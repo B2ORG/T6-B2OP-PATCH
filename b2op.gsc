@@ -111,7 +111,7 @@ on_player_spawned()
 		wait 0.05;
 
 	self thread welcome_prints();
-	self thread print_network_frame();
+	self thread evaluate_network_frame();
 	self thread velocity_meter();
 	// self thread set_characters();
 }
@@ -527,7 +527,7 @@ safety_beta()
 		generate_watermark("BETA", (0, 0.8, 0));
 }
 
-print_network_frame()
+evaluate_network_frame()
 {
 	level endon("end_game");
 	self endon("disconnect");
@@ -538,12 +538,22 @@ print_network_frame()
 	wait_network_frame();
 	end_time = int(getTime());
 	network_frame_len = (end_time - start_time) / 1000;
+    net_frame_good = false;
 
     /* To avoid direct float equality evaluation */
-    if ((level.players.size == 1 && (network_frame_len > 0.06 && network_frame_len < 0.14)) || (level.players.size > 1 && network_frame_len < 0.09))
+    if (level.players.size == 1)
     {
-        self thread print_scheduler("NETWORK FRAME: ^2GOOD");
+        if (network_frame_len > 0.06 && network_frame_len < 0.14)
+            net_frame_good = true;
     }
+    else
+    {
+        if (network_frame_len < 0.09)
+            net_frame_good = true;
+    }
+
+    if (net_frame_good)
+        self thread print_scheduler("NETWORK FRAME: ^2GOOD");
     else
     {
         self thread print_scheduler("NETWORK FRAME: ^1BAD");
