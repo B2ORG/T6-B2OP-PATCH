@@ -52,7 +52,8 @@ on_game_start()
 	level.B2OP_CONFIG["hud_color"] = (0, 1, 0.5);
 	level.B2OP_CONFIG["hud_enabled"] = true;
 	level.B2OP_CONFIG["timers_enabled"] = true;
-	// level.B2OP_CONFIG["show_hordes"] = true;
+	level.B2OP_CONFIG["hordes_enabled"] = true;
+	level.B2OP_CONFIG["velocity_enabled"] = true;
 	// level.B2OP_CONFIG["give_permaperks"] = true;
 	// level.B2OP_CONFIG["track_permaperks"] = true;
 	// level.B2OP_CONFIG["mannequins"] = false;
@@ -539,7 +540,7 @@ timer_hud()
 	level.FRFIX_START = int(getTime() / 1000);
 	flag_set("game_started");
 
-    if (!b2op_config("hud_enabled") && !b2op_config("timers_enabled"))
+    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
         return;
 
     timer_hud = createserverfontstring("big" , 1.6);
@@ -553,7 +554,7 @@ round_timer_hud()
 {
     level endon("end_game");
 
-    if (!b2op_config("hud_enabled") && !b2op_config("timers_enabled"))
+    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
         return;
 
 	round_hud = createserverfontstring("big" , 1.6);
@@ -593,7 +594,8 @@ show_split()
 {
 	level endon("end_game");
 
-    /* Add check for hud enabled */
+    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
+        return;
 
     switch (level.round_number)
     {
@@ -617,11 +619,12 @@ display_hordes()
 {
 	level endon("end_game");
 
-    /* Add check for hud enabled */
+    if (!b2op_config("hud_enabled") || b2op_config("hordes_enabled"))
+        return;
 
     wait 0.05;
 
-    if (!is_special_round() && is_round(20))
+    if (!is_special_round() && is_round(50))
     {
         label = "HORDES ON " + level.round_number + ": ^3";
         zombies_value = int(((maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total) / 24) * 100);
@@ -634,7 +637,8 @@ velocity_meter()
     self endon("disconnect");
     level endon("end_game");
 
-    /* Add check for hud enabled */
+    if (!b2op_config("hud_enabled") || !b2op_config("velocity_enabled"))
+        return;
 
     player_wait_for_initial_blackscreen();
 
