@@ -447,24 +447,6 @@ welcome_prints()
 	self iPrintLn("Source: ^1github.com/Zi0MIX/T6-B2OP-PATCH");
 }
 
-generate_cheat()
-{
-	// Don't want to generate it twice
-	if (isDefined(level.cheat_hud))
-		return;
-
-    level.cheat_hud = createserverfontstring("hudsmall" , 1.2);
-	level.cheat_hud setPoint("CENTER", "CENTER", 0, -30);
-	level.cheat_hud.color = (1, 0.5, 0);
-	level.cheat_hud setText("Alright there fuckaroo, quit this cheated sheit and touch grass loser.");
-	level.cheat_hud.alpha = 1;
-	level.cheat_hud.hidewheninmenu = 0;
-
-	level notify("cheat_generated");
-
-	return;
-}
-
 set_dvars()
 {
 	level endon("end_game");
@@ -504,9 +486,6 @@ dvar_detector()
 			if (getDvar(dvar_definitions["dvar_name"][i]) != dvar_definitions["dvar_values"][i])
 			{
 				debug_print("Detected " + dvar_definitions["dvar_name"][i]);
-
-				if (dvar_definitions["is_cheat"][i])
-					generate_cheat();
 
 				if (!isinarray(dvar_detections, detection_key))
 				{
