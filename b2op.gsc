@@ -198,26 +198,37 @@ generate_watermark(text, color, alpha_override)
     level.num_of_watermarks++;
 }
 
-print_scheduler(label, content)
+print_scheduler(content)
 {
 	level endon("end_game");
+    self endon("disconnect");
 
-	if (!isDefined(content))
-		content = "";
+    if (isDefined(self))
+        self thread player_print_scheduler(content);
+    else
+        foreach (player in level.players)
+            player thread player_print_scheduler(content);
+}
 
-	if (!isDefined(level.print_schedules))
-		level.print_schedules = 0;
+player_print_scheduler(content)
+{
+    level endon("end_game");
+    self endon("disconnect");
 
-	while (level.print_schedules > getDvarInt("con_gameMsgWindow0LineCount"))
-		wait 0.05;
+    while (isDefined(self.scheduled_prints) && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
+        wait 0.05;
 
-	level.print_schedules++;
-	iPrintLn("" + label + content);
-	wait_for_message_end();
-	level.print_schedules--;
+    if (isDefined(self.scheduled_prints))
+        self.scheduled_prints++;
+    else
+        self.scheduled_prints = 1;
 
-	if (level.print_schedules <= 0)
-		level.print_schedules = undefined;
+    self iPrintLn(content);
+    wait_for_message_end();
+    self.scheduled_prints--;
+
+    if (self.scheduled_prints <= 0)
+        self.scheduled_prints = undefined;
 }
 
 convert_time(seconds)
