@@ -233,42 +233,42 @@ player_print_scheduler(content)
 
 convert_time(seconds)
 {
-	hours = 0; 
-	minutes = 0; 
+	hours = 0;
+	minutes = 0;
 	
-	if( seconds > 59 )
+	if (seconds > 59)
 	{
 		minutes = int(seconds / 60);
 
 		seconds = int(seconds * 1000) % (60 * 1000);
-		seconds = seconds * 0.001; 
+		seconds = seconds * 0.001;
 
-		if(minutes > 59)
+		if (minutes > 59)
 		{
 			hours = int(minutes / 60);
 			minutes = int(minutes * 1000) % (60 * 1000);
-			minutes = minutes * 0.001; 		
+			minutes = minutes * 0.001;
 		}
 	}
 
 	str_hours = hours;
-	if(hours < 10)
-		str_hours = "0" + hours; 
+	if (hours < 10)
+		str_hours = "0" + hours;
 
 	str_minutes = minutes;
-	if(minutes < 10 && hours > 0)
-		str_minutes = "0" + minutes; 
+	if (minutes < 10 && hours > 0)
+		str_minutes = "0" + minutes;
 
 	str_seconds = seconds;
-	if(seconds < 10)
-		str_seconds = "0" + seconds; 
+	if (seconds < 10)
+		str_seconds = "0" + seconds;
 
 	if (hours == 0)
-		combined = "" + str_minutes  + ":" + str_seconds; 
+		combined = "" + str_minutes  + ":" + str_seconds;
 	else
-		combined = "" + str_hours  + ":" + str_minutes  + ":" + str_seconds; 
+		combined = "" + str_hours  + ":" + str_minutes  + ":" + str_seconds;
 
-	return combined; 
+	return combined;
 }
 
 player_wait_for_initial_blackscreen()
