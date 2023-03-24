@@ -178,7 +178,10 @@ debug_print(text)
 
 generate_watermark(text, color, alpha_override)
 {
-	y_offset = 12 * level.FRFIX_WATERMARKS.size;
+    if (!isDefined(level.num_of_watermarks))
+        level.num_of_watermarks = 0;
+
+	y_offset = 12 * level.num_of_watermarks;
 	if (!isDefined(color))
 		color = (1, 1, 1);
 
@@ -192,7 +195,7 @@ generate_watermark(text, color, alpha_override)
 	watermark.alpha = alpha_override;
 	watermark.hidewheninmenu = 0;
 
-	level.FRFIX_WATERMARKS[level.FRFIX_WATERMARKS.size] = watermark;
+    level.num_of_watermarks++;
 }
 
 print_scheduler(label, content)
