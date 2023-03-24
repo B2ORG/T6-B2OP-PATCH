@@ -70,9 +70,6 @@ on_game_start()
 	// level thread first_box_handler();
 	// level thread fridge_handler();
 	// level thread origins_fix();
-	// level thread powerup_point_drop_watcher();
-	// level thread powerup_odds_watcher();
-	// level thread powerup_vars_controller();
 
 	flag_wait("initial_blackscreen_passed");
 
