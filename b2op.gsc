@@ -116,7 +116,7 @@ on_player_spawned()
 		wait 0.05;
 
 	// self thread welcome_prints();
-	// self thread print_network_frame(6);
+	self thread print_network_frame();
 	// self thread velocity_meter();
 	// self thread set_characters();
 }
@@ -508,20 +508,10 @@ safety_beta()
 		generate_watermark("BETA", (0, 0.8, 0));
 }
 
-/* change that into iprint */
-print_network_frame(len)
+print_network_frame()
 {
 	level endon("end_game");
 	self endon("disconnect");
-
-    player_wait_for_initial_blackscreen();
-
-    self.network_hud = createfontstring("hudsmall" , 1.9);
-	self.network_hud setPoint("CENTER", "TOP", "CENTER", 5);
-	self.network_hud.alpha = 0;
-	self.network_hud.color = (1, 1, 1);
-	self.network_hud.hidewheninmenu = 1;
-    self.network_hud.label = &"NETWORK FRAME: ^2";
 
 	flag_wait("initial_blackscreen_passed");
 
@@ -530,27 +520,16 @@ print_network_frame(len)
 	end_time = int(getTime());
 	network_frame_len = (end_time - start_time) / 1000;
 
-	if (!isdefined(len))
-		len = 5;
-
-	if ((level.players.size == 1) && (network_frame_len != 0.1))
-	{
-		self.network_hud.label = &"NETWORK FRAME: ^1";
-		generate_watermark("PLUTO SPAWNS", (0.8, 0, 0));
-	}
-	else if ((level.players.size > 1) && (network_frame_len != 0.05))
-	{
-		self.network_hud.label = &"NETWORK FRAME: ^1";
-		generate_watermark("PLUTO SPAWNS", (0.8, 0, 0));
-	}
-
-	self.network_hud setValue(network_frame_len);
-
-	self.network_hud.alpha = 1;
-	wait len;
-	self.network_hud.alpha = 0;
-	wait 0.1;
-	self.network_hud destroy();
+    /* To avoid direct float equality evaluation */
+    if ((level.players.size == 1 && (network_frame_len > 0.06 && network_frame_len < 0.14)) || (level.players.size > 1 && network_frame_len < 0.09))
+    {
+        self thread print_scheduler("NETWORK FRAME: ^2GOOD");
+    }
+    else
+    {
+        self thread print_scheduler("NETWORK FRAME: ^1BAD");
+		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
+    }
 }
 
 timer_hud()
