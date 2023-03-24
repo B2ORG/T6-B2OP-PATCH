@@ -40,7 +40,6 @@ safe_init()
 	// level.B2OP_CONFIG["for_player"] = "";
 	// level.B2OP_CONFIG["key_hud_plugin"] = undefined;
 
-	set_dvars();
 	level thread on_game_start();
 }
 
@@ -53,7 +52,7 @@ on_game_start()
 	level.B2OP_CONFIG["hud_enabled"] = true;
 	level.B2OP_CONFIG["timers_enabled"] = true;
 	level.B2OP_CONFIG["hordes_enabled"] = true;
-	level.B2OP_CONFIG["velocity_enabled"] = true;
+	level.B2OP_CONFIG["velocity_enabled"] = false;
 	// level.B2OP_CONFIG["give_permaperks"] = true;
 	// level.B2OP_CONFIG["track_permaperks"] = true;
 	// level.B2OP_CONFIG["mannequins"] = false;
@@ -68,6 +67,7 @@ on_game_start()
 	level waittill("initial_players_connected");
 
 	// Initial game settings
+	set_dvars();
 	// level thread first_box_handler();
 	// level thread fridge_handler();
 	// level thread origins_fix();
@@ -77,13 +77,7 @@ on_game_start()
     level thread b2op_main_loop();
 
 	// HUD
-	// level thread timer_hud();
-	// level thread round_timer_hud();
-
-	// Scheduled prints
-	// level thread display_splits();
-	// level thread display_hordes();
-	// level thread semtex_display();
+	level thread timers();
 
 	// Game settings
 	// safety_zio();
@@ -126,10 +120,12 @@ b2op_main_loop()
 {
     level endon("end_game");
 
+    debug_print("initialized b2op_main_loop");
     while (true)
     {
         level waittill("start_of_round");
         check_dvars();
+        level thread show_hordes();
 
         level waittill("end_of_round");
         level thread show_split();
@@ -449,6 +445,18 @@ set_dvars()
     setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
     setdvar("sv_cheats", 0);
 
+    setDvar("timers", "0");
+    if (b2op_config("timers_enabled"))
+        setDvar("timers", "1");
+
+    setDvar("hordes", "0");
+    if (b2op_config("hordes_enabled"))
+        setDvar("hordes", "1");
+
+    setDvar("velocity", "0");
+    if (b2op_config("velocity_enabled"))
+        setDvar("velocity", "1");
+
     if (!flag("dvars_set"))
         flag_set("dvars_set");
 }
@@ -533,14 +541,47 @@ print_network_frame()
     }
 }
 
-timer_hud()
+hud_alpha_controller(dvar_name, hud1, hud2, hud3)
+{
+    level endon("end_game");
+
+    while (true)
+    {
+        if (getDvar(dvar_name) == "0")
+        {
+            if (hud1.alpha > 0)
+                hud1.alpha = 0;
+            if (isDefined(hud2) && hud2.alpha > 0)
+                hud2.alpha = 0;
+            if (isDefined(hud3) && hud3.alpha > 0)
+                hud3.alpha = 0;
+            // if (isDefined(hud4) && hud4.alpha > 0)
+            //     hud4.alpha = 0;
+        }
+        else
+        {
+            if (hud1.alpha == 0)
+                hud1.alpha = 1;
+            if (isDefined(hud2) && hud2.alpha == 0)
+                hud2.alpha = 1;
+            if (isDefined(hud3) && hud3.alpha == 0)
+                hud3.alpha = 1;
+            // if (isDefined(hud4) && hud4.alpha == 0)
+            //     hud4.alpha = 1;
+        }
+
+        wait 0.05;
+    }
+}
+
+timers()
 {
     level endon("end_game");
 
 	level.FRFIX_START = int(getTime() / 1000);
 	flag_set("game_started");
 
-    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
+    if (!b2op_config("hud_enabled"))
         return;
 
     timer_hud = createserverfontstring("big" , 1.6);
@@ -548,53 +589,44 @@ timer_hud()
 	if (is_plutonium())
 	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
 	timer_hud.alpha = 1;
-}
-
-round_timer_hud()
-{
-    level endon("end_game");
-
-    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
-        return;
 
 	round_hud = createserverfontstring("big" , 1.6);
-	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
+	round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
 	if (is_plutonium())
-	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
+	    round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
 	round_hud.alpha = 0;
 
-	while (true)
+    thread hud_alpha_controller("timers", timer_hud, round_hud);
+
+    level waittill("start_of_round");
+    while (isDefined(round_hud))
 	{
-		level waittill("start_of_round");
-
 		round_start = int(getTime() / 1000);
-
         round_hud setTimerUp(0);
-        round_hud FadeOverTime(0.25);
-        round_hud.alpha = 1;
 
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
-
-		for (ticks = 0; ticks < 20; ticks++)
-		{
-			round_hud setTimer(round_end - 0.1);
-			wait 0.25;
-		}
-
-		round_start = undefined;
-        round_end = undefined;
-
-		round_hud FadeOverTime(0.25);
-		round_hud.alpha = 0;
+		round_hud keep_displaying_old_time(round_end);
 	}
+}
+
+keep_displaying_old_time(time)
+{
+    level endon("end_game");
+    level endon("start_of_round");
+
+    while (true)
+    {
+        self setTimer(time - 0.1);
+        wait 0.25;
+    }
 }
 
 show_split()
 {
 	level endon("end_game");
 
-    if (!b2op_config("hud_enabled") || !b2op_config("timers_enabled"))
+    if (!b2op_config("hud_enabled") || getDvar("timers") == "0")
         return;
 
     switch (level.round_number)
@@ -612,14 +644,14 @@ show_split()
     }
 
     timestamp = convert_time(int(getTime() / 1000) - level.FRFIX_START);
-    self thread print_scheduler("Round " + level.round_number + " time: ^1", timestamp);
+    thread print_scheduler("Round " + level.round_number + " time: ^1", timestamp);
 }
 
-display_hordes()
+show_hordes()
 {
 	level endon("end_game");
 
-    if (!b2op_config("hud_enabled") || b2op_config("hordes_enabled"))
+    if (!b2op_config("hud_enabled") || getDvar("hordes") == "0")
         return;
 
     wait 0.05;
@@ -628,7 +660,7 @@ display_hordes()
     {
         label = "HORDES ON " + level.round_number + ": ^3";
         zombies_value = int(((maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total) / 24) * 100);
-        self thread print_scheduler(label, zombies_value / 100);
+        thread print_scheduler(label, zombies_value / 100);
     }
 }
 
@@ -637,7 +669,7 @@ velocity_meter()
     self endon("disconnect");
     level endon("end_game");
 
-    if (!b2op_config("hud_enabled") || !b2op_config("velocity_enabled"))
+    if (!b2op_config("hud_enabled"))
         return;
 
     player_wait_for_initial_blackscreen();
@@ -649,10 +681,7 @@ velocity_meter()
 
     while (true)
     {
-        if (isDefined(self.afterlife) && self.afterlife)
-		    hud.alpha = 0;
-	    else
-		    hud.alpha = 1;
+        self velocity_visible(self.hud_velocity);
 
 		velocity = int(length(self getvelocity() * (1, 1, 0)));
 		self.hud_velocity velocity_meter_scale(velocity);
@@ -660,6 +689,14 @@ velocity_meter()
 
         wait 0.05;
     }
+}
+
+velocity_visible(hud)
+{
+    if (is_true(self.afterlife) || getDvar("velocity") == "0")
+        hud.alpha = 0;
+    else
+        hud.alpha = 1;
 }
 
 velocity_meter_scale(vel)
