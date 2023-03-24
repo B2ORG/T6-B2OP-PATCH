@@ -49,9 +49,9 @@ on_game_start()
 	level endon("end_game");
 
 	// Func Config
-	// level.B2OP_CONFIG["hud_color"] = (0, 1, 0.5);
-	// level.B2OP_CONFIG["const_timer"] = true;
-	// level.B2OP_CONFIG["const_round_timer"] = false;
+	level.B2OP_CONFIG["hud_color"] = (0, 1, 0.5);
+	level.B2OP_CONFIG["hud_enabled"] = true;
+	level.B2OP_CONFIG["timers_enabled"] = true;
 	// level.B2OP_CONFIG["show_hordes"] = true;
 	// level.B2OP_CONFIG["give_permaperks"] = true;
 	// level.B2OP_CONFIG["track_permaperks"] = true;
@@ -534,31 +534,34 @@ print_network_frame()
 
 timer_hud()
 {
-    /* Return if timer disabled */
-
-    timer_hud = createserverfontstring("big" , 1.6);
-	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
-	if (!is_plutonium())
-		timer_hud set_hud_properties("round_hud", "TOPLEFT", "TOPLEFT", -55, -22);
-	timer_hud.alpha = 0;
-	timer_hud.hidewheninmenu = 1;
+    level endon("end_game");
 
 	level.FRFIX_START = int(getTime() / 1000);
 	flag_set("game_started");
+
+    if (!b2op_config("hud_enabled") && !b2op_config("timers_enabled"))
+        return;
+
+    timer_hud = createserverfontstring("big" , 1.6);
+	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -30);
+	if (is_plutonium())
+	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
+	timer_hud.alpha = 1;
 }
 
 round_timer_hud()
 {
     level endon("end_game");
 
-	round_hud = createserverfontstring("big" , 1.6);
-	round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
-	if (!is_plutonium())
-		round_hud set_hud_properties("round_hud", "TOPLEFT", "TOPLEFT", -55, -7);
-	round_hud.alpha = 0;
-	round_hud.hidewheninmenu = 1;
+    if (!b2op_config("hud_enabled") && !b2op_config("timers_enabled"))
+        return;
 
-    /* Return if no round timer hud enabled */
+	round_hud = createserverfontstring("big" , 1.6);
+	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
+	if (is_plutonium())
+	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
+	round_hud.alpha = 0;
+
 	while (true)
 	{
 		level waittill("start_of_round");
@@ -570,16 +573,16 @@ round_timer_hud()
         round_hud.alpha = 1;
 
 		level waittill("end_of_round");
-
 		round_end = int(getTime() / 1000) - round_start;
-
-		round_start = undefined;
 
 		for (ticks = 0; ticks < 20; ticks++)
 		{
 			round_hud setTimer(round_end - 0.1);
 			wait 0.25;
 		}
+
+		round_start = undefined;
+        round_end = undefined;
 
 		round_hud FadeOverTime(0.25);
 		round_hud.alpha = 0;
