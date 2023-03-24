@@ -78,9 +78,6 @@ on_game_start()
 	// level thread powerup_odds_watcher();
 	// level thread powerup_vars_controller();
 
-	// if (is_debug() && isDefined(level.FRFIX_PLUGIN_TEST))
-	// 	level thread [[level.FRFIX_PLUGIN_TEST]]();
-
 	flag_wait("initial_blackscreen_passed");
 
     level thread b2op_main_loop();
@@ -414,10 +411,10 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 	if (!isDefined(col))
 		col = level.B2OP_CONFIG["hud_color"];
 
-	if (isDefined(level.FRFIX_HUD_PLUGIN))
+	if (isDefined(level.B2OP_PLUGIN_HUD))
 	{
 		/* Proxy variable for irony compatibility */
-		func = level.FRFIX_HUD_PLUGIN[hud_key];
+		func = level.B2OP_PLUGIN_HUD[hud_key];
 		plugin = [[func]](level.B2OP_CONFIG["key_hud_plugin"]);
 		if (isDefined(plugin))
 		{
@@ -825,8 +822,8 @@ perma_perks_setup()
 		player thread permaperk_failsafe_early();
 
 		player.frfix_awarding_permaperks = false;
-		if (isDefined(level.FRFIX_PLUGIN_PERMAPERKS))
-			player thread [[level.FRFIX_PLUGIN_PERMAPERKS]]();
+		if (isDefined(level.B2OP_PLUGIN_PERMAPERKS))
+			player thread [[level.B2OP_PLUGIN_PERMAPERKS]]();
 		else
 			player thread award_permaperks_safe();
 	}
@@ -841,8 +838,8 @@ perma_perks_setup()
 		else
 			player thread permaperk_failsafe_late();
 
-		if (isDefined(level.FRFIX_PLUGIN_PERMAPERKS))
-			player thread [[level.FRFIX_PLUGIN_PERMAPERKS]]();
+		if (isDefined(level.B2OP_PLUGIN_PERMAPERKS))
+			player thread [[level.B2OP_PLUGIN_PERMAPERKS]]();
 	}
 }
 
@@ -1154,9 +1151,9 @@ fridge()
 	level endon("terminate_fridge_process");
 
 	// Use plugin to set initial fridge weapons, only for players connected from r1
-	if (isDefined(level.FRFIX_PLUGIN_FRIDGE))
+	if (isDefined(level.B2OP_PLUGIN_FRIDGE))
 	{
-		self thread [[level.FRFIX_PLUGIN_FRIDGE]](::player_rig_fridge);
+		self thread [[level.B2OP_PLUGIN_FRIDGE]](::player_rig_fridge);
 		level notify("terminate_fridge_process");
 	}
 
