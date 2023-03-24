@@ -23,10 +23,8 @@ main()
 safe_init()
 {
 	flag_init("dvars_set");
-	flag_init("cheat_printed_backspeed");
-	flag_init("cheat_printed_noprint");
-	flag_init("cheat_printed_cheats");
-	flag_init("cheat_printed_gspeed");
+	flag_init("detected_svcheats");
+	flag_init("detected_gspeed");
 
 	flag_init("game_started");
 	flag_init("box_rigged");
@@ -69,11 +67,9 @@ on_game_start()
 	level waittill("initial_players_connected");
 
 	// Initial game settings
-	// level thread dvar_detector();
 	// level thread first_box_handler();
 	// level thread fridge_handler();
 	// level thread origins_fix();
-	// level thread safety_anticheat();
 	// level thread powerup_point_drop_watcher();
 	// level thread powerup_odds_watcher();
 	// level thread powerup_vars_controller();
@@ -93,8 +89,6 @@ on_game_start()
 
 	// Game settings
 	// safety_zio();
-	// safety_round();
-	// safety_difficulty();
 	// safety_debugger();
 	// safety_beta();
 	// level thread perma_perks_setup();
@@ -137,9 +131,9 @@ b2op_main_loop()
     while (true)
     {
         level waittill("start_of_round");
+        check_dvars();
 
         level waittill("end_of_round");
-
         level thread show_split();
     }
 }
@@ -461,44 +455,19 @@ set_dvars()
         flag_set("dvars_set");
 }
 
-dvar_detector() 
+check_dvars()
 {
-	level endon("end_game");
+    if (getDvar("sv_cheats") != "0" && !flag("detected_svcheats"))
+    {
+        generate_watermark("SVCHEATS", (0.8, 0, 0));
+        flag_set("detected_svcheats");
+    }
 
-	flag_wait("dvars_set");
-
-	red_color = (0.8, 0, 0);
-	dvar_definitions = array();
-	dvar_definitions["dvar_name"] = array("sv_cheats", "g_speed");
-	dvar_definitions["dvar_values"] = array("0", "190");
-	dvar_definitions["dvar_watermark"] = array("CHEATS", "GSPEED");
-	dvar_definitions["watermark_color"] = array(red_color, red_color);
-	dvar_definitions["is_cheat"] = array(true, true);
-
-	dvar_detections = array();
-
-	while (true) 
-	{
-		for (i = 0; i < dvar_definitions.size; i++)
-		{
-			detection_key = "cheat_" + dvar_definitions["dvar_name"][i];
-
-			if (getDvar(dvar_definitions["dvar_name"][i]) != dvar_definitions["dvar_values"][i])
-			{
-				debug_print("Detected " + dvar_definitions["dvar_name"][i]);
-
-				if (!isinarray(dvar_detections, detection_key))
-				{
-					generate_watermark(dvar_definitions["dvar_watermark"][i], dvar_definitions["watermark_color"][i]);
-					dvar_detections[dvar_detections.size] = detection_key;
-				}
-
-				level notify("reset_dvars");
-			}
-		}
-
-		wait 0.1;
-	}
+    if (getDvar("g_speed") != "190" && !flag("detected_gspeed"))
+    {
+        generate_watermark("GSPEED", (0.8, 0, 0));
+        flag_set("detected_gspeed");
+    }
 }
 
 fixed_wait_network_frame()
@@ -511,40 +480,19 @@ fixed_wait_network_frame()
 
 safety_zio()
 {
-	// Song autotiming
+	// Songs
 	if (isDefined(level.SONG_TIMING))
 	{
-		iPrintLn("^1SONG PATCH DETECTED!!!");
+		print_scheduler("^1SONG PATCH DETECTED!!!");
 		level notify("end_game");
 	}
 
-	// Innit patch
-	if (isDefined(level.INNIT_CONFIG))
+	// First Room Fix
+	if (isDefined(level.FRFIX_CONFIG))
 	{
-		iPrintLn("^1INNIT PATCH DETECTED!!!");
+		print_scheduler("^1FIRST ROOM FIX DETECTED!!!");
 		level notify("end_game");
 	}
-}
-
-safety_round()
-{
-	maxround = 1;
-	if (is_town() || is_farm() || is_depot() || is_nuketown())
-		maxround = 10;
-
-	debug_print("Starting round detected: " + level.start_round);
-
-	if (level.start_round <= maxround)
-		return;
-
-	generate_watermark("STARTING ROUND", (0.8, 0, 0));
-}
-
-safety_difficulty()
-{
-	if (level.gamedifficulty == 0)
-		generate_watermark("EASY MODE", (0.8, 0, 0));
-	return;
 }
 
 safety_debugger()
@@ -555,18 +503,6 @@ safety_debugger()
 			player thread award_points(333333);
 		generate_watermark("DEBUGGER", (0.8, 0.8, 0));
 	}
-}
-
-safety_anticheat()
-{
-	level endon("end_game");
-
-	level waittill("cheat_generated");
-	while (isDefined(level.cheat_hud))
-		wait 0.1;
-
-	foreach (player in level.players)
-		player doDamage(player.health + 69, player.origin);
 }
 
 safety_beta()
