@@ -48,7 +48,7 @@ on_game_start()
 	level endon("end_game");
 
 	// Func Config
-	level.B2OP_CONFIG["hud_color"] = (0, 1, 0.5);
+	level.B2OP_CONFIG["hud_color"] = (1, 1, 1);
 	level.B2OP_CONFIG["hud_enabled"] = true;
 	level.B2OP_CONFIG["timers_enabled"] = true;
 	level.B2OP_CONFIG["hordes_enabled"] = true;
