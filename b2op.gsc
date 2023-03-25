@@ -66,7 +66,6 @@ on_game_start()
 
 	level waittill("initial_players_connected");
 
-	// Initial game settings
 	set_dvars();
 	// level thread first_box_handler();
 	// level thread fridge_handler();
@@ -75,17 +74,11 @@ on_game_start()
 	flag_wait("initial_blackscreen_passed");
 
     level thread b2op_main_loop();
-
-	// HUD
 	level thread timers();
-
-	// Game settings
+	// level thread perma_perks_setup();
 	safety_zio();
 	safety_debugger();
 	safety_beta();
-	// level thread perma_perks_setup();
-	// level thread nuketown_handler();
-	// level thread topbarn_controller();
 }
 
 on_player_joined()
