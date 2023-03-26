@@ -1026,7 +1026,9 @@ fridge_watch_state()
 {
 	level endon("end_game");
 
-	while (true)
+	fridge_claimed = false;
+
+	while (!fridge_claimed)
 	{
 		foreach(player in level.players)
 		{
@@ -1036,11 +1038,11 @@ fridge_watch_state()
 				player.fridge_state = locker;
 			/* If locker is saved, but stat is cleared, break out */
 			else if (isDefined(player.fridge_state) && locker == "")
-				break;
+				fridge_claimed = true;
 		}
 
 		if (is_round(11))
-			break;
+			fridge_claimed = true;
 
 		wait 0.25;
 	}
