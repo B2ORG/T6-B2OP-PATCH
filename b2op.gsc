@@ -59,7 +59,7 @@ on_game_start()
 	// level.B2OP_CONFIG["nuketown_25_ee"] = false;
 	// level.B2OP_CONFIG["forever_solo_game_fix"] = true;
 	// level.B2OP_CONFIG["semtex_prenades"] = true;
-	// level.B2OP_CONFIG["fridge"] = false;
+	level.B2OP_CONFIG["fridge"] = true;
 	// level.B2OP_CONFIG["first_box_module"] = false;
 
 	level thread on_player_joined();
@@ -68,7 +68,6 @@ on_game_start()
 
 	set_dvars();
 	// level thread first_box_handler();
-	// level thread fridge_handler();
 	// level thread origins_fix();
 
 	flag_wait("initial_blackscreen_passed");
@@ -76,6 +75,7 @@ on_game_start()
     level thread b2op_main_loop();
 	level thread timers();
 	level thread perma_perks_setup();
+	level thread fridge_handler();
 	safety_zio();
 	safety_debugger();
 	safety_beta();
@@ -366,7 +366,7 @@ is_plutonium()
 safe_restart()
 {
 	if (!is_plutonium() && level.players.size > 1)
-		level nofity("end_game");
+		level notify("end_game");
 	else
 		map_restart();
 }
@@ -952,157 +952,158 @@ remove_permaperk(perk_code)
 	self.pers_upgrades_awarded[perk_code] = 0;
 }
 
-// fridge_handler()
-// {
-// 	level endon("end_game");
+fridge_handler()
+{
+	level endon("end_game");
 
-// 	if (!is_tranzit() && !is_die_rise() && !is_buried())
-// 		return;
+	if (!has_permaperks_system() || !b2op_config("fridge"))
+		return;
 
-// 	if (!b2op_config("fridge"))
-// 		return;
+	if (isDefined(level.B2OP_PLUGIN_FRIDGE))
+	{
+		thread [[level.B2OP_PLUGIN_FRIDGE]](::player_rig_fridge);
+		print_scheduler("Fridge module: ^3LOADED PLUGIN");
+	}
+	else
+	{
+		print_scheduler("Fridge module: ^2ENABLED");
+		if (is_plutonium())
+			thread fridge_watch_chat();
+		thread fridge_watch_dvar();
+		thread fridge_watch_state();
 
-// 	print_scheduler("Fridge module: ", "^2ENABLED");
+		level waittill("terminate_fridge_process");
+		print_scheduler("Fridge module: ^1DISABLED");
+	}
 
-// 	self thread fridge();
-// 	self thread fridge_state_watcher();
+	// Cleanup
+	foreach(player in level.players)
+	{
+		if (isDefined(player.fridge_state))
+			player.fridge_state = undefined;
+	}
+}
 
-// 	// Cleanup
-// 	level waittill("terminate_fridge_process");
+fridge_watch_dvar()
+{
+	level endon("end_game");
+	level endon("terminate_fridge_process");
 
-// 	info_print("FRIDGE: One of the players obtained his weapon. Fridge module no longer available");
-// 	print_scheduler("Fridge module: ", "^2DISABLED");
+	setDvar("fridge", "");
+	while (true)
+	{
+		wait 0.05;
+		if (getDvar("fridge" == ""))
+			continue;
 
-// 	foreach(player in level.players)
-// 	{
-// 		if (isDefined(player.fridge_state))
-// 			player.fridge_state = undefined;
-// 	}
-// }
+		rig_fridge(getDvar("fridge"));
+	}
+}
 
-// fridge()
-// {
-// 	level endon("end_game");
-// 	level endon("terminate_fridge_process");
+fridge_watch_chat()
+{
+	level endon("end_game");
+	level endon("terminate_fridge_process");
 
-// 	// Use plugin to set initial fridge weapons, only for players connected from r1
-// 	if (isDefined(level.B2OP_PLUGIN_FRIDGE))
-// 	{
-// 		self thread [[level.B2OP_PLUGIN_FRIDGE]](::player_rig_fridge);
-// 		level notify("terminate_fridge_process");
-// 	}
+	while (true)
+	{
+		level waittill("say", message, player);
 
-// 	while (is_plutonium())
-// 	{
-// 		level waittill("say", message, player);
+		if (isSubStr(message, "fridge all") && player ishost())
+			rig_fridge(getSubStr(message, 11));
+		else if (isSubStr(message, "fridge"))
+			rig_fridge(getSubStr(message, 7), player);
 
-// 		if (isSubStr(message, "fridge all") && player ishost())
-// 			rig_fridge(getSubStr(message, 11));
-// 		else if (isSubStr(message, "fridge"))
-// 			rig_fridge(getSubStr(message, 7), player);
+		message = undefined;
+	}
+}
 
-// 		message = undefined;
-// 	}
+fridge_watch_state()
+{
+	level endon("end_game");
 
-// 	/* Redacted / Ancient */
-// 	setDvar("fridge", "");
-// 	while (true)
-// 	{
-// 		wait 0.05;
-// 		if (getDvar("fridge" == ""))
-// 			continue;
+	while (true)
+	{
+		foreach(player in level.players)
+		{
+			locker = player get_locker_stat();
+			/* Save state of the locker, if it's any weapon */
+			if (!isDefined(player.fridge_state) && locker != "")
+				player.fridge_state = locker;
+			/* If locker is saved, but stat is cleared, break out */
+			else if (isDefined(player.fridge_state) && locker == "")
+				break;
+		}
 
-// 		rig_fridge(getDvar("fridge"));
-// 	}
-// }
+		if (is_round(11))
+			break;
 
-// rig_fridge(key, player)
-// {
-// 	debug_print("rig_fridge(): key=" + key + "'");
+		wait 0.25;
+	}
+	level notify("terminate_fridge_process");
+}
 
-// 	if (isSubStr(key, "+"))
-// 		weapon = get_weapon_key(getSubStr(key, 1), ::fridge_pap_weapon_verification);
-// 	else
-// 		weapon = get_weapon_key(key, ::fridge_weapon_verification);
+rig_fridge(key, player)
+{
+	// debug_print("rig_fridge(): key=" + key + "'");
 
-// 	if (weapon == "")
-// 		return;
+	if (isSubStr(key, "+"))
+		weapon = get_weapon_key(getSubStr(key, 1), ::fridge_pap_weapon_verification);
+	else
+		weapon = get_weapon_key(key, ::fridge_weapon_verification);
 
-// 	if (isDefined(player))
-// 		player player_rig_fridge(weapon);
-// 	else
-// 	{
-// 		foreach(player in level.players)
-// 			player player_rig_fridge(weapon);
-// 	}
-// }
+	if (weapon == "")
+		return;
 
-// player_rig_fridge(weapon)
-// {
-// 	self clear_stored_weapondata();
+	if (isDefined(player))
+		player player_rig_fridge(weapon);
+	else
+	{
+		foreach(player in level.players)
+			player player_rig_fridge(weapon);
+	}
+}
 
-// 	wpn = array();
-// 	wpn["clip"] = weaponClipSize(weapon);
-// 	wpn["stock"] = weaponMaxAmmo(weapon);
-// 	wpn["dw_name"] = weapondualwieldweaponname(weapon);
-// 	wpn["alt_name"] = weaponaltweaponname(weapon);
-// 	wpn["lh_clip"] = weaponClipSize(wpn["dw_name"]);
-// 	wpn["alt_clip"] = weaponClipSize(wpn["alt_name"]);
-// 	wpn["alt_stock"] = weaponMaxAmmo(wpn["alt_name"]);
+player_rig_fridge(weapon)
+{
+	self clear_stored_weapondata();
 
-// 	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "name", weapon);
-// 	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "clip", wpn["clip"]);
-// 	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "stock", wpn["stock"]);
+	wpn = array();
+	wpn["clip"] = weaponClipSize(weapon);
+	wpn["stock"] = weaponMaxAmmo(weapon);
+	wpn["dw_name"] = weapondualwieldweaponname(weapon);
+	wpn["alt_name"] = weaponaltweaponname(weapon);
+	wpn["lh_clip"] = weaponClipSize(wpn["dw_name"]);
+	wpn["alt_clip"] = weaponClipSize(wpn["alt_name"]);
+	wpn["alt_stock"] = weaponMaxAmmo(wpn["alt_name"]);
 
-// 	if (isDefined(wpn["alt_name"]) && wpn["alt_name"] != "")
-// 	{
-// 		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_name", wpn["alt_name"]);
-// 		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_clip", wpn["alt_clip"]);
-// 		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_stock", wpn["alt_stock"]);
-// 	}
+	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "name", weapon);
+	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "clip", wpn["clip"]);
+	self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "stock", wpn["stock"]);
 
-// 	if (isDefined(wpn["dw_name"]) && wpn["dw_name"] != "")
-// 	{
-// 		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "dw_name", wpn["dw_name"]);
-// 		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
-// 	}
-// }
+	if (isDefined(wpn["alt_name"]) && wpn["alt_name"] != "")
+	{
+		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_name", wpn["alt_name"]);
+		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_clip", wpn["alt_clip"]);
+		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_stock", wpn["alt_stock"]);
+	}
 
-// fridge_state_watcher()
-// {
-// 	level endon("end_game");
-// 	level endon("terminate_fridge_process");
+	if (isDefined(wpn["dw_name"]) && wpn["dw_name"] != "")
+	{
+		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "dw_name", wpn["dw_name"]);
+		self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
+	}
+}
 
-// 	while (true)
-// 	{
-// 		foreach(player in level.players)
-// 		{
-// 			locker = player get_locker_stat();
-// 			/* Save state of the locker, if it's any weapon */
-// 			if (!isDefined(player.fridge_state) && locker != "")
-// 				player.fridge_state = locker;
-// 			/* If locker is saved, but stat is cleared, break out */
-// 			else if (isDefined(player.fridge_state) && locker == "")
-// 				break;
-// 		}
+get_locker_stat(stat)
+{
+	if (!isDefined(stat))
+		stat = "name";
 
-// 		if (is_round(11))
-// 			break;
-
-// 		wait 0.25;
-// 	}
-// 	level notify("terminate_fridge_process", player.name);
-// }
-
-// get_locker_stat(stat)
-// {
-// 	if (!isDefined(stat))
-// 		stat = "name";
-
-// 	value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
-// 	// debug_print("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
-// 	return value;
-// }
+	value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
+	// debug_print("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
+	return value;
+}
 
 // first_box_handler()
 // {
@@ -1361,183 +1362,183 @@ remove_permaperk(perk_code)
 // 	return;
 // }
 
-// get_weapon_key(weapon_str, verifier)
-// {
-// 	switch(weapon_str)
-// 	{
-// 		case "mk1":
-// 			key = "ray_gun_zm";
-// 			break;
-// 		case "mk2":
-// 			key = "raygun_mark2_zm";
-// 			break;
-// 		case "monk":
-// 			key = "cymbal_monkey_zm";
-// 			break;
-// 		case "emp":
-// 			key = "emp_grenade_zm";
-// 			break;
-// 		case "time":
-// 			key = "time_bomb_zm";
-// 			break;
-// 		case "sliq":
-// 			key = "slipgun_zm";
-// 			break;
-// 		case "blunder":
-// 			key = "blundergat_zm";
-// 			break;
-// 		case "paralyzer":
-// 			key = "slowgun_zm";
-// 			break;
+get_weapon_key(weapon_str, verifier)
+{
+	switch(weapon_str)
+	{
+		case "mk1":
+			key = "ray_gun_zm";
+			break;
+		case "mk2":
+			key = "raygun_mark2_zm";
+			break;
+		case "monk":
+			key = "cymbal_monkey_zm";
+			break;
+		case "emp":
+			key = "emp_grenade_zm";
+			break;
+		case "time":
+			key = "time_bomb_zm";
+			break;
+		case "sliq":
+			key = "slipgun_zm";
+			break;
+		case "blunder":
+			key = "blundergat_zm";
+			break;
+		case "paralyzer":
+			key = "slowgun_zm";
+			break;
 
-// 		case "ak47":
-// 			key = "ak47_zm";
-// 			break;
-// 		case "an94":
-// 			key = "an94_zm";
-// 			break;
-// 		case "barret":
-// 			key = "barretm82_zm";
-// 			break;
-// 		case "b23r":
-// 			key = "beretta93r_zm";
-// 			break;
-// 		case "b23re":
-// 			key = "beretta93r_extclip_zm";
-// 			break;
-// 		case "dsr":
-// 			key = "dsr50_zm";
-// 			break;
-// 		case "evo":
-// 			key = "evoskorpion_zm";
-// 			break;
-// 		case "57":
-// 			key = "fiveseven_zm";
-// 			break;
-// 		case "257":
-// 			key = "fivesevendw_zm";
-// 			break;
-// 		case "fal":
-// 			key = "fnfal_zm";
-// 			break;
-// 		case "galil":
-// 			key = "galil_zm";
-// 			break;
-// 		case "mtar":
-// 			key = "tar21_zm";
-// 			break;
-// 		case "hamr":
-// 			key = "hamr_zm";
-// 			break;
-// 		case "m27":
-// 			key = "hk416_zm";
-// 			break;
-// 		case "exe":
-// 			key = "judge_zm";
-// 			break;
-// 		case "kap":
-// 			key = "kard_zm";
-// 			break;
-// 		case "bk":
-// 			key = "knife_ballistic_zm";
-// 			break;
-// 		case "ksg":
-// 			key = "ksg_zm";
-// 			break;
-// 		case "wm":
-// 			key = "m32_zm";
-// 			break;
-// 		case "mg":
-// 			key = "mg08_zm";
-// 			break;
-// 		case "lsat":
-// 			key = "lsat_zm";
-// 			break;
-// 		case "dm":
-// 			key = "minigun_alcatraz_zm";
-// 		case "mp40":
-// 			key = "mp40_stalker_zm";
-// 			break;
-// 		case "pdw":
-// 			key = "pdw57_zm";
-// 			break;
-// 		case "pyt":
-// 			key = "python_zm";
-// 			break;
-// 		case "rnma":
-// 			key = "rnma_zm";
-// 			break;
-// 		case "type":
-// 			key = "type95_zm";
-// 			break;
-// 		case "rpd":
-// 			key = "rpd_zm";
-// 			break;
-// 		case "s12":
-// 			key = "saiga12_zm";
-// 			break;
-// 		case "scar":
-// 			key = "scar_zm";
-// 			break;
-// 		case "m1216":
-// 			key = "srm1216_zm";
-// 			break;
-// 		case "tommy":
-// 			key = "thompson_zm";
-// 			break;
-// 		case "chic":
-// 			key = "qcw05_zm";
-// 			break;
-// 		case "rpg":
-// 			key = "usrpg_zm";
-// 			break;
-// 		case "m8":
-// 			key = "xm8_zm";
-// 			break;
-// 		case "m16":
-// 			key = "m16_zm";
-// 			break;
-// 		case "remington":
-// 			key = "870mcs_zm";
-// 			break;
-// 		case "oly":
-// 		case "olympia":
-// 			key = "rottweil72_zm";
-// 			break;
-// 		case "mp5":
-// 			key = "mp5k_zm";
-// 			break;
-// 		case "ak74":
-// 			key = "ak74u_zm";
-// 			break;
-// 		case "m14":
-// 			key = "m14_zm";
-// 			break;
-// 		case "svu":
-// 			key = "svu_zm";
-// 			break;
-// 		default:
-// 			key = weapon_str;
-// 	}
+		case "ak47":
+			key = "ak47_zm";
+			break;
+		case "an94":
+			key = "an94_zm";
+			break;
+		case "barret":
+			key = "barretm82_zm";
+			break;
+		case "b23r":
+			key = "beretta93r_zm";
+			break;
+		case "b23re":
+			key = "beretta93r_extclip_zm";
+			break;
+		case "dsr":
+			key = "dsr50_zm";
+			break;
+		case "evo":
+			key = "evoskorpion_zm";
+			break;
+		case "57":
+			key = "fiveseven_zm";
+			break;
+		case "257":
+			key = "fivesevendw_zm";
+			break;
+		case "fal":
+			key = "fnfal_zm";
+			break;
+		case "galil":
+			key = "galil_zm";
+			break;
+		case "mtar":
+			key = "tar21_zm";
+			break;
+		case "hamr":
+			key = "hamr_zm";
+			break;
+		case "m27":
+			key = "hk416_zm";
+			break;
+		case "exe":
+			key = "judge_zm";
+			break;
+		case "kap":
+			key = "kard_zm";
+			break;
+		case "bk":
+			key = "knife_ballistic_zm";
+			break;
+		case "ksg":
+			key = "ksg_zm";
+			break;
+		case "wm":
+			key = "m32_zm";
+			break;
+		case "mg":
+			key = "mg08_zm";
+			break;
+		case "lsat":
+			key = "lsat_zm";
+			break;
+		case "dm":
+			key = "minigun_alcatraz_zm";
+		case "mp40":
+			key = "mp40_stalker_zm";
+			break;
+		case "pdw":
+			key = "pdw57_zm";
+			break;
+		case "pyt":
+			key = "python_zm";
+			break;
+		case "rnma":
+			key = "rnma_zm";
+			break;
+		case "type":
+			key = "type95_zm";
+			break;
+		case "rpd":
+			key = "rpd_zm";
+			break;
+		case "s12":
+			key = "saiga12_zm";
+			break;
+		case "scar":
+			key = "scar_zm";
+			break;
+		case "m1216":
+			key = "srm1216_zm";
+			break;
+		case "tommy":
+			key = "thompson_zm";
+			break;
+		case "chic":
+			key = "qcw05_zm";
+			break;
+		case "rpg":
+			key = "usrpg_zm";
+			break;
+		case "m8":
+			key = "xm8_zm";
+			break;
+		case "m16":
+			key = "m16_zm";
+			break;
+		case "remington":
+			key = "870mcs_zm";
+			break;
+		case "oly":
+		case "olympia":
+			key = "rottweil72_zm";
+			break;
+		case "mp5":
+			key = "mp5k_zm";
+			break;
+		case "ak74":
+			key = "ak74u_zm";
+			break;
+		case "m14":
+			key = "m14_zm";
+			break;
+		case "svu":
+			key = "svu_zm";
+			break;
+		default:
+			key = weapon_str;
+	}
 
-// 	if (!isDefined(verifier))
-// 		verifier = ::default_weapon_verification;
+	if (!isDefined(verifier))
+		verifier = ::default_weapon_verification;
 
-// 	key = [[verifier]](key);
+	key = [[verifier]](key);
 
-// 	debug_print("get_weapon_key(): weapon_key: " + key);
-// 	return key;
-// }
+	// debug_print("get_weapon_key(): weapon_key: " + key);
+	return key;
+}
 
-// default_weapon_verification()
-// {
-//     weapon_key = get_base_weapon_name(weapon_key, 1);
+default_weapon_verification()
+{
+    weapon_key = get_base_weapon_name(weapon_key, 1);
 
-//     if (!is_weapon_included(weapon_key))
-//         return "";
+    if (!is_weapon_included(weapon_key))
+        return "";
 
-// 	return weapon_key;
-// }
+	return weapon_key;
+}
 
 // box_weapon_verification(weapon_key)
 // {
@@ -1546,38 +1547,38 @@ remove_permaperk(perk_code)
 // 	return "";
 // }
 
-// fridge_weapon_verification(weapon_key)
-// {
-//     wpn = get_base_weapon_name(weapon_key, 1);
-// 	// debug_print("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
+fridge_weapon_verification(weapon_key)
+{
+    wpn = get_base_weapon_name(weapon_key, 1);
+	// debug_print("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
-//     if (!is_weapon_included(wpn))
-//         return "";
+    if (!is_weapon_included(wpn))
+        return "";
 
-//     if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
-//         return "";
+    if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
+        return "";
 
-//     return wpn;
-// }
+    return wpn;
+}
 
-// fridge_pap_weapon_verification(weapon_key)
-// {
-//     weapon_key = fridge_weapon_verification(weapon_key);
-// 	// debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
-// 	if (weapon_key != "")
-// 		return level.zombie_weapons[weapon_key].upgrade_name;
-// 	return "";
-// }
+fridge_pap_weapon_verification(weapon_key)
+{
+    weapon_key = fridge_weapon_verification(weapon_key);
+	// debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
+	if (weapon_key != "")
+		return level.zombie_weapons[weapon_key].upgrade_name;
+	return "";
+}
 
-// weapon_display_wrapper(weapon_key)
-// {
-// 	if (weapon_key == "emp_grenade_zm")
-// 		return "Emp Grenade";
-// 	if (weapon_key == "cymbal_monkey_zm")
-// 		return "Cymbal Monkey";
+weapon_display_wrapper(weapon_key)
+{
+	if (weapon_key == "emp_grenade_zm")
+		return "Emp Grenade";
+	if (weapon_key == "cymbal_monkey_zm")
+		return "Cymbal Monkey";
 	
-// 	return get_weapon_display_name(weapon_key);
-// }
+	return get_weapon_display_name(weapon_key);
+}
 
 // pull_character_preset(character_index)
 // {
