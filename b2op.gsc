@@ -997,10 +997,11 @@ fridge_watch_dvar()
 	while (true)
 	{
 		wait 0.05;
-		if (getDvar("fridge" == ""))
+		if (getDvar("fridge") == "")
 			continue;
 
 		rig_fridge(getDvar("fridge"));
+		setDvar("fridge", "");
 	}
 }
 
