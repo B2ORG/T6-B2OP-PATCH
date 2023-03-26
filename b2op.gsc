@@ -190,15 +190,17 @@ generate_watermark(text, color, alpha_override)
     level.num_of_watermarks++;
 }
 
-print_scheduler(content)
+print_scheduler(content, player)
 {
-	level endon("end_game");
-    self endon("disconnect");
-
-    if (isDefined(self))
-        self thread player_print_scheduler(content);
+	// debug_print("print_scheduler(content='" + content + ")");
+    if (isDefined(player))
+	{
+		// debug_print(player.name + ": print scheduled: " + content);
+        player thread player_print_scheduler(content);
+	}
     else
 	{
+		// debug_print("general: print scheduled: " + content);
         foreach (player in level.players)
             player thread player_print_scheduler(content);
 	}
@@ -570,10 +572,10 @@ evaluate_network_frame()
     }
 
     if (net_frame_good)
-        self print_scheduler("NETWORK FRAME: ^2GOOD");
+        print_scheduler("NETWORK FRAME: ^2GOOD", self);
     else
     {
-        self print_scheduler("NETWORK FRAME: ^1BAD");
+        print_scheduler("NETWORK FRAME: ^1BAD", self);
 		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
     }
 }
