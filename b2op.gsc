@@ -198,8 +198,10 @@ print_scheduler(content)
     if (isDefined(self))
         self thread player_print_scheduler(content);
     else
+	{
         foreach (player in level.players)
             player thread player_print_scheduler(content);
+	}
 }
 
 player_print_scheduler(content)
@@ -568,10 +570,10 @@ evaluate_network_frame()
     }
 
     if (net_frame_good)
-        self thread print_scheduler("NETWORK FRAME: ^2GOOD");
+        self print_scheduler("NETWORK FRAME: ^2GOOD");
     else
     {
-        self thread print_scheduler("NETWORK FRAME: ^1BAD");
+        self print_scheduler("NETWORK FRAME: ^1BAD");
 		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
     }
 }
@@ -680,7 +682,7 @@ show_split()
     }
 
     timestamp = convert_time(int(getTime() / 1000) - level.FRFIX_START);
-    thread print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
+    print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
 }
 
 show_hordes()
@@ -695,7 +697,7 @@ show_hordes()
     if (!is_special_round() && is_round(50))
     {
         zombies_value = int(((maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total) / 24) * 100);
-        thread print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value / 100);
+        print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value / 100);
     }
 }
 
@@ -805,7 +807,7 @@ watch_permaperk_award()
 
 		if (i == present_players && flag("permaperks_were_set"))
 		{
-			thread print_scheduler("Permaperks Awarded: ^1RESTART REQUIRED");
+			print_scheduler("Permaperks Awarded: ^1RESTART REQUIRED");
 			wait 1.5;
 			safe_restart();
 		}
