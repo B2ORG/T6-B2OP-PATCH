@@ -169,6 +169,9 @@ debug_print(text)
 
 generate_watermark(text, color, alpha_override)
 {
+	if (is_true(flag(text)))
+		return;
+
     if (!isDefined(level.num_of_watermarks))
         level.num_of_watermarks = 0;
 
@@ -185,6 +188,8 @@ generate_watermark(text, color, alpha_override)
 	watermark setText(text);
 	watermark.alpha = alpha_override;
 	watermark.hidewheninmenu = 0;
+
+	flag_set(text);
 
     level.num_of_watermarks++;
 }
