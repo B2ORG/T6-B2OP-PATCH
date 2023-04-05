@@ -629,14 +629,18 @@ timers()
 
     timer_hud = createserverfontstring("big" , 1.6);
 	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -30);
-	if (is_plutonium())
+	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
+	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
+	else if (is_plutonium())
 	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
 	timer_hud.alpha = 1;
     timer_hud setTimerUp(0);
 
 	round_hud = createserverfontstring("big" , 1.6);
 	round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
-	if (is_plutonium())
+	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
+	    round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
+	else if (is_plutonium())
 	    round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
 	round_hud.alpha = 0;
 
