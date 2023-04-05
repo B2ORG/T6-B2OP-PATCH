@@ -1285,6 +1285,9 @@ rig_box(gun, player)
     level endon("end_game");
 
 	weapon_key = get_weapon_key(gun, ::box_weapon_verification);
+	if (isDefined(player))
+		weapon_key = player player_box_weapon_verification(weapon_key);
+
 	if (weapon_key == "")
 	{
 		print_scheduler("Wrong weapon key: ^1" + gun);
@@ -1292,7 +1295,7 @@ rig_box(gun, player)
 	}
 
 	// weapon_name = level.zombie_weapons[weapon_key].name;
-	print_scheduler("" + player.name + " set box weapon to: ^3", weapon_display_wrapper(weapon_key));
+	print_scheduler("" + player.name + " set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
 	generate_watermark("FIRST BOX", (0.8, 0, 0));
 	level.rigged_hits++;
 
@@ -1743,9 +1746,29 @@ default_weapon_verification()
 
 box_weapon_verification(weapon_key)
 {
-	if (isDefined(level.zombie_weapons[weapon_key]) && level.zombie_weapons[weapon_key].is_in_box)
-		return weapon_key;
-	return "";
+	if (!is_true(level.zombie_weapons[weapon_key].is_in_box))
+		return "";
+	return weapon_key;
+}
+
+player_box_weapon_verification(weapon_key)
+{
+	if (self has_weapon_or_upgrade(weapon_key))
+		return "";
+	if (!limited_weapon_below_quota(weapon_key, self, getentarray("specialty_weapupgrade", "script_noteworthy")))
+		return "";
+
+	switch (weapon_key)
+	{
+		case "ray_gun_zm":
+			if (self has_weapon_or_upgrade("raygun_mark2_zm"))
+				return "";
+		case "raygun_mark2_zm":
+			if (self has_weapon_or_upgrade("ray_gun_zm"))
+				return "";
+	}
+
+	return weapon_key;
 }
 
 fridge_weapon_verification(weapon_key)
