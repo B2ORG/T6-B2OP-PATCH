@@ -1367,7 +1367,7 @@ first_box_location()
 	if (!b2op_config("first_box_module"))
 		return;
 
-	if (!IsTown() && !IsNuketown() && !IsMob() && !IsOrigins())
+	if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
 		return;
 
 	flag_wait("moving_chest_enabled");
@@ -1476,7 +1476,7 @@ move_chest(box)
 			print_box_location(box);
 
 			flag_set("moving_chest_now");
-			chest thread treasure_chest_move();
+			chest thread maps\mp\zombies\_zm_magicbox::treasure_chest_move();
 
 			wait 0.05;
 			level notify("weapon_fly_away_start");
@@ -1741,12 +1741,12 @@ default_weapon_verification()
 	return weapon_key;
 }
 
-// box_weapon_verification(weapon_key)
-// {
-// 	if (isDefined(level.zombie_weapons[weapon_key]) && level.zombie_weapons[weapon_key].is_in_box)
-// 		return weapon_key;
-// 	return "";
-// }
+box_weapon_verification(weapon_key)
+{
+	if (isDefined(level.zombie_weapons[weapon_key]) && level.zombie_weapons[weapon_key].is_in_box)
+		return weapon_key;
+	return "";
+}
 
 fridge_weapon_verification(weapon_key)
 {
