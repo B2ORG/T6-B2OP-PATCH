@@ -61,6 +61,8 @@ on_game_start()
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
 
+    level.round_start_custom_func = ::trap_fix;
+
 	level thread on_player_joined();
 
 	level waittill("initial_players_connected");
@@ -581,6 +583,22 @@ evaluate_network_frame()
     {
         print_scheduler("NETWORK FRAME: ^1BAD", self);
 		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
+    }
+}
+
+trap_fix()
+{
+    rnd_155 = 1044606905;
+
+    if (level.zombie_health <= rnd_155)
+        return;
+
+    level.zombie_health = rnd_155;
+
+    foreach (zombie in get_round_enemy_array())
+    {
+        if (zombie.health > rnd_155)
+            zombie.heath = rnd_155;
     }
 }
 
