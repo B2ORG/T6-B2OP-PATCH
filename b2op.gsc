@@ -1059,6 +1059,8 @@ fridge_handler()
 	if (!has_permaperks_system() || !b2op_config("fridge"))
 		return;
 
+	// debug_print("currently in fridge='" + level.players[0] get_locker_stat() + "'");
+
 	if (isDefined(level.B2OP_PLUGIN_FRIDGE))
 	{
 		thread [[level.B2OP_PLUGIN_FRIDGE]](::player_rig_fridge);
@@ -1891,8 +1893,8 @@ fridge_pap_weapon_verification(weapon_key)
     weapon_key = fridge_weapon_verification(weapon_key);
 	// debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
 	if (weapon_key != "")
-		return level.zombie_weapons[weapon_key].upgrade_name;
-	return "";
+		return get_upgrade_weapon(weapon_key);
+	return weapon_key;
 }
 
 weapon_display_wrapper(weapon_key)
