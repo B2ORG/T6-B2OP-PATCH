@@ -823,6 +823,9 @@ velocity_meter_scale(vel)
 
 buildable_hud()
 {
+    if (!b2op_config("hud_enabled"))
+        return;
+	
 	level.springpad_hud = createserverfontstring("objective", 1.3);
 	level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, -17, (1, 1, 1));
 	level.springpad_hud.label = &"SPRINGPADS: ^2";
