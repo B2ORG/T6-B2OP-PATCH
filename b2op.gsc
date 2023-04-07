@@ -35,7 +35,7 @@ safe_init()
 	level.B2OP_CONFIG = array();
 	level.B2OP_CONFIG["version"] = 1;
 	level.B2OP_CONFIG["beta"] = false;
-	level.B2OP_CONFIG["debug"] = true;
+	level.B2OP_CONFIG["debug"] = false;
 
 	level thread on_game_start();
 }
@@ -50,6 +50,7 @@ on_game_start()
 	level.B2OP_CONFIG["timers_enabled"] = true;
 	level.B2OP_CONFIG["buildables_enabled"] = true;
 	level.B2OP_CONFIG["hordes_enabled"] = true;
+	level.B2OP_CONFIG["sph_enabled"] = true;
 	level.B2OP_CONFIG["velocity_enabled"] = false;
 	level.B2OP_CONFIG["give_permaperks"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
@@ -134,7 +135,7 @@ b2op_main_loop()
 {
     level endon("end_game");
 
-    debug_print("initialized b2op_main_loop");
+    // debug_print("initialized b2op_main_loop");
     while (true)
     {
         level waittill("start_of_round");
@@ -152,14 +153,6 @@ replaceFunc(arg1, arg2)
 {
 }
 
-print(arg1)
-{
-}
-
-stub(arg)
-{
-}
-
 // Utilities
 
 is_debug()
@@ -169,11 +162,13 @@ is_debug()
 	return false;
 }
 
+/*
 debug_print(text)
 {
 	if (is_debug())
 		print("DEBUG: " + text);
 }
+*/
 
 generate_watermark(text, color, alpha_override)
 {
@@ -373,7 +368,7 @@ is_round(rnd)
 
 is_plutonium()
 {
-	// Returns true for Pluto versions r2693 and above
+	/* Returns true for Pluto versions r2693 and above */
 	if (getDvar("cg_weaponCycleDelay") == "")
 		return false;
 	return true;
@@ -389,14 +384,14 @@ safe_restart()
 
 has_magic()
 {
-    if (isDefined(level.enable_magic) && level.enable_magic)
+    if (is_true(level.enable_magic))
         return true;
     return false;
 }
 
 has_permaperks_system()
 {
-	// Refer to init_persistent_abilities()
+	/* Refer to init_persistent_abilities() */
 	if (isDefined(level.pers_upgrade_boards))
 		return true;
 	return false;
@@ -404,10 +399,10 @@ has_permaperks_system()
 
 is_special_round()
 {
-	if (isDefined(flag("dog_round")) && flag("dog_round"))
+	if (is_true(flag("dog_round")))
 		return true;
 
-	if (isDefined(flag("leaper_round")) && flag("leaper_round"))
+	if (is_true(flag("leaper_round")))
 		return true;
 
 	return false;
@@ -437,7 +432,7 @@ wait_for_message_end()
 
 b2op_config(key)
 {
-	if (isDefined(level.B2OP_CONFIG[key]) && level.B2OP_CONFIG[key])
+	if (is_true(level.B2OP_CONFIG[key]))
 		return true;
 	return false;
 }
@@ -699,7 +694,7 @@ timers()
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
 
-		if (is_round(57) && hordes_count > 2)
+		if (is_round(57) && hordes_count > 2 && b2op_config("sph_enabled"))
 			print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
 
 		level.round_hud keep_displaying_old_time(round_end);
@@ -1599,7 +1594,7 @@ force_next_location()
 
 process_box_location(input_msg)
 {
-	// DebugPrint("Input for 'lb': " + input_msg);
+	// debug_print("Input for 'lb': " + input_msg);
 	switch (tolower(input_msg))
 	{
 		case "dt":
@@ -2115,7 +2110,7 @@ set_characters()
 	if (isDefined(prop["voice"]))
 		self.voice = prop["voice"];
 
-	debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
+	// debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
 }
 
 buildable_controller()
