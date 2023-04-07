@@ -51,6 +51,7 @@ on_game_start()
 	level.B2OP_CONFIG["hud_color"] = (1, 1, 1);
 	level.B2OP_CONFIG["hud_enabled"] = true;
 	level.B2OP_CONFIG["timers_enabled"] = true;
+	level.B2OP_CONFIG["buildables_enabled"] = true;
 	level.B2OP_CONFIG["hordes_enabled"] = true;
 	level.B2OP_CONFIG["velocity_enabled"] = false;
 	level.B2OP_CONFIG["give_permaperks"] = true;
@@ -490,6 +491,10 @@ set_dvars()
     if (b2op_config("timers_enabled"))
         setDvar("timers", "1");
 
+    setDvar("buildables", "0");
+    if (b2op_config("buildables_enabled"))
+        setDvar("buildables", "1");		
+
     setDvar("hordes", "0");
     if (b2op_config("hordes_enabled"))
         setDvar("hordes", "1");
@@ -639,7 +644,24 @@ hud_alpha_controller()
                 level.round_hud.alpha = 1;
         }
 
-		// if (getDvar("buildables") == "0")
+		if (getDvar("buildables") == "0")
+		{
+            if (isDefined(level.springpad_hud) && level.springpad_hud.alpha > 0)
+                level.springpad_hud.alpha = 0;
+            if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha > 0)
+                level.subwoofer_hud.alpha = 0;
+            if (isDefined(level.turbine_hud) && level.turbine_hud.alpha > 0)
+                level.turbine_hud.alpha = 0;
+		}
+        else if (getDvar("buildables") == "1")
+        {
+            if (isDefined(level.springpad_hud) && level.springpad_hud.alpha == 0)
+                level.springpad_hud.alpha = 1;
+            if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha == 0)
+                level.subwoofer_hud.alpha = 1;
+            if (isDefined(level.turbine_hud) && level.turbine_hud.alpha == 0)
+                level.turbine_hud.alpha = 1;
+		}
 
 
         wait 0.05;
