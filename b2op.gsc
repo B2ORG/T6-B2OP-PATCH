@@ -2069,9 +2069,9 @@ set_characters()
 		map = "origins";
 
 	translation_index = translation_layer[player_id];
-	if (!isDefined(level.character_selection[map][translation_index]))
+	if (!isDefined(level.B2OP_PLUGIN_CHARACTER[map][translation_index]))
 		return;
-	character = level.character_selection[map][translation_index];
+	character = level.B2OP_PLUGIN_CHARACTER[map][translation_index];
 
 	prop = pull_character_preset(character);
 
