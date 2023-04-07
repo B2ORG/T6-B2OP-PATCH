@@ -671,20 +671,12 @@ timers()
         return;
 
     level.timer_hud = createserverfontstring("big" , 1.6);
-	level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -30);
-	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
-	    level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
-	else if (is_plutonium())
-	    level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
+	level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
 	level.timer_hud.alpha = 1;
     level.timer_hud setTimerUp(0);
 
 	level.round_hud = createserverfontstring("big" , 1.6);
-	level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
-	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
-	    level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
-	else if (is_plutonium())
-	    level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
+	level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
 	level.round_hud.alpha = 0;
 
     level waittill("start_of_round");
