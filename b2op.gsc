@@ -77,6 +77,8 @@ on_game_start()
 	level thread timers();
 	level thread perma_perks_setup();
 	level thread fridge_handler();
+	level thread buildable_controller();
+    level thread hud_alpha_controller(); 
 	safety_zio();
 	safety_debugger();
 	safety_beta();
@@ -109,6 +111,17 @@ on_player_spawned()
 	self thread evaluate_network_frame();
 	self thread velocity_meter();
 	self thread set_characters();
+
+	if (is_tracking_buildables())
+	{
+		self.buildable_stats = array();
+		self.buildable_stats["springpad_zm"] = self get_buildable_stat("springpad_zm");
+		if (is_buried())
+		{
+			self.buildable_stats["turbine"] = self get_buildable_stat("turbine");
+			self.buildable_stats["subwoofer_zm"] = self get_buildable_stat("subwoofer_zm");
+		}
+	}
 }
 
 on_player_spawned_permaperk()
@@ -407,6 +420,13 @@ is_special_round()
 	return false;
 }
 
+is_tracking_buildables()
+{
+	if (is_buried() || is_die_rise())
+		return true;
+	return false;
+}
+
 wait_for_message_end()
 {
 	wait getDvarFloat("con_gameMsgWindow0FadeInTime") + getDvarFloat("con_gameMsgWindow0MsgTime") + getDvarFloat("con_gameMsgWindow0FadeOutTime");
@@ -602,34 +622,29 @@ trap_fix()
     }
 }
 
-hud_alpha_controller(dvar_name, hud1, hud2, hud3)
+hud_alpha_controller()
 {
     level endon("end_game");
 
     while (true)
     {
-        if (getDvar(dvar_name) == "0")
+        if (getDvar("timers") == "0")
         {
-            if (hud1.alpha > 0)
-                hud1.alpha = 0;
-            if (isDefined(hud2) && hud2.alpha > 0)
-                hud2.alpha = 0;
-            if (isDefined(hud3) && hud3.alpha > 0)
-                hud3.alpha = 0;
-            // if (isDefined(hud4) && hud4.alpha > 0)
-            //     hud4.alpha = 0;
+            if (isDefined(level.timer_hud) && level.timer_hud.alpha > 0)
+                level.timer_hud.alpha = 0;
+            if (isDefined(level.round_hud) && level.round_hud.alpha > 0)
+                level.round_hud.alpha = 0;
         }
-        else
+        else if (getDvar("timers") == "1")
         {
-            if (hud1.alpha == 0)
-                hud1.alpha = 1;
-            if (isDefined(hud2) && hud2.alpha == 0)
-                hud2.alpha = 1;
-            if (isDefined(hud3) && hud3.alpha == 0)
-                hud3.alpha = 1;
-            // if (isDefined(hud4) && hud4.alpha == 0)
-            //     hud4.alpha = 1;
+            if (isDefined(level.timer_hud) && level.timer_hud.alpha == 0)
+                level.timer_hud.alpha = 1;
+            if (isDefined(level.round_hud) && level.round_hud.alpha == 0)
+                level.round_hud.alpha = 1;
         }
+
+		// if (getDvar("buildables") == "0")
+
 
         wait 0.05;
     }
@@ -645,34 +660,32 @@ timers()
     if (!b2op_config("hud_enabled"))
         return;
 
-    timer_hud = createserverfontstring("big" , 1.6);
-	timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -30);
+    level.timer_hud = createserverfontstring("big" , 1.6);
+	level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -30);
 	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
-	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
+	    level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
 	else if (is_plutonium())
-	    timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
-	timer_hud.alpha = 1;
-    timer_hud setTimerUp(0);
+	    level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -26);
+	level.timer_hud.alpha = 1;
+    level.timer_hud setTimerUp(0);
 
-	round_hud = createserverfontstring("big" , 1.6);
-	round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
+	level.round_hud = createserverfontstring("big" , 1.6);
+	level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -13);
 	if (is_plutonium() && getDvar("cg_drawFps") != "Off")
-	    round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
+	    level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
 	else if (is_plutonium())
-	    round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
-	round_hud.alpha = 0;
-
-    thread hud_alpha_controller("timers", timer_hud, round_hud);
+	    level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -9);
+	level.round_hud.alpha = 0;
 
     level waittill("start_of_round");
-    while (isDefined(round_hud))
+    while (isDefined(level.round_hud))
 	{
 		round_start = int(getTime() / 1000);
-        round_hud setTimerUp(0);
+        level.round_hud setTimerUp(0);
 
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
-		round_hud keep_displaying_old_time(round_end);
+		level.round_hud keep_displaying_old_time(round_end);
 	}
 }
 
@@ -803,6 +816,36 @@ velocity_meter_scale(vel)
 	{
 		self.color = (1, 0.2, 0);
 		self.glowcolor = (0.7, 0.1, 0);
+	}
+}
+
+buildable_hud()
+{
+	level.springpad_hud = createserverfontstring("objective", 1.3);
+	level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, -17, (1, 1, 1));
+	level.springpad_hud.label = &"SPRINGPADS: ^2";
+	level.springpad_hud setValue(0);
+
+	level.subwoofer_hud = createserverfontstring("objective", 1.3);
+	level.subwoofer_hud set_hud_properties("subwoofer_hud", "TOPLEFT", "TOPLEFT", -60, 0, (1, 1, 1));
+	level.subwoofer_hud.label = &"SUBWOOFERS: ^3";
+	level.subwoofer_hud setValue(0);
+
+	level.turbine_hud = createserverfontstring("objective", 1.3);
+	level.turbine_hud set_hud_properties("turbine_hud", "TOPLEFT", "TOPLEFT", -60, 17, (1, 1, 1));
+	level.turbine_hud.label = &"TURBINES: ^1";
+	level.turbine_hud setValue(0);
+
+	level.springpad_hud.alpha = 1;
+	if (is_die_rise())
+	{
+		level.subwoofer_hud destroy();
+		level.turbine_hud destroy();
+	}
+	else
+	{
+		level.subwoofer_hud.alpha = 1;
+		level.turbine_hud.alpha = 1;
 	}
 }
 
@@ -2053,4 +2096,46 @@ set_characters()
 		self.voice = prop["voice"];
 
 	debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
+}
+
+buildable_controller()
+{
+	level endon("end_game");
+
+	if (!is_tracking_buildables())
+		return;
+
+	buildable_hud();
+
+	while (true)
+	{
+		springpad_count = get_buildable_stat("springpad_zm");
+		if (is_buried())
+		{
+			subwoofer_count = get_buildable_stat("subwoofer_zm");
+			turbine_count = get_buildable_stat("turbine");
+
+			level.subwoofer_hud setValue(subwoofer_count);
+			level.turbine_hud setValue(turbine_count);
+		}
+		level.springpad_hud setValue(springpad_count);
+
+		wait 0.1;
+	}
+}
+
+get_buildable_stat(statname)
+{
+	if (self is_player())
+		return self getdstat("buildables", statname, "buildable_pickedup");
+
+	stat = 0;
+	foreach(player in level.players)
+	{
+		player_stat = player getdstat("buildables", statname, "buildable_pickedup");
+		player_stat -= player.buildable_stats[statname];
+		stat += player_stat;
+	}
+
+	return stat;
 }
