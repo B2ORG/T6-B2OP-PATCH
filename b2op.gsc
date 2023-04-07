@@ -699,7 +699,7 @@ timers()
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
 
-		if (is_round(57))
+		if (is_round(57) && hordes_count > 2)
 			print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
 
 		level.round_hud keep_displaying_old_time(round_end);
