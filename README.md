@@ -30,7 +30,7 @@ Download the `_clientids.gsc` script from [releases](https://github.com/Zi0MIX/T
 
 ## Redacted LAN
 
-Download the raw [.gsc file](https://github.com/T6-B2OP-PATCH/blob/main/b2op.gsc) containing the code (make sure it's downloaded from `main` branch), and insert it in Redacted scripts folder
+Download the raw [.gsc file](https://github.com/Zi0MIX/T6-B2OP-PATCH/blob/main/b2op.gsc) containing the code (make sure it's downloaded from `main` branch), and insert it in Redacted scripts folder
 
 ```{path to your redacted}\data\scripts```
 
