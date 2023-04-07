@@ -420,6 +420,16 @@ is_tracking_buildables()
 	return false;
 }
 
+get_zombies_left()
+{
+	return maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total;
+}
+
+get_hordes_left()
+{
+	return int((get_zombies_left() / 24) * 100) / 100;
+}
+
 wait_for_message_end()
 {
 	wait getDvarFloat("con_gameMsgWindow0FadeInTime") + getDvarFloat("con_gameMsgWindow0MsgTime") + getDvarFloat("con_gameMsgWindow0FadeOutTime");
@@ -683,10 +693,15 @@ timers()
     while (isDefined(level.round_hud))
 	{
 		round_start = int(getTime() / 1000);
+		hordes_count = get_hordes_left();
         level.round_hud setTimerUp(0);
 
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
+
+		if (is_round(57))
+			print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
+
 		level.round_hud keep_displaying_old_time(round_end);
 	}
 }
@@ -739,8 +754,8 @@ show_hordes()
 
     if (!is_special_round() && is_round(50))
     {
-        zombies_value = int(((maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total) / 24) * 100);
-        print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value / 100);
+        zombies_value = get_hordes_left();
+        print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value);
     }
 }
 
