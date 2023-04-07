@@ -36,9 +36,6 @@ safe_init()
 	level.B2OP_CONFIG["version"] = 1;
 	level.B2OP_CONFIG["beta"] = false;
 	level.B2OP_CONFIG["debug"] = true;
-	// level.B2OP_CONFIG["vanilla"] = get_vanilla_setting(false);
-	// level.B2OP_CONFIG["for_player"] = "";
-	// level.B2OP_CONFIG["key_hud_plugin"] = undefined;
 
 	level thread on_game_start();
 }
@@ -55,10 +52,6 @@ on_game_start()
 	level.B2OP_CONFIG["hordes_enabled"] = true;
 	level.B2OP_CONFIG["velocity_enabled"] = false;
 	level.B2OP_CONFIG["give_permaperks"] = true;
-	// level.B2OP_CONFIG["mannequins"] = false;
-	// level.B2OP_CONFIG["nuketown_25_ee"] = false;
-	// level.B2OP_CONFIG["forever_solo_game_fix"] = true;
-	// level.B2OP_CONFIG["semtex_prenades"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
 
@@ -70,7 +63,6 @@ on_game_start()
 
 	set_dvars();
 	level thread first_box_handler();
-	// level thread origins_fix();
 
 	flag_wait("initial_blackscreen_passed");
 
