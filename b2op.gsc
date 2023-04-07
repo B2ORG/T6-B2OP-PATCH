@@ -591,10 +591,10 @@ evaluate_network_frame()
     }
 
     if (net_frame_good)
-        print_scheduler("NETWORK FRAME: ^2GOOD", self);
+        print_scheduler("Network Frame: ^2GOOD", self);
     else
     {
-        print_scheduler("NETWORK FRAME: ^1BAD", self);
+        print_scheduler("Network Frame: ^1BAD", self);
 		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
     }
 }
@@ -1049,7 +1049,7 @@ fridge_handler()
 	}
 	else
 	{
-		print_scheduler("Fridge module: ^2ENABLED");
+		print_scheduler("Fridge module: ^2AVAILABLE");
 		if (is_plutonium())
 			thread fridge_watch_chat();
 		thread fridge_watch_dvar();
