@@ -1159,9 +1159,13 @@ rig_fridge(key, player)
 		return;
 
 	if (isDefined(player))
+	{
+		print_scheduler("You set your fridge weapon to: ^3" + weapon_display_wrapper(weapon), player);
 		player player_rig_fridge(weapon);
+	}
 	else
 	{
+		print_scheduler(level.players[0].name + " set your fridge weapon to: ^3" + weapon_display_wrapper(weapon));
 		foreach(player in level.players)
 			player player_rig_fridge(weapon);
 	}
