@@ -106,7 +106,7 @@ on_player_spawned()
 	self thread welcome_prints();
 	self thread evaluate_network_frame();
 	self thread velocity_meter();
-	// self thread set_characters();
+	self thread set_characters();
 }
 
 on_player_spawned_permaperk()
@@ -1813,197 +1813,226 @@ weapon_display_wrapper(weapon_key)
 	return get_weapon_display_name(weapon_key);
 }
 
-// pull_character_preset(character_index)
-// {
-// 	preset = array();
-// 	preset["model"] = undefined;
-// 	preset["viewmodel"] = undefined;
-// 	preset["favourite_wall_weapons"] = undefined;
-// 	preset["whos_who_shader"] = undefined;
-// 	preset["talks_in_danger"] = undefined;
-// 	preset["rich_sq_player"] = undefined;
-// 	preset["character_name"] = undefined;
-// 	preset["has_weasel"] = undefined;
-// 	preset["voice"] = undefined;
-// 	preset["is_female"] = 0;
+pull_character_preset(character_name)
+{
+	preset = array();
+	preset["model"] = undefined;
+	preset["viewmodel"] = undefined;
+	preset["favourite_wall_weapons"] = undefined;
+	preset["whos_who_shader"] = undefined;
+	preset["talks_in_danger"] = undefined;
+	preset["rich_sq_player"] = undefined;
+	preset["character_name"] = undefined;
+	preset["has_weasel"] = undefined;
+	preset["voice"] = undefined;
+	preset["is_female"] = 0;
 
-// 	if (is_tranzit() || is_die_rise() || is_buried())
-// 	{
-// 		if (character_index == 0)
-// 		{
-// 			preset["model"] = "c_zom_player_oldman_fb";
-// 			preset["viewmodel"] = "c_zom_oldman_viewhands";
-// 			preset["favourite_wall_weapons"] = array("frag_grenade_zm", "claymore_zm");
-// 			preset["whos_who_shader"] = "c_zom_player_oldman_dlc1_fb";
-// 			preset["character_name"] = "Russman";
+	if (is_tranzit() || is_die_rise() || is_buried())
+	{
+		switch(toLower(character_name))
+		{
+			case "russman":
+				preset["index"] = 0;
+				preset["model"] = "c_zom_player_oldman_fb";
+				preset["viewmodel"] = "c_zom_oldman_viewhands";
+				preset["favourite_wall_weapons"] = array("frag_grenade_zm", "claymore_zm");
+				preset["whos_who_shader"] = "c_zom_player_oldman_dlc1_fb";
+				preset["character_name"] = "Russman";
 
-// 			if (is_die_rise())
-// 				preset["model"] = "c_zom_player_oldman_dlc1_fb";
-// 		}
+				if (is_die_rise())
+					preset["model"] = "c_zom_player_oldman_dlc1_fb";
 
-// 		else if (character_index == 1)
-// 		{
-// 			preset["model"] = "c_zom_player_reporter_fb";
-// 			preset["viewmodel"] = "c_zom_reporter_viewhands";
-// 			preset["favourite_wall_weapons"] = array("beretta93r_zm");
-// 			preset["whos_who_shader"] = "c_zom_player_reporter_dlc1_fb";
-// 			preset["talks_in_danger"] = 1;
-// 			preset["rich_sq_player"] = 1;
-// 			preset["character_name"] = "Stuhlinger";
+				break;
 
-// 			if (is_die_rise())
-// 				preset["model"] = "c_zom_player_reporter_dlc1_fb";
-// 		}
+			case "stuhlinger":
+				preset["index"] = 1;
+				preset["model"] = "c_zom_player_reporter_fb";
+				preset["viewmodel"] = "c_zom_reporter_viewhands";
+				preset["favourite_wall_weapons"] = array("beretta93r_zm");
+				preset["whos_who_shader"] = "c_zom_player_reporter_dlc1_fb";
+				preset["talks_in_danger"] = 1;
+				preset["rich_sq_player"] = 1;
+				preset["character_name"] = "Stuhlinger";
 
-// 		else if (character_index == 2)
-// 		{
-// 			preset["model"] = "c_zom_player_farmgirl_fb";
-// 			preset["viewmodel"] = "c_zom_farmgirl_viewhands";
-// 			preset["is_female"] = 1;
-// 			preset["favourite_wall_weapons"] = array("rottweil72_zm", "870mcs_zm");
-// 			preset["whos_who_shader"] = "c_zom_player_farmgirl_dlc1_fb";
-// 			preset["character_name"] = "Misty";
+				if (is_die_rise())
+					preset["model"] = "c_zom_player_reporter_dlc1_fb";
 
-// 			if (is_die_rise())
-// 				preset["model"] = "c_zom_player_farmgirl_dlc1_fb";
-// 		}
+				break;
 
-// 		else if (character_index == 3)
-// 		{
-// 			preset["model"] = "c_zom_player_engineer_fb";
-// 			preset["viewmodel"] = "c_zom_engineer_viewhands";
-// 			preset["favourite_wall_weapons"] = array("m14_zm", "m16_zm");
-// 			preset["whos_who_shader"] = "c_zom_player_engineer_dlc1_fb";
-// 			preset["character_name"] = "Marlton";
+			case "misty":
+				preset["index"] = 2;
+				preset["model"] = "c_zom_player_farmgirl_fb";
+				preset["viewmodel"] = "c_zom_farmgirl_viewhands";
+				preset["is_female"] = 1;
+				preset["favourite_wall_weapons"] = array("rottweil72_zm", "870mcs_zm");
+				preset["whos_who_shader"] = "c_zom_player_farmgirl_dlc1_fb";
+				preset["character_name"] = "Misty";
 
-// 			if (is_die_rise())
-// 				preset["model"] = "c_zom_player_engineer_dlc1_fb";
-// 		}
-// 	}
+				if (is_die_rise())
+					preset["model"] = "c_zom_player_farmgirl_dlc1_fb";
 
-// 	else if (is_town() || is_farm() || is_depot() || is_nuketown())
-// 	{
-// 		if (character_index == 0)
-// 		{
-// 			preset["model"] = "c_zom_player_cia_fb";
-// 			preset["viewmodel"] = "c_zom_suit_viewhands";
-// 		}
+				break;
 
-// 		else if (character_index == 1)
-// 		{
-// 			preset["model"] = "c_zom_player_cdc_fb";
-// 			preset["viewmodel"] = "c_zom_hazmat_viewhands";
+			case "marlton":
+				preset["index"] = 3;
+				preset["model"] = "c_zom_player_engineer_fb";
+				preset["viewmodel"] = "c_zom_engineer_viewhands";
+				preset["favourite_wall_weapons"] = array("m14_zm", "m16_zm");
+				preset["whos_who_shader"] = "c_zom_player_engineer_dlc1_fb";
+				preset["character_name"] = "Marlton";
 
-// 			if (is_nuketown())
-// 				preset["viewmodel"] = "c_zom_hazmat_viewhands_light";
-// 		}
-// 	}
+				if (is_die_rise())
+					preset["model"] = "c_zom_player_engineer_dlc1_fb";
+			
+				break;
+		}
+	}
 
-// 	else if (is_mob())
-// 	{
-// 		if (character_index == 0)
-// 		{
-// 			preset["model"] = "c_zom_player_oleary_fb";
-// 			preset["viewmodel"] = "c_zom_oleary_shortsleeve_viewhands";
-// 			preset["favourite_wall_weapons"] = array("judge_zm");
-// 			preset["character_name"] = "Finn";
-// 		}
+	else if (is_town() || is_farm() || is_depot() || is_nuketown())
+	{
+		switch(toLower(character_name))
+		{
+			case "cia":
+				preset["index"] = 0;
+				preset["model"] = "c_zom_player_cia_fb";
+				preset["viewmodel"] = "c_zom_suit_viewhands";
+				break;
+			case "cdc":
+				preset["index"] = 1;
+				preset["model"] = "c_zom_player_cdc_fb";
+				preset["viewmodel"] = "c_zom_hazmat_viewhands";
 
-// 		else if (character_index == 1)
-// 		{
-// 			preset["model"] = "c_zom_player_deluca_fb";
-// 			preset["viewmodel"] = "c_zom_deluca_longsleeve_viewhands";
-// 			preset["favourite_wall_weapons"] = array("thompson_zm");
-// 			preset["character_name"] = "Sal";
-// 		}
+				if (is_nuketown())
+					preset["viewmodel"] = "c_zom_hazmat_viewhands_light";
 
-// 		else if (character_index == 2)
-// 		{
-// 			preset["model"] = "c_zom_player_handsome_fb";
-// 			preset["viewmodel"] = "c_zom_handsome_sleeveless_viewhands";
-// 			preset["favourite_wall_weapons"] = array("blundergat_zm");
-// 			preset["character_name"] = "Billy";
-// 		}
+				break;
+		}
+	}
 
-// 		else if (character_index == 3)
-// 		{
-// 			preset["model"] = "c_zom_player_arlington_fb";
-// 			preset["viewmodel"] = "c_zom_arlington_coat_viewhands";
-// 			preset["favourite_wall_weapons"] = array("ray_gun_zm");
-// 			preset["character_name"] = "Arlington";
-// 			preset["has_weasel"] = 1;
-// 		}
-// 	}
+	else if (is_mob())
+	{
+		switch(toLower(character_name))
+		{
+			case "finn":
+				preset["index"] = 0;
+				preset["model"] = "c_zom_player_oleary_fb";
+				preset["viewmodel"] = "c_zom_oleary_shortsleeve_viewhands";
+				preset["favourite_wall_weapons"] = array("judge_zm");
+				preset["character_name"] = "Finn";
+				break;
 
-// 	else if (is_origins())
-// 	{
-// 		if (character_index == 0)
-// 		{
-// 			preset["model"] = "c_zom_tomb_dempsey_fb";
-// 			preset["viewmodel"] = "c_zom_dempsey_viewhands";
-// 			preset["character_name"] = "Dempsey";
-// 		}
+			case "sal":
+				preset["index"] = 1;
+				preset["model"] = "c_zom_player_deluca_fb";
+				preset["viewmodel"] = "c_zom_deluca_longsleeve_viewhands";
+				preset["favourite_wall_weapons"] = array("thompson_zm");
+				preset["character_name"] = "Sal";
+				break;
 
-// 		else if (character_index == 1)
-// 		{
-// 			preset["model"] = "c_zom_tomb_nikolai_fb";
-// 			preset["viewmodel"] = "c_zom_nikolai_viewhands";
-// 			preset["character_name"] = "Nikolai";
-// 			preset["voice"] = "russian";
-// 		}
+			case "billy":
+				preset["index"] = 2;
+				preset["model"] = "c_zom_player_handsome_fb";
+				preset["viewmodel"] = "c_zom_handsome_sleeveless_viewhands";
+				preset["favourite_wall_weapons"] = array("blundergat_zm");
+				preset["character_name"] = "Billy";
+				break;
 
-// 		else if (character_index == 2)
-// 		{
-// 			preset["model"] = "c_zom_tomb_richtofen_fb";
-// 			preset["viewmodel"] = "c_zom_richtofen_viewhands";
-// 			preset["character_name"] = "Richtofen";
-// 		}
+			case "arlington":
+			case "weasel":
+				preset["index"] = 3;
+				preset["model"] = "c_zom_player_arlington_fb";
+				preset["viewmodel"] = "c_zom_arlington_coat_viewhands";
+				preset["favourite_wall_weapons"] = array("ray_gun_zm");
+				preset["character_name"] = "Arlington";
+				preset["has_weasel"] = 1;
+				break;
+		}
+	}
 
-// 		else if (character_index == 3)
-// 		{
-// 			preset["model"] = "c_zom_tomb_takeo_fb";
-// 			preset["viewmodel"] = "c_zom_takeo_viewhands";
-// 			preset["character_name"] = "Nikolai";
-// 		}
-// 	}
+	else if (is_origins())
+	{
+		switch(toLower(character_name))
+		{
+			case "dempsey":
+				preset["index"] = 0;
+				preset["model"] = "c_zom_tomb_dempsey_fb";
+				preset["viewmodel"] = "c_zom_dempsey_viewhands";
+				preset["character_name"] = "Dempsey";
+				break;
 
-// 	return preset;
-// }
+			case "nikolai":
+				preset["index"] = 1;
+				preset["model"] = "c_zom_tomb_nikolai_fb";
+				preset["viewmodel"] = "c_zom_nikolai_viewhands";
+				preset["character_name"] = "Nikolai";
+				preset["voice"] = "russian";
+				break;
 
-// set_characters()
-// {
-// 	level endon("end_game");
-// 	self endon("disconnect");
+			case "richtofen":
+				preset["index"] = 2;
+				preset["model"] = "c_zom_tomb_richtofen_fb";
+				preset["viewmodel"] = "c_zom_richtofen_viewhands";
+				preset["character_name"] = "Richtofen";
+				break;
 
-// 	player_id = self.clientid;
-// 	if (player_id > 3)
-// 		player_id -= 4;
+			case "takeo":
+				preset["index"] = 3;
+				preset["model"] = "c_zom_tomb_takeo_fb";
+				preset["viewmodel"] = "c_zom_takeo_viewhands";
+				preset["character_name"] = "Takeo";
+				break;
+		}
+	}
 
-// 	dvar = "frfix_player" + player_id + "_character";
-// 	if (getDvar(dvar) != "")
-// 	{
-// 		prop = pull_character_preset(getDvarInt(dvar));
+	return preset;
+}
 
-// 		self setmodel(prop["model"]);
-// 		self setviewmodel(prop["viewmodel"]);
-// 		self set_player_is_female(prop["is_female"]);
-// 		self.characterindex = getDvarInt(dvar);
+set_characters()
+{
+	level endon("end_game");
+	self endon("disconnect");
 
-// 		if (isDefined(prop["favourite_wall_weapons"]))
-// 			self.favorite_wall_weapons_list = prop["favourite_wall_weapons"];
-// 		if (isDefined(prop["whos_who_shader"]))
-// 			self.whos_who_shader = prop["whos_who_shader"];
-// 		if (isDefined(prop["talks_in_danger"]))
-// 			self.talks_in_danger = prop["talks_in_danger"];
-// 		if (isDefined(prop["rich_sq_player"]))
-// 			level.rich_sq_player = self;
-// 		if (isDefined(prop["character_name"]))
-// 			self.character_name = prop["character_name"];
-// 		if (isDefined(prop["has_weasel"]))
-// 			level.has_weasel = prop["has_weasel"];
-// 		if (isDefined(prop["voice"]))
-// 			self.voice = prop["voice"];
+	player_id = self.clientid;
+	while (player_id > 3)
+		player_id -= 4;
 
-// 		debug_print("Read value '" + getDvar(dvar) + "' from dvar '" + dvar + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
-// 	}
-// }
+	translation_layer = array("white", "blue", "yellow", "green");
+
+	if (is_tranzit() || is_die_rise() || is_buried())
+		map = "tranzit";
+	else if (is_town() || is_farm() || is_depot() || is_nuketown())
+		map = "town";
+	else if (is_mob())
+		map = "mob";
+	else if (is_origins())
+		map = "origins";
+
+	translation_index = translation_layer[player_id];
+	if (!isDefined(level.character_selection[map][translation_index]))
+		return;
+	character = level.character_selection[map][translation_index];
+
+	prop = pull_character_preset(character);
+
+	self setmodel(prop["model"]);
+	self setviewmodel(prop["viewmodel"]);
+	self set_player_is_female(prop["is_female"]);
+	self.characterindex = prop["index"];
+
+	if (isDefined(prop["favourite_wall_weapons"]))
+		self.favorite_wall_weapons_list = prop["favourite_wall_weapons"];
+	if (isDefined(prop["whos_who_shader"]))
+		self.whos_who_shader = prop["whos_who_shader"];
+	if (isDefined(prop["talks_in_danger"]))
+		self.talks_in_danger = prop["talks_in_danger"];
+	if (isDefined(prop["rich_sq_player"]))
+		level.rich_sq_player = self;
+	if (isDefined(prop["character_name"]))
+		self.character_name = prop["character_name"];
+	if (isDefined(prop["has_weasel"]))
+		level.has_weasel = prop["has_weasel"];
+	if (isDefined(prop["voice"]))
+		self.voice = prop["voice"];
+
+	debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
+}
