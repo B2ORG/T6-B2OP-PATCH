@@ -446,24 +446,20 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 
 	if (isDefined(level.B2OP_PLUGIN_HUD))
 	{
-		/* Proxy variable for irony compatibility */
-		func = level.B2OP_PLUGIN_HUD[hud_key];
-		plugin = [[func]](level.B2OP_CONFIG["key_hud_plugin"]);
-		if (isDefined(plugin))
+		data = level.B2OP_PLUGIN_HUD[hud_key];
+		if (isDefined(data))
 		{
-			if (isDefined(plugin["x_align"]))
-				x_align = plugin["x_align"];
-			if (isDefined(plugin["y_align"]))
-				y_align = plugin["y_align"];
-			if (isDefined(plugin["x_pos"]))
-				x_pos = plugin["x_pos"];
-			if (isDefined(plugin["y_pos"]))
-				y_pos = plugin["y_pos"];
-			if (isDefined(plugin["color"]))
-				col = plugin["color"];
+			if (isDefined(data["x_align"]))
+				x_align = data["x_align"];
+			if (isDefined(data["y_align"]))
+				y_align = data["y_align"];
+			if (isDefined(data["x_pos"]))
+				x_pos = data["x_pos"];
+			if (isDefined(data["y_pos"]))
+				y_pos = data["y_pos"];
+			if (isDefined(data["color"]))
+				col = data["color"];
 		}
-		else
-			debug_print("set_hud_properties(): hud plugin returned undefined for key='" + hud_key + "'");
 	}
 
 	self setpoint(x_align, y_align, x_pos, y_pos);

@@ -31,7 +31,7 @@ safe_init()
     level.B2OP_PLUGIN_CHARACTER["origins"]["yellow"] = undefined;
     level.B2OP_PLUGIN_CHARACTER["origins"]["green"] = undefined;
 
-    level thread clear_variable();
+    thread clear_variable();
 }
 
 initialize_vars()
