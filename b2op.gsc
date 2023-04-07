@@ -105,6 +105,7 @@ on_player_spawned()
 	self thread evaluate_network_frame();
 	self thread velocity_meter();
 	self thread set_characters();
+	self thread fill_up_bank();
 
 	if (is_tracking_buildables())
 	{
@@ -862,6 +863,17 @@ buildable_hud()
 		level.subwoofer_hud.alpha = 1;
 		level.turbine_hud.alpha = 1;
 	}
+}
+
+fill_up_bank()
+{
+	level endon("end_game");
+	self endon("disconnect");
+
+	flag_wait("initial_blackscreen_passed");
+
+    if (has_permaperks_system())
+        self.account_value = level.bank_account_max;
 }
 
 perma_perks_setup()

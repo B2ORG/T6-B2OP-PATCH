@@ -41,6 +41,7 @@ List of the patch features:
 - Basic anticheat capabilities (DVARs, Box etc.)
 - Network Frame Fix (for Plutonium, does nothing on Redacted)
 - Automatic permaperks assignment (consistent with in-game logic)
+- Full bank
 - Fixed strafe & backwards speed
 - Fixed traps & JetGun
 - Toogleable game / round timers
