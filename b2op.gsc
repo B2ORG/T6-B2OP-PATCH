@@ -56,19 +56,14 @@ on_game_start()
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
 
-    level.round_start_custom_func = ::trap_fix;
-
+	thread set_dvars();
 	level thread on_player_joined();
-
-	level waittill("initial_players_connected");
-
-	set_dvars();
-	level thread first_box_handler();
 
 	flag_wait("initial_blackscreen_passed");
 
     level thread b2op_main_loop();
 	level thread timers();
+	level thread first_box_handler();
 	level thread perma_perks_setup();
 	level thread fridge_handler();
 	level thread buildable_controller();
@@ -468,6 +463,8 @@ welcome_prints()
 set_dvars()
 {
 	level endon("end_game");
+
+    level.round_start_custom_func = ::trap_fix;
 
     setdvar("player_strafeSpeedScale", 1);
     setdvar("player_backSpeedScale", 0.9);
