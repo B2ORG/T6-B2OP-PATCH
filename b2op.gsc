@@ -16,11 +16,9 @@ main()
 {
 	replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
 	replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-
-    level thread safe_init();
 }
 
-safe_init()
+init()
 {
 	flag_init("dvars_set");
 	flag_init("detected_svcheats");
@@ -2073,7 +2071,12 @@ set_characters()
 	level endon("end_game");
 	self endon("disconnect");
 
-	player_id = self.clientid;
+	/* We don't call clientid cause of Ancient */
+	if (!isDefined(level.players))
+		player_id = 0;
+	else
+		player_id = level.players.size - 1;
+
 	while (player_id > 3)
 		player_id -= 4;
 
@@ -2114,8 +2117,6 @@ set_characters()
 		level.has_weasel = prop["has_weasel"];
 	if (isDefined(prop["voice"]))
 		self.voice = prop["voice"];
-
-	// debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
 }
 
 buildable_stat()
