@@ -106,17 +106,7 @@ on_player_spawned()
 	self thread velocity_meter();
 	self thread set_characters();
 	self thread fill_up_bank();
-
-	if (is_tracking_buildables())
-	{
-		self.buildable_stats = array();
-		self.buildable_stats["springpad_zm"] = self get_buildable_stat("springpad_zm");
-		if (is_buried())
-		{
-			self.buildable_stats["turbine"] = self get_buildable_stat("turbine");
-			self.buildable_stats["subwoofer_zm"] = self get_buildable_stat("subwoofer_zm");
-		}
-	}
+	self thread buildable_stat();
 }
 
 on_player_spawned_permaperk()
@@ -2129,6 +2119,20 @@ set_characters()
 		self.voice = prop["voice"];
 
 	// debug_print("Character: " + character + "' for player '" + self.name + "' with ID '" + self.clientid + "' Set character '" + prop["model"] + "'");
+}
+
+buildable_stat()
+{
+	if (!is_tracking_buildables())
+		return;
+
+	self.buildable_stats = array();
+	self.buildable_stats["springpad_zm"] = self get_buildable_stat("springpad_zm");
+	if (is_buried())
+	{
+		self.buildable_stats["turbine"] = self get_buildable_stat("turbine");
+		self.buildable_stats["subwoofer_zm"] = self get_buildable_stat("subwoofer_zm");
+	}
 }
 
 buildable_controller()
