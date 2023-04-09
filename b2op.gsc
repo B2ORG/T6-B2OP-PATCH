@@ -14,7 +14,6 @@
 
 init()
 {
-	flag_init("dvars_set");
 	flag_init("detected_svcheats");
 	flag_init("detected_gspeed");
 
@@ -464,24 +463,10 @@ set_dvars()
     setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
     setdvar("sv_cheats", 0);
 
-    setDvar("timers", "0");
-    if (b2op_config("timers_enabled"))
-        setDvar("timers", "1");
-
-    setDvar("buildables", "0");
-    if (b2op_config("buildables_enabled"))
-        setDvar("buildables", "1");		
-
-    // setDvar("hordes", "0");
-    // if (b2op_config("hordes_enabled"))
-    //     setDvar("hordes", "1");
-
-    setDvar("velocity", "0");
-    if (b2op_config("velocity_enabled"))
-        setDvar("velocity", "1");
-
-    if (!flag("dvars_set"))
-        flag_set("dvars_set");
+	init_dvar("timers");
+	init_dvar("buildables");
+	// init_dvar("hordes");
+	init_dvar("velocity");
 }
 
 check_dvars()
@@ -497,6 +482,16 @@ check_dvars()
         generate_watermark("GSPEED", (0.8, 0, 0));
         flag_set("detected_gspeed");
     }
+}
+
+init_dvar(dvar_str)
+{
+	if (getDvar(dvar_str) != "")
+		return;
+	if (b2op_config(dvar_str + "_enabled"))
+		setDvar(dvar_str, "1");
+	else
+		setDvar(dvar_str, "0");
 }
 
 award_points(amount)
