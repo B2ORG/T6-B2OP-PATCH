@@ -14,9 +14,6 @@
 
 init()
 {
-	flag_init("detected_svcheats");
-	flag_init("detected_gspeed");
-
 	flag_init("game_started");
 	flag_init("box_rigged");
 	flag_init("permaperks_were_set");
@@ -471,17 +468,11 @@ set_dvars()
 
 check_dvars()
 {
-    if (getDvar("sv_cheats") != "0" && !flag("detected_svcheats"))
-    {
+    if (getDvar("sv_cheats") != "0")
         generate_watermark("SVCHEATS", (0.8, 0, 0));
-        flag_set("detected_svcheats");
-    }
 
-    if (getDvar("g_speed") != "190" && !flag("detected_gspeed"))
-    {
+    if (getDvar("g_speed") != "190")
         generate_watermark("GSPEED", (0.8, 0, 0));
-        flag_set("detected_gspeed");
-    }
 }
 
 init_dvar(dvar_str)
