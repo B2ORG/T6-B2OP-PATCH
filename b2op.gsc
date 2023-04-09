@@ -41,8 +41,8 @@ on_game_start()
 	level.B2OP_CONFIG["hud_enabled"] = true;
 	level.B2OP_CONFIG["timers_enabled"] = true;
 	level.B2OP_CONFIG["buildables_enabled"] = true;
-	level.B2OP_CONFIG["hordes_enabled"] = true;
-	level.B2OP_CONFIG["sph_enabled"] = true;
+	// level.B2OP_CONFIG["hordes_enabled"] = true;
+	// level.B2OP_CONFIG["sph_enabled"] = true;
 	level.B2OP_CONFIG["velocity_enabled"] = false;
 	level.B2OP_CONFIG["give_permaperks"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
@@ -118,7 +118,7 @@ b2op_main_loop()
     {
         level waittill("start_of_round");
         check_dvars();
-        level thread show_hordes();
+        // level thread show_hordes();
 
         level waittill("end_of_round");
         level thread show_split();
@@ -472,9 +472,9 @@ set_dvars()
     if (b2op_config("buildables_enabled"))
         setDvar("buildables", "1");		
 
-    setDvar("hordes", "0");
-    if (b2op_config("hordes_enabled"))
-        setDvar("hordes", "1");
+    // setDvar("hordes", "0");
+    // if (b2op_config("hordes_enabled"))
+    //     setDvar("hordes", "1");
 
     setDvar("velocity", "0");
     if (b2op_config("velocity_enabled"))
@@ -666,8 +666,10 @@ timers()
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
 
+		/*
 		if (is_round(57) && hordes_count > 2 && b2op_config("sph_enabled"))
 			print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
+		*/
 
 		level.round_hud keep_displaying_old_time(round_end);
 	}

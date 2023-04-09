@@ -36,22 +36,29 @@ Download the raw [.gsc file](https://github.com/Zi0MIX/T6-B2OP-PATCH/blob/main/b
 
 # Features
 
-List of the patch features:
+Features in B2OP patch
+
+## List of the patch features
 
 - Basic anticheat capabilities (DVARs, Box etc.)
-- Network Frame Fix (for Plutonium, does nothing on Redacted)
 - Automatic permaperks assignment (consistent with in-game logic)
 - Full bank
 - Fixed strafe & backwards speed
 - Fixed traps & JetGun
 - Toogleable game / round timers
 - Toogleable hud counting buildables
-- Toogleable prints amount of hordes incoming for each round (past 50)
-- Toogleable prints SPH after each round (past 56)
 - Toogleable prints with time splits for key rounds
 - Toogleable velocity meter
 - Optional box override (First Box patch)
 - Optional fridge override
+
+## Network Frame fix
+
+If you play on Plutonium R2905 (or similar), please use additional script from release section 
+
+```network-frame-fix.gsc```
+
+Which will set the network frame to the right values
 
 # HUD
 
@@ -61,7 +68,6 @@ All HUD elements are toogleable (with the exception of watermarks), below is the
 | --- | --- | --- |
 | Timers + SPH print | `timers` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
-| Horde count print | `hordes` 0/1 | Enabled |
 | Velocity meter | `velocity` 0/1 | Disabled |
 
 # Box / Fridge
