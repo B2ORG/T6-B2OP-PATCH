@@ -1,9 +1,4 @@
-main()
-{
-    thread safe_init();
-}
-
-safe_init()
+init()
 {
     initialize_vars();
 

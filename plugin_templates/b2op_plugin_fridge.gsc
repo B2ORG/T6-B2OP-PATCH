@@ -1,11 +1,6 @@
 #include common_scripts\utility;
 
-main()
-{
-    level thread safe_init();
-}
-
-safe_init()
+init()
 {
     level waittill("frfix_init");
     level.B2OP_PLUGIN_FRIDGE = ::set_fridge;

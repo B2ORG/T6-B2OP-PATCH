@@ -1,11 +1,6 @@
 #include common_scripts\utility;
 
-main()
-{
-    level thread safe_init();
-}
-
-safe_init()
+init()
 {
     level.B2OP_HUD_PLUGIN = array();
     level.B2OP_HUD_PLUGIN["timer_hud"] = get_timer_hud();
