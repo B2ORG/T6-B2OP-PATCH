@@ -12,12 +12,6 @@
 #include maps\mp\zm_tomb;
 #include maps\mp\zm_tomb_utility;
 
-main()
-{
-	replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-	replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-}
-
 init()
 {
 	flag_init("dvars_set");
@@ -503,14 +497,6 @@ check_dvars()
         generate_watermark("GSPEED", (0.8, 0, 0));
         flag_set("detected_gspeed");
     }
-}
-
-fixed_wait_network_frame()
-{
-	if (!isDefined(level.players) || level.players.size == 1)
-		wait 0.1;
-	else
-		wait 0.05;
 }
 
 award_points(amount)

@@ -8,6 +8,8 @@ Compiler.exe "b2op.gsc"
 Compiler.exe "plugin_templates\b2op_plugin_characters.gsc"
 Compiler.exe "plugin_templates\b2op_plugin_fridge.gsc"
 Compiler.exe "plugin_templates\b2op_plugin_hud.gsc"
+@rem Network Frame fix
+gsc-tool.exe comp t6 "network_frame_fix.gsc"
 @rem Move files
 MOVE /y "b2op-compiled.gsc" "compiled\t6\_clientids.gsc"
 MOVE /y "b2op_plugin_characters-compiled.gsc" "compiled\t6\_clientids-plugin-characters.gsc"
