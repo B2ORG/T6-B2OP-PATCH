@@ -932,12 +932,12 @@ award_permaperks_safe()
 	wait 0.5;
 
 	perks_to_process = array();
-	perks_to_process = permaperk_struct(perks_to_process, "revive", true, false);
+	perks_to_process = permaperk_struct(perks_to_process, "revive", true, false, 3);
 	perks_to_process = permaperk_struct(perks_to_process, "multikill_headshots", true, false, undefined, undefined, undefined);
 	perks_to_process = permaperk_struct(perks_to_process, "perk_lose", true, false, undefined, undefined, undefined);
 	perks_to_process = permaperk_struct(perks_to_process, "jugg", true, false, 15, undefined, undefined);
 	perks_to_process = permaperk_struct(perks_to_process, "flopper", true, false, 255, array(), "zm_buried");
-	perks_to_process = permaperk_struct(perks_to_process, "box_weapon", false, true, 255, array("zm_buried"), undefined);
+	perks_to_process = permaperk_struct(perks_to_process, "box_weapon", false, true, 3, array("zm_buried"), undefined);
 
 	self.frfix_awarding_permaperks = true;
 
