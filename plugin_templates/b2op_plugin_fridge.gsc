@@ -2,7 +2,6 @@
 
 init()
 {
-    level waittill("frfix_init");
     level.B2OP_PLUGIN_FRIDGE = ::set_fridge;
     thread clear_variable();
 }
@@ -17,7 +16,7 @@ set_fridge(func)
                 if (level.script == "zm_transit")
                     player [[func]]("mp5k_upgraded_zm");
                 else if (level.script == "zm_highrise" || level.script == "zm_buried")
-                    player [[func]]("an94_upgraded_zm");
+                    player [[func]]("an94_upgraded_zm+mms");
             }
     }
 }
