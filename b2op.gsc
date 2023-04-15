@@ -1851,9 +1851,29 @@ fridge_pap_weapon_verification(weapon_key)
 {
     weapon_key = fridge_weapon_verification(weapon_key);
 	// debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
-	if (weapon_key != "")
+
+	/* Give set attachment if weapon supports it */
+	att = fridge_pap_weapon_attachment_rules(weapon_key);
+	if (weapon_key != "" && weapon_supports_this_attachment(weapon_key, att))
+	{
+		base = get_base_name(weapon_key);
+		return level.zombie_weapons[base].upgrade_name + "+" + att;
+	}
+	/* Else just give base attachment */
+	else if (weapon_key != "")
+	{
 		return get_upgrade_weapon(weapon_key);
+	}
 	return weapon_key;
+}
+
+fridge_pap_weapon_attachment_rules(weapon_key)
+{
+	switch (weapon_key)
+	{
+		default:
+			return "mms";
+	}
 }
 
 weapon_display_wrapper(weapon_key)
