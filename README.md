@@ -6,6 +6,8 @@ Patch for playing world record games in Black Ops II Zombies. Made based on comm
 
 B2OP is new, while it was obviously tested during development, it is yet to be seen if everything works 100% as it should in real life scenarios. Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured.
 
+For additional questions, feel free to join my [Discord](https://discord.gg/fDY4VR6rNE) server and head to section dedicated to B2OP patch when myself or someone qualified can answer them.
+
 # Categories
 
 This patch is meant to be used during games of Highrounds, No Powers & Round Speedruns. Below you can see alternatives for other categories
