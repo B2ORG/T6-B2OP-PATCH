@@ -44,7 +44,7 @@ Features in B2OP patch
 - Automatic permaperks assignment (consistent with in-game logic)
 - Full bank
 - Fixed strafe & backwards speed
-- Fixed traps & JetGun
+- Fixed traps & JetGun (disabled for maps that don't need it)
 - Toogleable game / round timers
 - Toogleable hud counting buildables
 - Toogleable prints with time splits for key rounds
