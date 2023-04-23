@@ -353,10 +353,10 @@ is_plutonium()
 
 safe_restart()
 {
-	if (!is_plutonium() && level.players.size > 1)
-		level notify("end_game");
-	else
+	if (is_plutonium())
 		map_restart();
+	else
+		level notify("end_game");
 }
 
 has_magic()
@@ -948,20 +948,21 @@ award_permaperks_safe()
 	foreach (perk in perks_to_process)
 	{
 		wait 0.05;
+		skip_this_perk = false;
 
 		if (isDefined(perk.map_unique) && perk.map_unique != level.script)
-			continue;
+			skip_this_perk = true;
 
 		perk_code = perk.code;
 
 		// If award and take are both set, it means maps specified in 'maps_to_exclude' are the maps on which perk needs to be taken away
-		if (perk.award && perk.take && isinarray(perk.maps_to_exclude, level.script))
+		if (!skip_this_perk && perk.award && perk.take && isinarray(perk.maps_to_exclude, level.script))
 		{
 			self remove_permaperk(perk_code);
 			wait_network_frame();
 		}
 		// Else if take is specified, take
-		else if (!perk.award && perk.take && !isinarray(perk.maps_to_exclude, level.script))
+		else if (!skip_this_perk && !perk.award && perk.take && !isinarray(perk.maps_to_exclude, level.script))
 		{
 			self remove_permaperk(perk_code);
 			wait_network_frame();
@@ -969,18 +970,21 @@ award_permaperks_safe()
 
 		// Do not try to award perk if player already has it
 		if (self.pers_upgrades_awarded[perk_code])
-			continue;
+			skip_this_perk = true;
 
-		for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
+		if (!skip_this_perk)
 		{
-			stat_name = level.pers_upgrades[perk_code].stat_names[j];
-			stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
-
-			// Award perk if all conditions match
-			if (perk.award && !is_round(perk.to_round) && !isinarray(perk.maps_to_exclude, level.script))
+			for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
 			{
-				self award_permaperk(stat_name, perk_code, stat_value);
-				wait_network_frame();
+				stat_name = level.pers_upgrades[perk_code].stat_names[j];
+				stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
+
+				// Award perk if all conditions match
+				if (perk.award && !is_round(perk.to_round) && !isinarray(perk.maps_to_exclude, level.script))
+				{
+					self award_permaperk(stat_name, perk_code, stat_value);
+					wait_network_frame();
+				}
 			}
 		}
 	}
@@ -993,7 +997,6 @@ award_permaperks_safe()
 award_permaperk(stat_name, perk_code, stat_value)
 {
 	flag_set("permaperks_were_set");
-
 	self.stats_this_frame[stat_name] = 1;
 	self set_global_stat(stat_name, stat_value);
 }
