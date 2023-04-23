@@ -1133,7 +1133,7 @@ rig_fridge(key, player)
 	}
 	else
 	{
-		print_scheduler(level.players[0].name + " set your fridge weapon to: ^3" + weapon_display_wrapper(weapon));
+		print_scheduler(level.players[0].name + "^7 set your fridge weapon to: ^3" + weapon_display_wrapper(weapon));
 		foreach(player in level.players)
 			player player_rig_fridge(weapon);
 	}
@@ -1364,7 +1364,7 @@ rig_box(gun, player)
 	}
 
 	// weapon_name = level.zombie_weapons[weapon_key].name;
-	print_scheduler("" + player.name + " set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
+	print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
 	generate_watermark("FIRST BOX", (0.8, 0, 0));
 	level.rigged_hits++;
 
