@@ -72,6 +72,10 @@ All HUD elements are toogleable (with the exception of watermarks), below is the
 | Buildables HUD | `buildables` 0/1 | Enabled |
 | Velocity meter | `velocity` 0/1 | Disabled |
 
+If you wish to hide all HUD elements, simply paste this line to the console upon loading to the game (you only need to do once per bo2 restart, DVAR state carries over between games)
+
+```timers 0;buildables 0```
+
 # Box / Fridge
 
 This patch has the following capabilites regarding box and fridge:
