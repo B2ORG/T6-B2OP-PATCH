@@ -960,6 +960,7 @@ award_permaperks_safe()
 	perks_to_process = permaperk_struct(perks_to_process, "jugg", true, false, 15, undefined, undefined);
 	perks_to_process = permaperk_struct(perks_to_process, "flopper", true, false, 255, array(), "zm_buried");
 	perks_to_process = permaperk_struct(perks_to_process, "box_weapon", true, true, 255, array("zm_transit"), undefined);
+	perks_to_process = permaperk_struct(perks_to_process, "cash_back", true, false, 255, array(), undefined);
 
 	self.frfix_awarding_permaperks = true;
 
