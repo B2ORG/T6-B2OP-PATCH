@@ -1018,6 +1018,7 @@ award_permaperk(stat_name, perk_code, stat_value)
 	flag_set("permaperks_were_set");
 	self.stats_this_frame[stat_name] = 1;
 	self set_global_stat(stat_name, stat_value);
+	self playsoundtoplayer("evt_player_upgrade", self);
 }
 
 remove_permaperk_wrapper(perk_code, round)
@@ -1035,6 +1036,7 @@ remove_permaperk_wrapper(perk_code, round)
 remove_permaperk(perk_code)
 {
 	self.pers_upgrades_awarded[perk_code] = 0;
+	self playsoundtoplayer("evt_player_downgrade", self);
 }
 
 fridge_handler()
