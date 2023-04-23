@@ -21,7 +21,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = array();
-	level.B2OP_CONFIG["version"] = 1.1;
+	level.B2OP_CONFIG["version"] = 1.2;
 	level.B2OP_CONFIG["beta"] = false;
 	level.B2OP_CONFIG["debug"] = false;
 
@@ -136,6 +136,7 @@ is_debug()
 	return false;
 }
 
+/*
 debug_print(text)
 {
 	if (!is_debug())
@@ -146,6 +147,7 @@ debug_print(text)
 	else
 		iprintln("DEBUG: " + text);
 }
+*/
 
 generate_watermark(text, color, alpha_override)
 {
