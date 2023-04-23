@@ -136,13 +136,16 @@ is_debug()
 	return false;
 }
 
-/*
 debug_print(text)
 {
-	if (is_debug())
+	if (!is_debug())
+		return;
+
+	if (is_plutonium())
 		print("DEBUG: " + text);
+	else
+		iprintln("DEBUG: " + text);
 }
-*/
 
 generate_watermark(text, color, alpha_override)
 {
