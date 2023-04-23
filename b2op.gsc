@@ -919,25 +919,22 @@ initialize_permaperks_safety()
 	flag_set("start_permajug_remover");
 }
 
-permaperk_struct(current_array, code, award, take, to_round, maps_exclude, map_unique)
+permaperk_array(code, maps_award, maps_take, to_round)
 {
-	if (!isDefined(maps_exclude))
-		maps_exclude = array();
+	if (!isDefined(maps_award))
+		maps_award = array("zm_transit", "zm_highrise", "zm_buried");
+	if (!isDefined(maps_take))
+		maps_take = array();
 	if (!isDefined(to_round))
 		to_round = 255;
-	if (!isDefined(map_unique))
-		map_unique = undefined;
 
-	permaperk = spawnStruct();
-	permaperk.code = code;
-	permaperk.to_round = to_round;
-	permaperk.award = award;
-	permaperk.take = take;
-	permaperk.maps_to_exclude = maps_exclude;
-	permaperk.map_unique = map_unique;
+	permaperk = array();
+	permaperk["code"] = code;
+	permaperk["maps_award"] = maps_award;
+	permaperk["maps_take"] = maps_take;
+	permaperk["to_round"] = to_round;
 
-	current_array[current_array.size] = permaperk;
-	return current_array;
+	return permaperk;
 }
 
 award_permaperks_safe()
@@ -954,67 +951,56 @@ award_permaperks_safe()
 	wait 0.5;
 
 	perks_to_process = array();
-	perks_to_process = permaperk_struct(perks_to_process, "revive", true, false);
-	perks_to_process = permaperk_struct(perks_to_process, "multikill_headshots", true, false, undefined, undefined, undefined);
-	perks_to_process = permaperk_struct(perks_to_process, "perk_lose", true, false, undefined, undefined, undefined);
-	perks_to_process = permaperk_struct(perks_to_process, "jugg", true, false, 15, undefined, undefined);
-	perks_to_process = permaperk_struct(perks_to_process, "flopper", true, false, 255, array(), "zm_buried");
-	perks_to_process = permaperk_struct(perks_to_process, "box_weapon", true, true, 255, array("zm_transit"), undefined);
-	perks_to_process = permaperk_struct(perks_to_process, "cash_back", true, false, 255, array(), undefined);
+	perks_to_process[perks_to_process.size] = permaperk_array("revive");
+	perks_to_process[perks_to_process.size] = permaperk_array("multikill_headshots");
+	perks_to_process[perks_to_process.size] = permaperk_array("perk_lose");
+	perks_to_process[perks_to_process.size] = permaperk_array("jugg", undefined, undefined, 15);
+	perks_to_process[perks_to_process.size] = permaperk_array("flopper", array("zm_buried"));
+	perks_to_process[perks_to_process.size] = permaperk_array("box_weapon", array("zm_highrise", "zm_buried"), array("zm_transit"));
+	perks_to_process[perks_to_process.size] = permaperk_array("cash_back");
 
 	self.frfix_awarding_permaperks = true;
 
 	foreach (perk in perks_to_process)
 	{
+		self resolve_permaperk(perk);
 		wait 0.05;
-		skip_this_perk = false;
-
-		if (isDefined(perk.map_unique) && perk.map_unique != level.script)
-			skip_this_perk = true;
-
-		perk_code = perk.code;
-
-		// If award and take are both set, it means maps specified in 'maps_to_exclude' are the maps on which perk needs to be taken away
-		if (!skip_this_perk && perk.award && perk.take && isinarray(perk.maps_to_exclude, level.script))
-		{
-			self remove_permaperk(perk_code);
-			wait_network_frame();
-		}
-		// Else if take is specified, take
-		else if (!skip_this_perk && !perk.award && perk.take && !isinarray(perk.maps_to_exclude, level.script))
-		{
-			self remove_permaperk(perk_code);
-			wait_network_frame();
-		}
-
-		// Do not try to award perk if player already has it
-		if (self.pers_upgrades_awarded[perk_code])
-			skip_this_perk = true;
-
-		if (!skip_this_perk)
-		{
-			for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
-			{
-				stat_name = level.pers_upgrades[perk_code].stat_names[j];
-				stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
-
-				// Award perk if all conditions match
-				if (perk.award && !is_round(perk.to_round) && !isinarray(perk.maps_to_exclude, level.script))
-				{
-					self award_permaperk(stat_name, perk_code, stat_value);
-					wait_network_frame();
-				}
-			}
-		}
 	}
 
 	wait 0.5;
+	perks_to_process = undefined;
 	self.frfix_awarding_permaperks = undefined;
 	self uploadstatssoon();
 }
 
+resolve_permaperk(perk)
+{
+	wait 0.05;
+
+	perk_code = perk["code"];
+
+	/* Too high of a round, return out */
+	if (is_round(perk["to_round"]))
+		return;
+
+	if (isinarray(perk["maps_award"], level.script) && !self.pers_upgrades_awarded[perk_code])
+	{
+		for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
+		{
+			stat_name = level.pers_upgrades[perk_code].stat_names[j];
+			stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
+
+			self award_permaperk(stat_name, perk_code, stat_value);
+		}
+	}
+
+	if (isinarray(perk["maps_take"], level.script) && self.pers_upgrades_awarded[perk_code])
+		self remove_permaperk(perk_code);
+}
+
 award_permaperk(stat_name, perk_code, stat_value)
 {
+	// debug_print("awarding: " + stat_name + " " + perk_code + " " + stat_value);
 	flag_set("permaperks_were_set");
 	self.stats_this_frame[stat_name] = 1;
 	self set_global_stat(stat_name, stat_value);
@@ -1027,14 +1013,12 @@ remove_permaperk_wrapper(perk_code, round)
 		round = 1;
 
 	if (is_round(round) && self.pers_upgrades_awarded[perk_code])
-	{
 		self remove_permaperk(perk_code);
-		self playsoundtoplayer("evt_player_downgrade", self);
-	}
 }
 
 remove_permaperk(perk_code)
 {
+	// debug_print("removing: " + perk_code);
 	self.pers_upgrades_awarded[perk_code] = 0;
 	self playsoundtoplayer("evt_player_downgrade", self);
 }

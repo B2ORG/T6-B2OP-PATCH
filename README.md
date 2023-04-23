@@ -227,7 +227,8 @@ List of permaperks awarded by B2OP
 | Tombstone | - |
 | Mini-Jug | Will not be awarded if game starts past round 15, will also actively be taken from players past round 15 |
 | Flopper | Only on Buried |
-| Better Box | Awarded only on Buried. On Tranzit & Die Rise is instead taken away |
+| Better Box | Given only on Die Rise and Buried. Taken away on Tranzit |
+| Cash Back | - |
 
 Players are always recommended to restart the game after being given perma perks, but this is no longer enforced since version 1.2
 Instead, players are prompted with restart recommendation.
