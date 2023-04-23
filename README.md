@@ -211,6 +211,26 @@ Example of player setting upgraded weapons for everyone (host only):
 
 ```fridge all +m16```
 
+# Permaperks
+
+Patch does award players with permaperks on connect, but only at the beginning of the game. Players joining in progress will not be given any permaperks. Every player joining the game past round 15 will have PermaJug taken away from him.
+List of permaperks awarded by B2OP
+
+| Perk | Notes |
+| --- | --- |
+| Revive | - |
+| Better Headshots | - |
+| Tombstone | - |
+| Mini-Jug | Will not be awarded if game starts past round 15, will also actively be taken from players past round 15 |
+| Flopper | Only on Buried |
+| Better Box | Awarded only on Buried. On Tranzit & Die Rise is instead taken away |
+
+Players are always recommended to restart the game after being given perma perks, but this is no longer enforced since version 1.2
+Instead, players are prompted with restart recommendation.
+- Solo - Restart is recommended, but realistically error it is meant to prevent doesn't happen on solo.
+- Coop (Redacted & Ancient) - Restart is highly recommended, but as restarting on coop on those is not as fast, players can ignore it and play at their own risk of having permaperks not taken away when they should be
+- Coop (New Pluto) - Restart is performed automatically, since such functionality is supported by New Plutonium and players don't have to do it manually
+
 # Contribution / Reporting issues
 
 If you wish to contribute to the project with feedback, advice, issue report, please open an issue in the Issues section of this repository.

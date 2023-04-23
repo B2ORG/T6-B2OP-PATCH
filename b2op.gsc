@@ -870,9 +870,25 @@ watch_permaperk_award()
 
 		if (i == present_players && flag("permaperks_were_set"))
 		{
-			print_scheduler("Permaperks Awarded: ^1RESTART REQUIRED");
-			wait 1.5;
-			safe_restart();
+			/* Solo - Recommend restart */
+			if (present_players == 1)
+			{
+				print_scheduler("Permaperks Awarded: ^3RESTART RECOMMENDED");
+				break;
+			}
+			/* Coop Irony launchers - Recommend restart but more XD */
+			else if (!is_plutonium())
+			{
+				print_scheduler("Permaperks Awarded: ^1RESTART STRONGLY RECOMMENDED");
+				break;
+			}
+			/* Coop new Pluto - Automatic restart */
+			else
+			{
+				print_scheduler("Permaperks Awarded: ^2MAP GONNA RESTART");
+				wait 1.5;
+				safe_restart();
+			}
 		}
 
 		if (!did_game_just_start())
