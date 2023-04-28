@@ -959,6 +959,7 @@ award_permaperks_safe()
 	perks_to_process[perks_to_process.size] = permaperk_array("box_weapon", array("zm_highrise", "zm_buried"), array("zm_transit"));
 	perks_to_process[perks_to_process.size] = permaperk_array("cash_back");
 	perks_to_process[perks_to_process.size] = permaperk_array("sniper");
+	perks_to_process[perks_to_process.size] = permaperk_array("insta_kill");
 
 	self.frfix_awarding_permaperks = true;
 
