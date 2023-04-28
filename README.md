@@ -230,6 +230,9 @@ List of permaperks awarded by B2OP
 | Better Box | Given only on Die Rise and Buried. Taken away on Tranzit |
 | Cash Back | - |
 | Sniper Points | - |
+| Insta Kill | - |
+| Pistol Points | - |
+| Double Points | - |
 
 Players are always recommended to restart the game after being given perma perks, but this is no longer enforced since version 1.2
 Instead, players are prompted with restart recommendation.

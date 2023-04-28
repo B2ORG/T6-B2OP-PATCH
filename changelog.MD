@@ -12,4 +12,8 @@
 
 # Version 1.3
 
-- Added sniper points permaperk to the autoaward sequence
+- Permaperks
+    * Added sniper points to award sequence
+    * Added pistol points to award sequence
+    * Added instakill to award sequence
+    * Added double points to award sequence
