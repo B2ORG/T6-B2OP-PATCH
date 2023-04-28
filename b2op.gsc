@@ -21,7 +21,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = array();
-	level.B2OP_CONFIG["version"] = 1.2;
+	level.B2OP_CONFIG["version"] = 1.3;
 	level.B2OP_CONFIG["beta"] = false;
 	level.B2OP_CONFIG["debug"] = false;
 

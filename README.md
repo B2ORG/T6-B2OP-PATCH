@@ -229,6 +229,7 @@ List of permaperks awarded by B2OP
 | Flopper | Only on Buried |
 | Better Box | Given only on Die Rise and Buried. Taken away on Tranzit |
 | Cash Back | - |
+| Sniper Points | - |
 
 Players are always recommended to restart the game after being given perma perks, but this is no longer enforced since version 1.2
 Instead, players are prompted with restart recommendation.

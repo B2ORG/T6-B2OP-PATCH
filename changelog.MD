@@ -9,3 +9,7 @@
     * Autorestart is no longer forced on launchers using Irony and New Pluto solo
     * Added Cash Back & Teddy permaperks to assignment sequence
 - Info messages are no longer affected by playernames containing color codes
+
+# Version 1.3
+
+- Added sniper points permaperk to the autoaward sequence
