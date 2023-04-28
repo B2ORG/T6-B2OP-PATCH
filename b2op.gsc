@@ -961,6 +961,7 @@ award_permaperks_safe()
 	perks_to_process[perks_to_process.size] = permaperk_array("sniper");
 	perks_to_process[perks_to_process.size] = permaperk_array("insta_kill");
 	perks_to_process[perks_to_process.size] = permaperk_array("pistol_points");
+	perks_to_process[perks_to_process.size] = permaperk_array("double_points");
 
 	self.frfix_awarding_permaperks = true;
 
