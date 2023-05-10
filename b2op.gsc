@@ -115,6 +115,10 @@ b2op_main_loop()
         level waittill("start_of_round");
         check_dvars();
         // level thread show_hordes();
+		/*
+		if (is_debug())
+			thread generate_temp_watermark(level.round_number + 2, "JUST TEST" + level.round_number);
+		*/
 
         level waittill("end_of_round");
         level thread show_split();
@@ -149,15 +153,55 @@ debug_print(text)
 }
 */
 
+generate_watermark_slots()
+{
+	slots = array();
+	slots[0] = array();
+	slots[1] = array();
+	slots[2] = array();
+	slots[3] = array();
+	slots[4] = array();
+	slots[5] = array();
+	slots[6] = array();
+
+	positions = array(0, -90, 90, -180, 180, -270, 270);
+
+	for (i = 0; i < slots.size; i++)
+	{
+		slots[i]["pos"] = positions[i];
+		slots[i]["perm_on"] = false;
+		slots[i]["temp_on"] = false;
+	}
+
+	level.set_of_slots = slots;
+}
+
+get_watermark_position(mode)
+{
+	mode += "_on";
+	for (i = 0; i < level.set_of_slots.size; i++)
+	{
+		if (!level.set_of_slots[i][mode])
+		{
+			level.set_of_slots[i][mode] = true;
+			return level.set_of_slots[i]["pos"];
+		}
+	}
+	return undefined;
+}
+
 generate_watermark(text, color, alpha_override)
 {
 	if (is_true(flag(text)))
 		return;
 
-    if (!isDefined(level.num_of_watermarks))
-        level.num_of_watermarks = 0;
+    if (!isDefined(level.set_of_slots))
+        generate_watermark_slots();
 
-	y_offset = 12 * level.num_of_watermarks;
+	x_pos = get_watermark_position("perm");
+	if (!isDefined(x_pos))
+		return;
+
 	if (!isDefined(color))
 		color = (1, 1, 1);
 
@@ -165,7 +209,7 @@ generate_watermark(text, color, alpha_override)
 		alpha_override = 0.33;
 
     watermark = createserverfontstring("hudsmall" , 1.2);
-	watermark setPoint("CENTER", "TOP", 0, y_offset - 10);
+	watermark setPoint("CENTER", "TOP", x_pos, -5);
 	watermark.color = color;
 	watermark setText(text);
 	watermark.alpha = alpha_override;
@@ -174,6 +218,49 @@ generate_watermark(text, color, alpha_override)
 	flag_set(text);
 
     level.num_of_watermarks++;
+}
+
+generate_temp_watermark(kill_on, text, color, alpha_override)
+{
+	level endon("end_game");
+
+	if (is_true(flag(text)))
+		return;
+
+    if (!isDefined(level.set_of_slots))
+        generate_watermark_slots();
+
+	x_pos = get_watermark_position("temp");
+	if (!isDefined(x_pos))
+		return;
+
+	if (!isDefined(color))
+		color = (1, 1, 1);
+
+	if (!isDefined(alpha_override))
+		alpha_override = 0.33;
+
+    twatermark = createserverfontstring("hudsmall" , 1.2);
+	twatermark setPoint("CENTER", "TOP", x_pos, -17);
+	twatermark.color = color;
+	twatermark setText(text);
+	twatermark.alpha = alpha_override;
+	twatermark.hidewheninmenu = 0;
+
+	flag_set(text);
+
+	while (level.round_number < kill_on)
+		level waittill("end_of_round");
+
+	twatermark.alpha = 0;
+	twatermark destroy_hud();
+
+	/* Cleanup slots array if there are no huds to track */
+	for (i = 0; i < level.set_of_slots.size; i++)
+	{
+		if (level.set_of_slots[i]["pos"] == x_pos)
+			level.set_of_slots[i]["temp_on"] = false;
+	}
 }
 
 print_scheduler(content, player)
@@ -1291,7 +1378,7 @@ scan_in_box()
 		else if ((offset > 0) && (in_box == (should_be_in_box + offset)))
 			continue;
 
-		generate_watermark("FIRST BOX", (0.8, 0, 0));
+		thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
 		break;
     }
 }
@@ -1374,7 +1461,7 @@ rig_box(gun, player)
 
 	// weapon_name = level.zombie_weapons[weapon_key].name;
 	print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
-	generate_watermark("FIRST BOX", (0.8, 0, 0));
+	thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
 	level.rigged_hits++;
 
 	saved_check = level.special_weapon_magicbox_check;
