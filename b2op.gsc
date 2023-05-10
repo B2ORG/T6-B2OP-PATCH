@@ -1559,19 +1559,11 @@ location_watch_dvar()
 		if (dvar == "")
 			continue;
 
-		if (isSubStr(dvar, "lb"))
-			loc_selection = getSubStr(dvar, 3);
-		else
-		{
-			setDvar("lb", "");
-			continue;
-		}
-
-		process_selection = process_box_location(loc_selection);
+		process_selection = process_box_location(dvar);
 
 		if (process_selection == "no box selected")
 		{
-			print_scheduler("Incorrect selection: ^1" + loc_selection);
+			print_scheduler("Incorrect selection: ^1" + dvar);
 			setDvar("lb", "");
 			continue;
 		}
