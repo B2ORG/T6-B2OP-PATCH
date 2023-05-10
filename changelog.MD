@@ -17,3 +17,8 @@
     * Added pistol points to award sequence
     * Added instakill to award sequence
     * Added double points to award sequence
+
+# Version 1.4
+
+- Watermarks refactor - watermarks now align horizontally. Introduced temporal watermarks that dissapear after X amount of time (to address users complaining about First Box watermark being permanent, it will now dissapear at the end of round 19)
+- Fixed moving box locations with DVAR method
