@@ -179,10 +179,13 @@ get_watermark_position(mode)
 		if (!level.set_of_slots[i][mode])
 		{
 			level.set_of_slots[i][mode] = true;
-			return level.set_of_slots[i]["pos"];
+			pos = level.set_of_slots[i]["pos"];
+			if (pos < 640 && pos > -640)
+				return pos;
+			return 0;
 		}
 	}
-	return undefined;
+	return 0;
 }
 
 generate_watermark(text, color, alpha_override)
