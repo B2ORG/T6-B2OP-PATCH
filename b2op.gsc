@@ -156,19 +156,14 @@ debug_print(text)
 generate_watermark_slots()
 {
 	slots = array();
-	slots[0] = array();
-	slots[1] = array();
-	slots[2] = array();
-	slots[3] = array();
-	slots[4] = array();
-	slots[5] = array();
-	slots[6] = array();
 
-	positions = array(0, -90, 90, -180, 180, -270, 270);
+	positions = array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630);
 
-	for (i = 0; i < slots.size; i++)
+	foreach(pos in positions)
 	{
-		slots[i]["pos"] = positions[i];
+		i = slots.size;
+		slots[i] = array();
+		slots[i]["pos"] = pos;
 		slots[i]["perm_on"] = false;
 		slots[i]["temp_on"] = false;
 	}
