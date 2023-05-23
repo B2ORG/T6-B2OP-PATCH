@@ -115,10 +115,6 @@ b2op_main_loop()
         level waittill("start_of_round");
         check_dvars();
         // level thread show_hordes();
-		/*
-		if (is_debug())
-			thread generate_temp_watermark(level.round_number + 2, "JUST TEST" + level.round_number);
-		*/
 
         level waittill("end_of_round");
         level thread show_split();
