@@ -588,14 +588,14 @@ safety_zio()
 	if (isDefined(level.SONG_TIMING))
 	{
 		print_scheduler("^1SONG PATCH DETECTED!!!");
-		level notify("end_game");
+		emulate_menu_call("endgame");
 	}
 
 	// First Room Fix
 	if (isDefined(level.FRFIX_CONFIG))
 	{
 		print_scheduler("^1FIRST ROOM FIX DETECTED!!!");
-		level notify("end_game");
+		emulate_menu_call("endgame");
 	}
 }
 
