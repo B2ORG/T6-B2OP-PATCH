@@ -116,6 +116,19 @@ b2op_main_loop()
         check_dvars();
         // level thread show_hordes();
 
+		if (has_permaperks_system())
+		{
+			if (is_debug())
+				level.players[0] remove_permaperk_wrapper("insta_kill", 2);
+
+			wait 2;
+			foreach(player in level.players)
+			{
+				player remove_permaperk_wrapper("jugg", 15);
+				player remove_permaperk_wrapper("nube", 10);
+			}
+		}
+
         level waittill("end_of_round");
         level thread show_split();
     }
