@@ -22,3 +22,9 @@
 
 - Watermarks refactor - watermarks now align horizontally. Introduced temporal watermarks that dissapear after X amount of time (to address users complaining about First Box watermark being permanent, it will now dissapear at the end of round 19)
 - Fixed moving box locations with DVAR method
+
+# Version 1.5
+
+- Players can no longer move after safety from using conflicting patches triggered end game
+- Patch now actively removes minijug after round 15 instead of only on connect
+- Restored restart enforcement (at least for now) after permaperk award

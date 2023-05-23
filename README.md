@@ -234,11 +234,7 @@ List of permaperks awarded by B2OP
 | Pistol Points | - |
 | Double Points | - |
 
-Players are always recommended to restart the game after being given perma perks, but this is no longer enforced since version 1.2
-Instead, players are prompted with restart recommendation.
-- Solo - Restart is recommended, but realistically error it is meant to prevent doesn't happen on solo.
-- Coop (Redacted & Ancient) - Restart is highly recommended, but as restarting on coop on those is not as fast, players can ignore it and play at their own risk of having permaperks not taken away when they should be
-- Coop (New Pluto) - Restart is performed automatically, since such functionality is supported by New Plutonium and players don't have to do it manually
+Players are always recommended to restart the game after being given perma perks, restart is done automatically when situation allows for it, otherwise players have to `map_restart` manually (the game will end automatically).
 
 # Contribution / Reporting issues
 
