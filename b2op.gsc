@@ -17,7 +17,6 @@ init()
 	flag_init("game_started");
 	flag_init("box_rigged");
 	flag_init("permaperks_were_set");
-	flag_init("start_permajug_remover");
 
 	// Patch Config
 	level.B2OP_CONFIG = array();
@@ -101,7 +100,7 @@ on_player_spawned_permaperk()
 	The wait is essential, it allows the game to process permaperks internally before we override them */
 	wait 2;
 
-	if (has_permaperks_system() && flag("start_permajug_remover"))
+	if (has_permaperks_system() && is_round(15))
 		self remove_permaperk_wrapper("jugg");
 }
 
@@ -537,6 +536,14 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 	self.color = col;
 }
 
+emulate_menu_call(call, ent)
+{
+	if (!isDefined(ent))
+		ent = level.players[0];
+
+	ent notify ("menuresponse", "", call);
+}
+
 // Functions
 
 welcome_prints()
@@ -941,7 +948,6 @@ perma_perks_setup()
 		return;
 
 	thread watch_permaperk_award();
-	thread initialize_permaperks_safety();
 
 	foreach (player in level.players)
 		player thread award_permaperks_safe();
@@ -964,25 +970,14 @@ watch_permaperk_award()
 
 		if (i == present_players && flag("permaperks_were_set"))
 		{
-			/* Solo - Recommend restart */
-			if (present_players == 1)
-			{
-				print_scheduler("Permaperks Awarded: ^3RESTART RECOMMENDED");
-				break;
-			}
-			/* Coop Irony launchers - Recommend restart but more XD */
-			else if (!is_plutonium())
-			{
-				print_scheduler("Permaperks Awarded: ^1RESTART STRONGLY RECOMMENDED");
-				break;
-			}
-			/* Coop new Pluto - Automatic restart */
+			print_scheduler("Permaperks Awarded - ^1RESTARTING");
+			wait 1;
+
+			if (is_plutonium() || present_players == 1)
+				emulate_menu_call("restart_level_zm");
 			else
-			{
-				print_scheduler("Permaperks Awarded: ^2MAP GONNA RESTART");
-				wait 1.5;
-				safe_restart();
-			}
+				emulate_menu_call("endgame");
+			break;
 		}
 
 		if (!did_game_just_start())
@@ -996,21 +991,6 @@ watch_permaperk_award()
 		if (isDefined(player.frfix_awarding_permaperks))
 			player.frfix_awarding_permaperks = undefined;
 	}
-}
-
-initialize_permaperks_safety()
-{
-	level endon("end_game");
-
-	while (!is_round(15))
-		wait 0.1;
-	level waittill("start_of_round");
-	wait 5;
-
-	foreach(player in level.players)
-		player remove_permaperk_wrapper("jugg");
-
-	flag_set("start_permajug_remover");
 }
 
 permaperk_array(code, maps_award, maps_take, to_round)
