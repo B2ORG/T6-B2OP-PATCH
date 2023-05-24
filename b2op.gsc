@@ -642,6 +642,9 @@ evaluate_network_frame()
 
 	flag_wait("initial_blackscreen_passed");
 
+	if (!is_plutonium())
+		level waittill("start_of_round");
+
 	start_time = int(getTime());
 	wait_network_frame();
 	end_time = int(getTime());
