@@ -12,4 +12,4 @@ Compiler.exe "b2op.gsc"
 gsc-tool.exe comp t6 "network_frame_fix.gsc"
 
 @rem Move files
-MOVE /y "b2op-compiled.gsc" "compiled\t6\maps\mp\gametypes\_clientids.gsc"
+MOVE /y "b2op-compiled.gsc" "compiled\t6\maps\mp\gametypes_zm\_clientids.gsc"
