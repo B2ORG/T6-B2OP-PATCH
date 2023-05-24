@@ -28,3 +28,4 @@
 - Players can no longer move after safety from using conflicting patches triggered end game
 - Patch now actively removes minijug after round 15 instead of only on connect
 - Restored restart enforcement (at least for now) after permaperk award
+- Added handle for splits plugin + created a template

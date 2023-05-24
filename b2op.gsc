@@ -787,19 +787,13 @@ show_split()
     if (!b2op_config("hud_enabled") || getDvar("timers") == "0")
         return;
 
-    switch (level.round_number)
-    {
-        case 30:
-        case 50:
-        case 70:
-        case 100:
-        case 150:
-        case 200:
-            wait 8.5;
-            break;
-        default:
-            return;
-    }
+	split_rounds = array(30, 50, 70, 100, 150, 200);
+	if (isDefined(level.B2OP_PLUGIN_SPLITS))
+		split_rounds = level.B2OP_PLUGIN_SPLITS;
+
+	if (!IsInArray(split_rounds, level.round_number))
+		return;
+	wait 8.5;
 
     timestamp = convert_time(int(getTime() / 1000) - level.FRFIX_START);
     print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
