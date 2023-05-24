@@ -77,7 +77,8 @@ on_game_start()
 	level thread perma_perks_setup();
 	level thread fridge_handler();
 	level thread buildable_controller();
-    level thread hud_alpha_controller(); 
+    level thread hud_alpha_controller();
+	level thread network_frame_hud();
 	safety_zio();
 	safety_debugger();
 	safety_beta();
@@ -665,9 +666,6 @@ evaluate_network_frame()
 
 	flag_wait("initial_blackscreen_passed");
 
-	if (!is_plutonium())
-		level waittill("start_of_round");
-
 	start_time = int(getTime());
 	wait_network_frame();
 	end_time = int(getTime());
@@ -691,7 +689,8 @@ evaluate_network_frame()
     else
     {
         print_scheduler("Network Frame: ^1BAD", self);
-		generate_watermark("NETWORK FRAME", (0.8, 0, 0));
+		level waittill("start_of_round");
+		self thread evaluate_network_frame();
     }
 }
 
@@ -2269,4 +2268,26 @@ get_buildable_stat(statname)
 	}
 
 	return stat;
+}
+
+network_frame_hud()
+{
+	level endon("end_game");
+
+	if (!is_debug())
+		return;
+
+	netframe_hud = createserverfontstring("default", 1.3);
+	netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
+	netframe_hud.label = &"NETFRAME: ";
+	netframe_hud.alpha = 1;
+
+	while (true)
+	{
+		start_time = int(getTime());
+		wait_network_frame();
+		end_time = int(getTime());
+
+		netframe_hud setValue(end_time - start_time);
+	}
 }
