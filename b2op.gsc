@@ -995,7 +995,7 @@ watch_permaperk_award()
 			if (is_plutonium() || present_players == 1)
 				emulate_menu_call("restart_level_zm");
 			else
-				emulate_menu_call("endgame");
+				emulate_menu_call("endround");
 			break;
 		}
 
