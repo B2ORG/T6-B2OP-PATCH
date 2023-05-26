@@ -771,7 +771,7 @@ timers()
     level.timer_hud setTimerUp(0);
 
 	level.round_hud = createserverfontstring("big" , 1.6);
-	level.round_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
+	level.round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
 	level.round_hud.alpha = 0;
 
     level waittill("start_of_round");
