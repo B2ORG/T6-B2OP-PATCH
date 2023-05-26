@@ -632,14 +632,14 @@ safety_zio()
 	if (isDefined(level.SONG_TIMING))
 	{
 		print_scheduler("^1SONG PATCH DETECTED!!!");
-		emulate_menu_call("endgame");
+		emulate_menu_call("endround");
 	}
 
 	// First Room Fix
 	if (isDefined(level.FRFIX_CONFIG))
 	{
 		print_scheduler("^1FIRST ROOM FIX DETECTED!!!");
-		emulate_menu_call("endgame");
+		emulate_menu_call("endround");
 	}
 }
 
