@@ -28,5 +28,5 @@
 - Players can no longer move after safety from using conflicting patches triggered end game
 - Patch now actively removes minijug after round 15 instead of only on connect
 - Restored restart enforcement (at least for now) after permaperk award
-- Network frame evaluation now happens at the beginning of round 1 on Ancient & Redacted to prevent false detections
+- Network frame evaluation no longer generates watermark on failure. Instead it checks again next round (effectively if game is on wrong network frame, at the beginning of each round there will be a print about bad network frame)
 - Added handle for splits plugin + created a template
