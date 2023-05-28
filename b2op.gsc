@@ -556,8 +556,61 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 		}
 	}
 
+	res_components = strTok(getDvar("r_mode"), "x");
+	ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
+	aspect_ratio = "16:9";
+	switch (ratio)
+	{
+		case 160:
+			aspect_ratio = "16:10";
+			break;
+		// Includes 5:4
+		case 125:
+		case 133:
+			aspect_ratio = "4:3";
+			break;
+		case 237:
+		case 239:
+			aspect_ratio = "21:9";
+			break;
+	}
+
+	if (x_pos == int(x_pos))
+		x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
+
+	debug_print("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
+
 	self setpoint(x_align, y_align, x_pos, y_pos);
 	self.color = col;
+}
+
+recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
+{
+	if (isSubStr(tolower(xalign), "left") && xpos < 0)
+	{
+		if (aspect_ratio == "16:10")
+			return xpos + 6;
+		if (aspect_ratio == "4:3")
+			return xpos + 14;
+		/* Need help from someone who can test on UW
+		if (aspect_ratio == "21:9")
+			return xpos;
+		*/
+	}
+
+	else if (isSubStr(tolower(xalign), "right") && xpos > 0)
+	{
+		if (aspect_ratio == "16:10")
+			return xpos - 6;
+		if (aspect_ratio == "4:3")
+			return xpos - 14;
+		/* Need help from someone who can test on UW
+		if (aspect_ratio == "21:9")
+			return xpos;
+		*/
+	}
+
+	return xpos;
 }
 
 emulate_menu_call(call, ent)
