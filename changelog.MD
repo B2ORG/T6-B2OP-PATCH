@@ -30,3 +30,9 @@
 - Restored restart enforcement (at least for now) after permaperk award
 - Network frame evaluation no longer generates watermark on failure. Instead it checks again next round (effectively if game is on wrong network frame, at the beginning of each round there will be a print about bad network frame)
 - Added handle for splits plugin + created a template
+
+# Version 1.6
+
+- Fixed HUD being cut off on aspect ratios 4:3 5:4 and 16:10
+- Fixed HUD plugin causing timer and round timers to overlap
+- Fixed patch safety functions not ending the game properly
