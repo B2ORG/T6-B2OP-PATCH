@@ -112,7 +112,14 @@ on_player_spawned()
 	self thread velocity_meter();
 	self thread set_characters();
 	self thread fill_up_bank();
-	self thread buildable_stat();
+
+	if (is_tracking_buildables())
+	{
+		self.initial_stats = array();
+		self thread watch_stat("springpad_zm", array("zm_highrise", "zm_buried"));
+		self thread watch_stat("turbine");
+		self thread watch_stat("subwoofer_zm");
+	}
 }
 
 on_player_spawned_permaperk()
@@ -2267,20 +2274,6 @@ set_characters()
 		self.voice = prop["voice"];
 }
 
-buildable_stat()
-{
-	if (!is_tracking_buildables())
-		return;
-
-	self.buildable_stats = array();
-	self.buildable_stats["springpad_zm"] = self get_buildable_stat("springpad_zm");
-	if (is_buried())
-	{
-		self.buildable_stats["turbine"] = self get_buildable_stat("turbine");
-		self.buildable_stats["subwoofer_zm"] = self get_buildable_stat("subwoofer_zm");
-	}
-}
-
 buildable_controller()
 {
 	level endon("end_game");
@@ -2290,37 +2283,51 @@ buildable_controller()
 
 	buildable_hud();
 
+	level.buildable_stats = array();
+	level.buildable_stats["springpad_zm"] = 0;
+	level.buildable_stats["turbine"] = 0;
+	level.buildable_stats["subwoofer_zm"] = 0;
+
 	while (true)
 	{
-		springpad_count = get_buildable_stat("springpad_zm");
 		if (is_buried())
 		{
-			subwoofer_count = get_buildable_stat("subwoofer_zm");
-			turbine_count = get_buildable_stat("turbine");
-
-			level.subwoofer_hud setValue(subwoofer_count);
-			level.turbine_hud setValue(turbine_count);
+			level.subwoofer_hud setValue(level.buildable_stats["subwoofer_zm"]);
+			level.turbine_hud setValue(level.buildable_stats["turbine"]);
 		}
-		level.springpad_hud setValue(springpad_count);
+		level.springpad_hud setValue(level.buildable_stats["springpad_zm"]);
 
 		wait 0.1;
 	}
 }
 
-get_buildable_stat(statname)
+watch_stat(stat, map_array)
 {
-	if (self is_player())
-		return self getdstat("buildables", statname, "buildable_pickedup");
+	if (!isDefined(map_array))
+		map_array = array("zm_buried");
 
-	stat = 0;
-	foreach(player in level.players)
+	if (!IsInArray(map_array, level.script))
+		return;
+
+	level endon("end_game");
+	self endon("disconnect");
+
+	if (!isDefined(self.initial_stats[stat]))
+		self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
+
+	while (true)
 	{
-		player_stat = player getdstat("buildables", statname, "buildable_pickedup");
-		player_stat -= player.buildable_stats[statname];
-		stat += player_stat;
-	}
+		stat_number = self getdstat("buildables", stat, "buildable_pickedup");
+		delta = stat_number - self.initial_stats[stat];
 
-	return stat;
+		if (delta > 0)
+		{
+			self.initial_stats[stat] = stat_number;
+			level.buildable_stats[stat] += delta;
+		}
+
+		wait 0.1;
+	}
 }
 
 network_frame_hud()
