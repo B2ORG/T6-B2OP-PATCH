@@ -2320,7 +2320,7 @@ watch_stat(stat, map_array)
 		stat_number = self getdstat("buildables", stat, "buildable_pickedup");
 		delta = stat_number - self.initial_stats[stat];
 
-		if (delta > 0)
+		if (delta > 0 && stat_number > 0)
 		{
 			self.initial_stats[stat] = stat_number;
 			level.buildable_stats[stat] += delta;
