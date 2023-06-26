@@ -1,16 +1,5 @@
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
-#include maps\mp\_utility;
-#include maps\mp\animscripts\zm_utility;
-#include maps\mp\zombies\_zm_utility;
-#include maps\mp\zombies\_zm_stats;
-#include maps\mp\zombies\_zm_weapons;
-#include maps\mp\zombies\_zm_powerups;
-#include maps\mp\zombies\_zm_audio;
-#include maps\mp\zombies\_zm_net;
-#include maps\mp\zm_prison;
-#include maps\mp\zm_tomb;
-#include maps\mp\zm_tomb_utility;
 
 init()
 {
@@ -1127,7 +1116,7 @@ award_permaperks_safe()
 	wait 0.5;
 	perks_to_process = undefined;
 	self.frfix_awarding_permaperks = undefined;
-	self uploadstatssoon();
+	self maps\mp\zombies\_zm_stats::uploadstatssoon();
 }
 
 resolve_permaperk(perk)
@@ -1160,7 +1149,7 @@ award_permaperk(stat_name, perk_code, stat_value)
 	// debug_print("awarding: " + stat_name + " " + perk_code + " " + stat_value);
 	flag_set("permaperks_were_set");
 	self.stats_this_frame[stat_name] = 1;
-	self set_global_stat(stat_name, stat_value);
+	self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
 	self playsoundtoplayer("evt_player_upgrade", self);
 }
 
@@ -1303,7 +1292,7 @@ rig_fridge(key, player)
 
 player_rig_fridge(weapon)
 {
-	self clear_stored_weapondata();
+	self maps\mp\zombies\_zm_stats::clear_stored_weapondata();
 
 	wpn = array();
 	wpn["clip"] = weaponClipSize(weapon);
