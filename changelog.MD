@@ -36,3 +36,9 @@
 - Fixed HUD being cut off on aspect ratios 4:3 5:4 and 16:10
 - Fixed HUD plugin causing timer and round timers to overlap
 - Fixed patch safety functions not ending the game properly
+
+# Version 1.7
+
+- Fixed Buildable tracker zeroing after one of the players disconnected from the game
+- Removed redundant includes
+- Network frame fix - Now network frame fix will create prints about it's presents if used without B2OP

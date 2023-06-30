@@ -9,8 +9,8 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = array();
-	level.B2OP_CONFIG["version"] = 1.6;
-	level.B2OP_CONFIG["beta"] = true;
+	level.B2OP_CONFIG["version"] = 1.7;
+	level.B2OP_CONFIG["beta"] = false;
 	level.B2OP_CONFIG["debug"] = false;
 
 	level thread on_game_start();
@@ -574,7 +574,7 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 	if (x_pos == int(x_pos))
 		x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
 
-	debug_print("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
+	// debug_print("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
 
 	self setpoint(x_align, y_align, x_pos, y_pos);
 	self.color = col;

@@ -1,10 +1,10 @@
 # T6-B2OP-PATCH
 
-Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023.
+Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box or fridge overrides are fully optional and invoked in-game by the players.
 
 # Notice
 
-B2OP is new, while it was obviously tested during development, it is yet to be seen if everything works 100% as it should in real life scenarios. Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured.
+Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured.
 
 For additional questions, feel free to join my [Discord](https://discord.gg/fDY4VR6rNE) server and head to section dedicated to B2OP patch when myself or someone qualified can answer them.
 
@@ -28,7 +28,8 @@ Download the main script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH
 
 ## Plutonium - Ancient (r353 and similar)
 
-Download the `_clientids.gsc` script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section, and inject it to the game [Video tutorial](https://youtu.be/Qhmful3ZVkE).
+**Please note, according to recent discoveries, Ancient is not legit for coop games (and it's only really used for that), so for the time being i stop including file dedicated to Ancient in the releases. You can still create it yourself, by taking the file specified for Redacted LAN and compiling it with the Irony compiler**
+~~Download the `_clientids.gsc` script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section, and inject it to the game [Video tutorial](https://youtu.be/Qhmful3ZVkE).~~
 
 ## Redacted LAN
 
