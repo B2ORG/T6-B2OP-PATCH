@@ -1,5 +1,6 @@
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
+#include maps\mp\zombies\_zm_utility;
 
 init()
 {
@@ -509,7 +510,7 @@ is_tracking_buildables()
 
 get_zombies_left()
 {
-	return maps\mp\zombies\_zm_utility::get_round_enemy_array().size + level.zombie_total;
+	return get_round_enemy_array().size + level.zombie_total;
 }
 
 get_hordes_left()
@@ -1948,9 +1949,9 @@ get_weapon_key(weapon_str, verifier)
 
 default_weapon_verification()
 {
-    weapon_key = get_base_weapon_name(weapon_key, 1);
+    weapon_key = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
 
-    if (!is_weapon_included(weapon_key))
+    if (!maps\mp\zombies\_zm_weapons::is_weapon_included(weapon_key))
         return "";
 
 	return weapon_key;
@@ -1965,18 +1966,18 @@ box_weapon_verification(weapon_key)
 
 player_box_weapon_verification(weapon_key)
 {
-	if (self has_weapon_or_upgrade(weapon_key))
+	if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade(weapon_key))
 		return "";
-	if (!limited_weapon_below_quota(weapon_key, self, getentarray("specialty_weapupgrade", "script_noteworthy")))
+	if (!maps\mp\zombies\_zm_weapons::limited_weapon_below_quota(weapon_key, self, getentarray("specialty_weapupgrade", "script_noteworthy")))
 		return "";
 
 	switch (weapon_key)
 	{
 		case "ray_gun_zm":
-			if (self has_weapon_or_upgrade("raygun_mark2_zm"))
+			if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade("raygun_mark2_zm"))
 				return "";
 		case "raygun_mark2_zm":
-			if (self has_weapon_or_upgrade("ray_gun_zm"))
+			if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade("ray_gun_zm"))
 				return "";
 	}
 
@@ -1985,10 +1986,10 @@ player_box_weapon_verification(weapon_key)
 
 fridge_weapon_verification(weapon_key)
 {
-    wpn = get_base_weapon_name(weapon_key, 1);
+    wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
 	// debug_print("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
-    if (!is_weapon_included(wpn))
+    if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
         return "";
 
     if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
@@ -2004,15 +2005,15 @@ fridge_pap_weapon_verification(weapon_key)
 
 	/* Give set attachment if weapon supports it */
 	att = fridge_pap_weapon_attachment_rules(weapon_key);
-	if (weapon_key != "" && weapon_supports_this_attachment(weapon_key, att))
+	if (weapon_key != "" && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon_key, att))
 	{
-		base = get_base_name(weapon_key);
+		base = maps\mp\zombies\_zm_weapons::get_base_name(weapon_key);
 		return level.zombie_weapons[base].upgrade_name + "+" + att;
 	}
 	/* Else just give base attachment */
 	else if (weapon_key != "")
 	{
-		return get_upgrade_weapon(weapon_key);
+		return maps\mp\zombies\_zm_weapons::get_upgrade_weapon(weapon_key);
 	}
 	return weapon_key;
 }
@@ -2033,7 +2034,7 @@ weapon_display_wrapper(weapon_key)
 	if (weapon_key == "cymbal_monkey_zm")
 		return "Cymbal Monkey";
 	
-	return get_weapon_display_name(weapon_key);
+	return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
 }
 
 pull_character_preset(character_name)
