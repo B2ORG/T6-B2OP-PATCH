@@ -29,6 +29,7 @@ Download the main script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH
 ## Plutonium - Ancient (r353 and similar)
 
 **Please note, according to recent discoveries, Ancient is not legit for coop games (and it's only really used for that), so for the time being i stop including file dedicated to Ancient in the releases. You can still create it yourself, by taking the file specified for Redacted LAN and compiling it with the Irony compiler**
+
 ~~Download the `_clientids.gsc` script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section, and inject it to the game [Video tutorial](https://youtu.be/Qhmful3ZVkE).~~
 
 ## Redacted LAN

@@ -42,3 +42,7 @@
 - Fixed Buildable tracker zeroing after one of the players disconnected from the game
 - Removed redundant includes
 - Network frame fix - Now network frame fix will create prints about it's presents if used without B2OP
+
+# Version 1.8
+
+- Fixed an error that prevented the patch from being usable on Irony based launchers (Redacted)
