@@ -7,6 +7,23 @@
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\zombies\_zm_utility;
 
+#if ANCIENT == true
+#include maps\mp\_utility;
+// #include common_scripts\utility;
+#include maps\mp\animscripts\zm_run;
+#include maps\mp\animscripts\zm_utility;
+#include maps\mp\zombies\_zm_server_throttle;
+#include maps\mp\zombies\_zm_laststand;
+#include maps\mp\zombies\_zm_weapons;
+#include maps\mp\zombies\_zm_buildables;
+#include maps\mp\zombies\_zm_power;
+#include maps\mp\zombies\_zm_powerups;
+#include maps\mp\zombies\_zm_equipment;
+#include maps\mp\gametypes_zm\_hud_message;
+#include maps\mp\zombies\_zm_stats;
+#include maps\mp\zombies\_zm_audio;
+#endif
+
 #if PLUTO == true
 main()
 {
@@ -2403,23 +2420,6 @@ fixed_wait_network_frame()
 #endif
 
 #if ANCIENT == true
-// T6 GSC SOURCE
-// Decompiled by https://github.com/xensik/gsc-tool
-#include maps\mp\_utility;
-#include common_scripts\utility;
-#include maps\mp\animscripts\zm_run;
-#include maps\mp\animscripts\zm_utility;
-#include maps\mp\zombies\_zm_server_throttle;
-#include maps\mp\zombies\_zm_laststand;
-#include maps\mp\zombies\_zm_weapons;
-#include maps\mp\zombies\_zm_buildables;
-#include maps\mp\zombies\_zm_power;
-#include maps\mp\zombies\_zm_powerups;
-#include maps\mp\zombies\_zm_equipment;
-#include maps\mp\gametypes_zm\_hud_message;
-#include maps\mp\zombies\_zm_stats;
-#include maps\mp\zombies\_zm_audio;
-
 init_utility()
 {
 
