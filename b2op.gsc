@@ -1597,6 +1597,13 @@ location_watch_dvar()
 		if (dvar == "")
 			continue;
 
+		if (is_mob() && !flag("afterlife_start_over"))
+		{
+			print_scheduler("^3Players must leave initial afterlife mode first!", level.players[0]);
+			setDvar("lb", "");
+			continue;
+		}
+
 		process_selection = process_box_location(dvar);
 
 		if (process_selection == "no box selected")
@@ -1632,6 +1639,12 @@ location_watch_chat()
 			loc_selection = getSubStr(message, 3);
 		else
 			continue;
+
+		if (is_mob() && !flag("afterlife_start_over"))
+		{
+			print_scheduler("^3Players must leave initial afterlife mode first!");
+			continue;
+		}
 
 		process_selection = process_box_location(loc_selection);
 
