@@ -1671,6 +1671,7 @@ move_chest(box)
 		else if (!chest.hidden)
 		{
 			level.chest_min_move_usage = 8;
+			level.chest_name = box;
 			print_box_location(box);
 
 			flag_set("moving_chest_now");
@@ -1690,6 +1691,7 @@ move_chest(box)
 	if (isDefined(kept_move_logic))
 		level._zombiemode_custom_box_move_logic = kept_move_logic;
 
+	level.chest_name = undefined;
 	level.chest_min_move_usage = 4;
 }
 
