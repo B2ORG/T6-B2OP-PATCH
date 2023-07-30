@@ -6607,7 +6607,8 @@ get_eye()
     {
         linked_ent = self getlinkedent();
 
-        if ( isdefined( linked_ent ) && getdvarint( _hash_5AEFD7E9 ) > 0 )
+		/* Seems to be debug related dvar ~ Zi0 */
+        if ( isdefined( linked_ent )/* && getdvarint( _hash_5AEFD7E9 ) > 0 */)
         {
             camera = linked_ent gettagorigin( "tag_camera" );
 
