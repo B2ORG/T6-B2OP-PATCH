@@ -1608,7 +1608,7 @@ location_watch_dvar()
 
 		if (process_selection == "no box selected")
 		{
-			print_scheduler("Incorrect selection: ^1" + dvar);
+			print_scheduler("Incorrect selection: ^1" + dvar, level.players[0]);
 			setDvar("lb", "");
 			continue;
 		}
