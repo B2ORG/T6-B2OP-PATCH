@@ -2248,7 +2248,7 @@ set_characters()
 
 player_lightning_manager_override()
 {
-	self setclientfieldtoplayer("toggle_lightning", 0);
+	self maps\mp\_utility::setclientfieldtoplayer("toggle_lightning", 0);
 }
 
 buildable_controller()
