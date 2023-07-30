@@ -32,9 +32,14 @@ on_game_start()
 	level.B2OP_CONFIG["give_permaperks"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
+	level.B2OP_CONFIG["mob_lighting_fix"] = true;
 
 	thread set_dvars();
 	level thread on_player_joined();
+
+	/* Credit to JezuzLizard */
+	if (b2op_config("mob_lighting_fix") && is_mob())
+		level._callbacks["on_player_connect"][16] = ::player_lightning_manager_override;
 
 	flag_wait("initial_blackscreen_passed");
 
@@ -2239,6 +2244,11 @@ set_characters()
 		level.has_weasel = prop["has_weasel"];
 	if (isDefined(prop["voice"]))
 		self.voice = prop["voice"];
+}
+
+player_lightning_manager_override()
+{
+	self setclientfieldtoplayer("toggle_lightning", 0);
 }
 
 buildable_controller()
