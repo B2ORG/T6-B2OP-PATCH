@@ -15,29 +15,6 @@ init()
 	level.B2OP_CONFIG["debug"] = false;
 
 	level thread on_game_start();
-	level thread clientids_fix();
-}
-
-clientids_fix()
-{
-	level endon("end_game");
-
-	if (isDefined(level.clientid) || is_plutonium())
-		return;
-
-    level.clientid = 0;
-
-	while (true)
-	{
-        level waittill("connecting", player);
-
-        player.clientid = level.clientid;
-        level.clientid++;
-
-		/* Means we got 2 of these running */
-		if (level.players.size > level.clientid)
-			break;
-	}
 }
 
 on_game_start()
