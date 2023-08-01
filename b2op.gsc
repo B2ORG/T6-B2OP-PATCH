@@ -6261,11 +6261,12 @@ getyaw( org )
     return angles[1];
 }
 
+/* That will probably break some zombie audio stuff */
 getyawtospot( spot )
 {
     pos = spot;
     yaw = self.angles[1] - getyaw( pos );
-    yaw = angleclamp180( yaw );
+    // yaw = angleclamp180( yaw );
     return yaw;
 }
 
