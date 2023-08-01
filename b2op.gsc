@@ -298,6 +298,9 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 		if (level.set_of_slots[i]["pos"] == x_pos)
 			level.set_of_slots[i]["temp_on"] = false;
 	}
+
+	/* There should've been flag_clear here, but don't add it anymore, since it's now used
+	for appending first box info to splits */
 }
 
 print_scheduler(content, player)
@@ -893,7 +896,10 @@ show_split()
 	wait 8.5;
 
     timestamp = convert_time(int(getTime() / 1000) - level.FRFIX_START);
-    print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
+	if (is_true(flag("FIRST BOX")))
+    	print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
+	else
+    	print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
 }
 
 #ifndef DISABLE_HORDES
