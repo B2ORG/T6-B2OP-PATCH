@@ -1,27 +1,32 @@
-# Version 1.1
+# Version 2.0
 
-- Restricted trap fix to only apply on maps that it is needed on (to prevent issues with Frozen rounds on Origins)
+Major version update
 
-# Version 1.2
+## Changes
+- Added mob lighting fix (by [JezuzLizard](https://github.com/JezuzLizard/))
+- Fixed an issue that'd cause box location override to not work properly [#5](https://github.com/Zi0MIX/T6-B2OP-PATCH/issues/5)
+- Info about First Box is now displayed alongside splits (watermark remains as it was)
 
-- Permaperks
-    * Fixed assignment logic for launchers using Irony compiler (Redacted & Ancient)
-    * Autorestart is no longer forced on launchers using Irony and New Pluto solo
-    * Added Cash Back & Teddy permaperks to assignment sequence
-- Info messages are no longer affected by playernames containing color codes
+## Distribution
 
-# Version 1.3
+- Versions from all launchers will now be available in the release as oppose to having to download code directly from code section, furthermore using uncompiled patch is no longer possible (unless future versions of plutonium add certain features to it's compiler)
+- Added back support for Ancient Plutonium (with huge aesterix)
 
-- Permaperks
-    * Added sniper points to award sequence
-    * Added pistol points to award sequence
-    * Added instakill to award sequence
-    * Added double points to award sequence
+# Version 1.8
 
-# Version 1.4
+- Fixed an error that prevented the patch from being usable on Irony based launchers (Redacted)
 
-- Watermarks refactor - watermarks now align horizontally. Introduced temporal watermarks that dissapear after X amount of time (to address users complaining about First Box watermark being permanent, it will now dissapear at the end of round 19)
-- Fixed moving box locations with DVAR method
+# Version 1.7
+
+- Fixed Buildable tracker zeroing after one of the players disconnected from the game
+- Removed redundant includes
+- Network frame fix - Now network frame fix will create prints about it's presents if used without B2OP
+
+# Version 1.6
+
+- Fixed HUD being cut off on aspect ratios 4:3 5:4 and 16:10
+- Fixed HUD plugin causing timer and round timers to overlap
+- Fixed patch safety functions not ending the game properly
 
 # Version 1.5
 
@@ -31,18 +36,27 @@
 - Network frame evaluation no longer generates watermark on failure. Instead it checks again next round (effectively if game is on wrong network frame, at the beginning of each round there will be a print about bad network frame)
 - Added handle for splits plugin + created a template
 
-# Version 1.6
+# Version 1.4
 
-- Fixed HUD being cut off on aspect ratios 4:3 5:4 and 16:10
-- Fixed HUD plugin causing timer and round timers to overlap
-- Fixed patch safety functions not ending the game properly
+- Watermarks refactor - watermarks now align horizontally. Introduced temporal watermarks that dissapear after X amount of time (to address users complaining about First Box watermark being permanent, it will now dissapear at the end of round 19)
+- Fixed moving box locations with DVAR method
 
-# Version 1.7
+# Version 1.3
 
-- Fixed Buildable tracker zeroing after one of the players disconnected from the game
-- Removed redundant includes
-- Network frame fix - Now network frame fix will create prints about it's presents if used without B2OP
+- Permaperks
+    * Added sniper points to award sequence
+    * Added pistol points to award sequence
+    * Added instakill to award sequence
+    * Added double points to award sequence
 
-# Version 1.8
+# Version 1.2
 
-- Fixed an error that prevented the patch from being usable on Irony based launchers (Redacted)
+- Permaperks
+    * Fixed assignment logic for launchers using Irony compiler (Redacted & Ancient)
+    * Autorestart is no longer forced on launchers using Irony and New Pluto solo
+    * Added Cash Back & Teddy permaperks to assignment sequence
+- Info messages are no longer affected by playernames containing color codes
+
+# Version 1.1
+
+- Restricted trap fix to only apply on maps that it is needed on (to prevent issues with Frozen rounds on Origins)

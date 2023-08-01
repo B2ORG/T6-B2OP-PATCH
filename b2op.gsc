@@ -2,7 +2,7 @@
 #define REDACTED 0
 #define PLUTO 0
 #define DEBUG 0
-#define BETA 0
+#define BETA 1
 
 #define DISABLE_HORDES
 #define DISABLE_SPH
@@ -48,7 +48,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = array();
-	level.B2OP_CONFIG["version"] = 1.8;
+	level.B2OP_CONFIG["version"] = 2;
 
 	level thread on_game_start();
 }
