@@ -632,12 +632,12 @@ recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
 	return xpos;
 }
 
-emulate_menu_call(call, ent)
+emulate_menu_call(content, ent)
 {
 	if (!isDefined(ent))
 		ent = level.players[0];
 
-	ent notify ("menuresponse", "", call);
+	ent notify ("menuresponse", "", content);
 }
 
 // Functions
