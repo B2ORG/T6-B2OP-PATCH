@@ -49,10 +49,6 @@ init()
 	// Patch Config
 	level.B2OP_CONFIG = array();
 	level.B2OP_CONFIG["version"] = 1.8;
-	level.B2OP_CONFIG["beta"] = false;
-#if DEBUG == 1
-	level.B2OP_CONFIG["debug"] = true;
-#endif
 
 	level thread on_game_start();
 }
@@ -165,8 +161,9 @@ b2op_main_loop()
 
 		if (has_permaperks_system())
 		{
-			if (is_debug())
-				level.players[0] remove_permaperk_wrapper("insta_kill", 2);
+#if DEBUG == 1
+			level.players[0] remove_permaperk_wrapper("insta_kill", 2);
+#endif
 
 			wait 2;
 			foreach(player in level.players)
@@ -183,19 +180,9 @@ b2op_main_loop()
 
 // Utilities
 
-is_debug()
-{
-	if (b2op_config("debug"))
-		return true;
-	return false;
-}
-
 #if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 debug_print(text)
 {
-	if (!is_debug())
-		return;
-
 	if (is_plutonium())
 		print("DEBUG: " + text);
 	else
@@ -859,7 +846,9 @@ timers()
     while (isDefined(level.round_hud))
 	{
 		round_start = int(getTime() / 1000);
+#ifndef DISABLE_SPH
 		hordes_count = get_hordes_left();
+#endif
         level.round_hud setTimerUp(0);
 
 		level waittill("end_of_round");
@@ -2419,9 +2408,6 @@ watch_stat(stat, map_array)
 network_frame_hud()
 {
 	level endon("end_game");
-
-	if (!is_debug())
-		return;
 
 	netframe_hud = createserverfontstring("default", 1.3);
 	netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
