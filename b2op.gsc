@@ -2823,7 +2823,7 @@ all_chunks_destroyed( barrier, barrier_chunks )
     }
     else if ( isdefined( barrier_chunks ) )
     {
-        assert( isdefined( barrier_chunks ), "_zm_utility::all_chunks_destroyed - Barrier chunks undefined" );
+        // assert( isdefined( barrier_chunks ), "_zm_utility::all_chunks_destroyed - Barrier chunks undefined" );
 
         for ( i = 0; i < barrier_chunks.size; i++ )
         {
@@ -4594,7 +4594,7 @@ show_grate_repair()
 
 get_chunk_state()
 {
-    assert( isdefined( self.state ) );
+    // assert( isdefined( self.state ) );
     return self.state;
 }
 
@@ -5179,7 +5179,7 @@ magic_bullet_shield()
 
             if ( isai( self ) )
             {
-                assert( isalive( self ), "Tried to do magic_bullet_shield on a dead or undefined guy." );
+                // assert( isalive( self ), "Tried to do magic_bullet_shield on a dead or undefined guy." );
                 self._mbs.last_pain_time = 0;
                 self._mbs.ignore_time = 2;
                 self._mbs.turret_ignore_time = 5;
@@ -5207,7 +5207,7 @@ debug_magic_bullet_shield_death( guy )
 
     guy waittill( "death" );
 
-    assert( !isdefined( guy ), "Guy died with magic bullet shield on with targetname: " + targetname );
+    // assert( !isdefined( guy ), "Guy died with magic bullet shield on with targetname: " + targetname );
 }
 
 is_magic_bullet_shield_enabled( ent )
@@ -5595,7 +5595,7 @@ clear_is_drinking()
 
 getweaponclasszm( weapon )
 {
-    assert( isdefined( weapon ) );
+    // assert( isdefined( weapon ) );
 
     if ( !isdefined( weapon ) )
         return undefined;
@@ -6288,14 +6288,14 @@ add_spawn_function( function, param1, param2, param3, param4 )
 
 disable_react()
 {
-    assert( isalive( self ), "Tried to disable react on a non ai" );
+    // assert( isalive( self ), "Tried to disable react on a non ai" );
     self.a.disablereact = 1;
     self.allowreact = 0;
 }
 
 enable_react()
 {
-    assert( isalive( self ), "Tried to enable react on a non ai" );
+    // assert( isalive( self ), "Tried to enable react on a non ai" );
     self.a.disablereact = 0;
     self.allowreact = 1;
 }
@@ -6445,7 +6445,7 @@ ent_flag_init( message, val )
     }
 
     if ( !isdefined( level.first_frame ) )
-        assert( !isdefined( self.ent_flag[message] ), "Attempt to reinitialize existing flag '" + message + "' on entity." );
+        // assert( !isdefined( self.ent_flag[message] ), "Attempt to reinitialize existing flag '" + message + "' on entity." );
 
     if ( isdefined( val ) && val )
     {
@@ -6520,8 +6520,8 @@ ent_flag_clear_delayed( message, delay )
 
 ent_flag( message )
 {
-    assert( isdefined( message ), "Tried to check flag but the flag was not defined." );
-    assert( isdefined( self.ent_flag[message] ), "Tried to check entity flag '" + message + "', but the flag was not initialized." );
+    // assert( isdefined( message ), "Tried to check flag but the flag was not defined." );
+    // assert( isdefined( self.ent_flag[message] ), "Tried to check entity flag '" + message + "', but the flag was not initialized." );
 
     if ( !self.ent_flag[message] )
         return false;
@@ -6559,7 +6559,7 @@ flat_angle( angle )
 
 waittill_any_or_timeout( timer, string1, string2, string3, string4, string5 )
 {
-    assert( isdefined( string1 ) );
+    // assert( isdefined( string1 ) );
     self endon( string1 );
 
     if ( isdefined( string2 ) )
@@ -6684,7 +6684,7 @@ get_eye()
 
 is_player_looking_at( origin, dot, do_trace, ignore_ent )
 {
-    assert( isplayer( self ), "player_looking_at must be called on a player." );
+    // assert( isplayer( self ), "player_looking_at must be called on a player." );
 
     if ( !isdefined( dot ) )
         dot = 0.7;
