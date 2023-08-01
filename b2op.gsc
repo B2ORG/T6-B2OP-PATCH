@@ -6160,15 +6160,11 @@ init_button_wrappers()
     }
 }
 
+/* Do note, this may behave differently than vanilla in some very extreme cases */
 wait_network_frame()
 {
-    if ( numremoteclients() )
-    {
-        snapshot_ids = getsnapshotindexarray();
-
-        for ( acked = undefined; !isdefined( acked ); acked = snapshotacknowledged( snapshot_ids ) )
-            level waittill( "snapacknowledged" );
-    }
+    if ( level.players.size > 1 )
+        wait 0.05;
     else
         wait 0.1;
 }
