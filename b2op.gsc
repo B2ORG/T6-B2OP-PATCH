@@ -58,8 +58,9 @@ on_game_start()
 	level endon("end_game");
 
 	// Func Config
+#ifndef DISABLE_HUD
 	level.B2OP_CONFIG["hud_color"] = (1, 1, 1);
-	level.B2OP_CONFIG["hud_enabled"] = true;
+#endif
 	level.B2OP_CONFIG["give_permaperks"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
@@ -75,12 +76,14 @@ on_game_start()
 	flag_wait("initial_blackscreen_passed");
 
     level thread b2op_main_loop();
+#ifndef DISABLE_HUD
 	level thread timers();
+    level thread hud_alpha_controller();
+	level thread buildable_controller();
+#endif
 	level thread first_box_handler();
 	level thread perma_perks_setup();
 	level thread fridge_handler();
-	level thread buildable_controller();
-    level thread hud_alpha_controller();
 	safety_zio();
 
 #if DEBUG == 1
@@ -117,7 +120,9 @@ on_player_spawned()
 
 	self thread welcome_prints();
 	self thread evaluate_network_frame();
+#ifndef DISABLE_HUD
 	self thread velocity_meter();
+#endif
 	self thread set_characters();
 	self thread fill_up_bank();
 
@@ -174,7 +179,9 @@ b2op_main_loop()
 		}
 
         level waittill("end_of_round");
+#ifndef DISABLE_HUD
         level thread show_split();
+#endif
     }
 }
 
@@ -783,6 +790,7 @@ trap_fix()
     }
 }
 
+#ifndef DISABLE_HUD
 hud_alpha_controller()
 {
     level endon("end_game");
@@ -1029,6 +1037,7 @@ buildable_hud()
 		level.turbine_hud.alpha = 1;
 	}
 }
+#endif
 
 fill_up_bank()
 {
@@ -2356,6 +2365,7 @@ player_lightning_manager_override()
 	self maps\mp\_utility::setclientfieldtoplayer("toggle_lightning", 0);
 }
 
+#ifndef DISABLE_HUD
 buildable_controller()
 {
 	level endon("end_game");
@@ -2382,6 +2392,7 @@ buildable_controller()
 		wait 0.1;
 	}
 }
+#endif
 
 watch_stat(stat, map_array)
 {
