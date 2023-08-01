@@ -32,7 +32,11 @@ main()
 }
 #endif
 
+#if ANCIENT == 1
+init_utility()
+#else
 init()
+#endif
 {
 	flag_init("game_started");
 	flag_init("box_rigged");
