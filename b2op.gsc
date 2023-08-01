@@ -1,13 +1,13 @@
-#define ANCIENT false
-#define REDACTED false
-#define PLUTO true
-#define DEBUG true
+#define ANCIENT 1
+#define REDACTED 0
+#define PLUTO 0
+#define DEBUG 0
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\zombies\_zm_utility;
 
-#if ANCIENT == true
+#if ANCIENT == 1
 #include maps\mp\_utility;
 // #include common_scripts\utility;
 #include maps\mp\animscripts\zm_run;
@@ -24,7 +24,7 @@
 #include maps\mp\zombies\_zm_audio;
 #endif
 
-#if PLUTO == true
+#if PLUTO == 1
 main()
 {
 	replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
@@ -42,7 +42,7 @@ init()
 	level.B2OP_CONFIG = array();
 	level.B2OP_CONFIG["version"] = 1.8;
 	level.B2OP_CONFIG["beta"] = false;
-#if DEBUG == true
+#if DEBUG == 1
 	level.B2OP_CONFIG["debug"] = true;
 #else
 	level.B2OP_CONFIG["debug"] = false;
@@ -140,7 +140,7 @@ b2op_main_loop()
 {
     level endon("end_game");
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
     // debug_print("initialized b2op_main_loop");
 #endif
 
@@ -183,7 +183,7 @@ is_debug()
 	return false;
 }
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 debug_print(text)
 {
 	if (!is_debug())
@@ -306,19 +306,19 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 
 print_scheduler(content, player)
 {
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("print_scheduler(content='" + content + ")");
 #endif
     if (isDefined(player))
 	{
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 		// debug_print(player.name + ": print scheduled: " + content);
 #endif
         player thread player_print_scheduler(content);
 	}
     else
 	{
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 		// debug_print("general: print scheduled: " + content);
 #endif
         foreach (player in level.players)
@@ -595,7 +595,7 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 	if (x_pos == int(x_pos))
 		x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
 #endif
 
@@ -1169,7 +1169,7 @@ resolve_permaperk(perk)
 
 award_permaperk(stat_name, perk_code, stat_value)
 {
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("awarding: " + stat_name + " " + perk_code + " " + stat_value);
 #endif
 	flag_set("permaperks_were_set");
@@ -1189,7 +1189,7 @@ remove_permaperk_wrapper(perk_code, round)
 
 remove_permaperk(perk_code)
 {
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("removing: " + perk_code);
 #endif
 	self.pers_upgrades_awarded[perk_code] = 0;
@@ -1203,7 +1203,7 @@ fridge_handler()
 	if (!has_permaperks_system() || !b2op_config("fridge"))
 		return;
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 #endif
 
@@ -1215,7 +1215,7 @@ fridge_handler()
 	else
 	{
 		print_scheduler("Fridge module: ^2AVAILABLE");
-#if PLUTO == true
+#if PLUTO == 1
 		thread fridge_watch_chat();
 #endif
 		thread fridge_watch_dvar();
@@ -1250,7 +1250,7 @@ fridge_watch_dvar()
 	}
 }
 
-#if PLUTO == true
+#if PLUTO == 1
 fridge_watch_chat()
 {
 	level endon("end_game");
@@ -1299,7 +1299,7 @@ fridge_watch_state()
 
 rig_fridge(key, player)
 {
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("rig_fridge(): key=" + key + "'");
 #endif
 
@@ -1361,7 +1361,7 @@ get_locker_stat(stat)
 		stat = "name";
 
 	value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
 #endif
 	return value;
@@ -1461,7 +1461,7 @@ scan_in_box()
                 in_box++;
         }
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 		// debug_print("in_box: " + in_box + " should: " + should_be_in_box);
 #endif
 
@@ -1485,7 +1485,7 @@ first_box()
 	thread print_scheduler("First Box module: ^2AVAILABLE");
 	thread watch_for_finish_firstbox();
 	thread box_watch_dvar();
-#if PLUTO == true
+#if PLUTO == 1
 	thread box_watch_chat();
 #endif
 }
@@ -1513,7 +1513,7 @@ box_watch_dvar()
 	}
 }
 
-#if PLUTO == true
+#if PLUTO == 1
 box_watch_chat()
 {
     level endon("end_game");
@@ -1565,7 +1565,7 @@ rig_box(gun, player)
 	removed_guns = array();
 
 	flag_set("box_rigged");
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("FIRST BOX: flag('box_rigged'): " + flag("box_rigged"));
 #endif
 
@@ -1576,7 +1576,7 @@ rig_box(gun, player)
 		{
 			removed_guns[removed_guns.size] = weapon;
 			level.zombie_weapons[weapon].is_in_box = 0;
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 			// debug_print("FIRST BOX: setting " + weapon + ".is_in_box to 0");
 #endif
 		}
@@ -1587,7 +1587,7 @@ rig_box(gun, player)
 	{
 		if (is_round(11))
 		{
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 			// debug_print("FIRST BOX: breaking out of First Box above round 10");
 #endif
 			break;
@@ -1599,7 +1599,7 @@ rig_box(gun, player)
 
 	level.special_weapon_magicbox_check = saved_check;
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("FIRST BOX: removed_guns.size " + removed_guns.size);
 #endif
 	if (removed_guns.size > 0)
@@ -1607,7 +1607,7 @@ rig_box(gun, player)
 		foreach(rweapon in removed_guns)
 		{
 			level.zombie_weapons[rweapon].is_in_box = 1;
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 			// debug_print("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
 #endif
 		}
@@ -1628,7 +1628,7 @@ watch_for_finish_firstbox()
 		print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
 
 	level notify("break_firstbox");
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("FIRST BOX: notifying module to break");
 #endif
 	level.rigged_hits = undefined;
@@ -1774,7 +1774,7 @@ force_next_location()
 
 process_box_location(input_msg)
 {
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("Input for 'lb': " + input_msg);
 #endif
 	switch (tolower(input_msg))
@@ -1997,7 +1997,7 @@ get_weapon_key(weapon_str, verifier)
 
 	key = [[verifier]](key);
 
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("get_weapon_key(): weapon_key: " + key);
 #endif
 	return key;
@@ -2043,7 +2043,7 @@ player_box_weapon_verification(weapon_key)
 fridge_weapon_verification(weapon_key)
 {
     wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 #endif
 
@@ -2059,7 +2059,7 @@ fridge_weapon_verification(weapon_key)
 fridge_pap_weapon_verification(weapon_key)
 {
     weapon_key = fridge_weapon_verification(weapon_key);
-#if DEBUG == true && ANCIENT == false && REDACTED == false
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
 	// debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
 #endif
 
@@ -2402,7 +2402,7 @@ network_frame_hud()
 	}
 }
 
-#if PLUTO == true
+#if PLUTO == 1
 fixed_wait_network_frame()
 {
     if (level.players.size == 1)
@@ -2419,7 +2419,7 @@ fixed_wait_network_frame()
 }
 #endif
 
-#if ANCIENT == true
+#if ANCIENT == 1
 init_utility()
 {
 
