@@ -23,8 +23,7 @@ PLUGIN_DIR = "plugin_templates"
 REPLACE_DEFAULT = {
     "#define ANCIENT 1": "#define ANCIENT 0",
     "#define REDACTED 1": "#define REDACTED 0",
-    "#define PLUTO 1": "#define PLUTO 0",
-    "#define DEBUG 1": "#define DEBUG 0"
+    "#define PLUTO 1": "#define PLUTO 0"
 }
 
 
