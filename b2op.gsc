@@ -252,6 +252,8 @@ generate_watermark(text, color, alpha_override)
 
 	flag_set(text);
 
+	if (!isDefined(level.num_of_watermarks))
+		level.num_of_watermarks = 0;
     level.num_of_watermarks++;
 }
 
