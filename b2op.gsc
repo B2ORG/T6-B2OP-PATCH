@@ -2,6 +2,10 @@
 #define REDACTED 0
 #define PLUTO 0
 #define DEBUG 0
+#define BETA 0
+
+#define DISABLE_HORDES
+#define DISABLE_SPH
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -48,8 +52,6 @@ init()
 	level.B2OP_CONFIG["beta"] = false;
 #if DEBUG == 1
 	level.B2OP_CONFIG["debug"] = true;
-#else
-	level.B2OP_CONFIG["debug"] = false;
 #endif
 
 	level thread on_game_start();
@@ -62,11 +64,6 @@ on_game_start()
 	// Func Config
 	level.B2OP_CONFIG["hud_color"] = (1, 1, 1);
 	level.B2OP_CONFIG["hud_enabled"] = true;
-	level.B2OP_CONFIG["timers_enabled"] = true;
-	level.B2OP_CONFIG["buildables_enabled"] = true;
-	// level.B2OP_CONFIG["hordes_enabled"] = true;
-	// level.B2OP_CONFIG["sph_enabled"] = true;
-	level.B2OP_CONFIG["velocity_enabled"] = false;
 	level.B2OP_CONFIG["give_permaperks"] = true;
 	level.B2OP_CONFIG["fridge"] = true;
 	level.B2OP_CONFIG["first_box_module"] = true;
@@ -83,10 +80,15 @@ on_game_start()
 	level thread fridge_handler();
 	level thread buildable_controller();
     level thread hud_alpha_controller();
-	level thread network_frame_hud();
 	safety_zio();
-	safety_debugger();
+
+#if DEBUG == 1
+	level thread network_frame_hud();
+	debug_mode();
+#endif
+#if BETA == 1
 	safety_beta();
+#endif
 }
 
 on_player_joined()
@@ -152,7 +154,9 @@ b2op_main_loop()
     {
         level waittill("start_of_round");
         check_dvars();
-        // level thread show_hordes();
+#ifndef DISABLE_HORDES
+        level thread show_hordes();
+#endif
 
 		if (has_permaperks_system())
 		{
@@ -170,12 +174,6 @@ b2op_main_loop()
         level waittill("end_of_round");
         level thread show_split();
     }
-}
-
-// Stubs
-
-replaceFunc(arg1, arg2)
-{
 }
 
 // Utilities
@@ -669,7 +667,9 @@ set_dvars()
 
 	init_dvar("timers");
 	init_dvar("buildables");
-	// init_dvar("hordes");
+#ifndef DISABLE_HORDES
+	init_dvar("hordes");
+#endif
 	init_dvar("velocity");
 }
 
@@ -719,21 +719,21 @@ safety_zio()
 	}
 }
 
-safety_debugger()
+#if DEBUG == 1
+debug_mode()
 {
-	if (is_debug())
-	{
-		foreach(player in level.players)
-			player thread award_points(333333);
-		generate_watermark("DEBUGGER", (0.8, 0.8, 0));
-	}
+	foreach(player in level.players)
+		player thread award_points(333333);
+	generate_watermark("DEBUGGER", (0.8, 0.8, 0));
 }
+#endif
 
+#if BETA == 1
 safety_beta()
 {
-	if (b2op_config("beta"))
-		generate_watermark("BETA", (0, 0.8, 0));
+	generate_watermark("BETA", (0, 0.8, 0));
 }
+#endif
 
 evaluate_network_frame()
 {
@@ -860,10 +860,10 @@ timers()
 		level waittill("end_of_round");
 		round_end = int(getTime() / 1000) - round_start;
 
-		/*
+#ifndef DISABLE_SPH
 		if (is_round(57) && hordes_count > 2 && b2op_config("sph_enabled"))
 			print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
-		*/
+#endif
 
 		level.round_hud keep_displaying_old_time(round_end);
 	}
@@ -900,6 +900,7 @@ show_split()
     print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
 }
 
+#ifndef DISABLE_HORDES
 show_hordes()
 {
 	level endon("end_game");
@@ -915,6 +916,7 @@ show_hordes()
         print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value);
     }
 }
+#endif
 
 velocity_meter()
 {
@@ -1653,7 +1655,9 @@ first_box_location()
 	flag_wait("moving_chest_enabled");
 
 	thread location_watch_dvar();
+#if PLUTO == 1
 	thread location_watch_chat();
+#endif
 }
 
 location_watch_dvar()
@@ -1692,6 +1696,7 @@ location_watch_dvar()
 	}
 }
 
+#if PLUTO == 1
 location_watch_chat()
 {
     level endon("end_game");
@@ -1726,6 +1731,7 @@ location_watch_chat()
 		level notify("break_box_location");
 	}
 }
+#endif
 
 move_chest(box)
 {
@@ -2384,6 +2390,7 @@ watch_stat(stat, map_array)
 	}
 }
 
+#if DEBUG == 1
 network_frame_hud()
 {
 	level endon("end_game");
@@ -2405,6 +2412,7 @@ network_frame_hud()
 		netframe_hud setValue(end_time - start_time);
 	}
 }
+#endif
 
 #if PLUTO == 1
 fixed_wait_network_frame()
