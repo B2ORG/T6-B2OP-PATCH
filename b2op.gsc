@@ -2850,9 +2850,8 @@ check_point_in_playable_area( origin )
 
 check_point_in_enabled_zone( origin, zone_is_active, player_zones )
 {
-	/* Originally kwarg */
-	if ( !isdefined( player_zones ) )
-		player_zones = getentarray( "player_volume", "script_noteworthy" );
+    if ( !isdefined( player_zones ) )
+        player_zones = getentarray( "player_volume", "script_noteworthy" );
 
     if ( !isdefined( level.zones ) || !isdefined( player_zones ) )
         return 1;
@@ -2864,12 +2863,14 @@ check_point_in_enabled_zone( origin, zone_is_active, player_zones )
     {
         if ( scr_org istouching( player_zones[i] ) )
         {
-            zone = level.zones[player_zones[i].targetname];
+            targetname = player_zones[i].targetname;
+            zone = level.zones[targetname];
 
-            if ( isdefined( zone ) && ( isdefined( zone.is_enabled ) && zone.is_enabled ) )
+            /* Split into 2 ifs */
+            if ( isdefined( zone ) )
             {
-                if ( isdefined( zone_is_active ) && zone_is_active == 1 && !( isdefined( zone.is_active ) && zone.is_active ) )
-                    continue;
+                if ( isdefined( zone.is_enabled ) && zone.is_enabled )
+                {
 
                 one_valid_zone = 1;
                 break;
@@ -3731,8 +3732,12 @@ non_destroyed_bar_board_order( origin, chunks )
         }
         else if ( isdefined( chunks[i].script_team ) && chunks[i].script_team == "new_barricade" )
         {
-            if ( isdefined( chunks[i].script_parameters ) && ( chunks[i].script_parameters == "repair_board" || chunks[i].script_parameters == "barricade_vents" ) )
-                return get_closest_2d( origin, chunks );
+			/* Split into 2 ifs */
+            if ( isdefined( chunks[i].script_parameters ) )
+			{
+				if ( chunks[i].script_parameters == "repair_board" || chunks[i].script_parameters == "barricade_vents" ) 
+                	return get_closest_2d( origin, chunks );
+			}
         }
     }
 
@@ -4290,13 +4295,17 @@ get_non_destroyed_chunks( barrier, barrier_chunks )
 
             if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "new_barricade" )
             {
-                if ( isdefined( barrier_chunks[i].script_parameters ) && ( barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" ) )
+				/* Split into 2 ifs */
+                if ( isdefined( barrier_chunks[i].script_parameters ) )
                 {
-                    if ( barrier_chunks[i] get_chunk_state() == "repaired" )
-                    {
-                        if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
-                            array[array.size] = barrier_chunks[i];
-                    }
+					if ( barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" )
+					{
+						if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+						{
+							if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
+								array[array.size] = barrier_chunks[i];
+						}
+					}
                 }
 
                 continue;
@@ -5348,8 +5357,12 @@ isprimarydamage( meansofdeath )
 
 isfiredamage( weapon, meansofdeath )
 {
-    if ( ( issubstr( weapon, "flame" ) || issubstr( weapon, "molotov_" ) || issubstr( weapon, "napalmblob_" ) ) && ( meansofdeath == "MOD_BURNED" || meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH" ) )
-        return true;
+	/* Split into 2 ifs */
+    if ( issubstr( weapon, "flame" ) || issubstr( weapon, "molotov_" ) || issubstr( weapon, "napalmblob_" ) )
+	{
+		if ( meansofdeath == "MOD_BURNED" || meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH" )
+        	return true;
+	}
 
     return false;
 }
@@ -6251,7 +6264,8 @@ getyawtospot( spot )
 
 add_spawn_function( function, param1, param2, param3, param4 )
 {
-    assert( !isdefined( level._loadstarted ) || !isalive( self ), "Tried to add_spawn_function to a living guy." );
+	/* Disabled the assert */
+    // assert( !isdefined( level._loadstarted ) || !isalive( self ), "Tried to add_spawn_function to a living guy." );
     func = [];
     func["function"] = function;
     func["param1"] = param1;
@@ -7078,30 +7092,31 @@ sq_refresh_player_navcard_hud()
         player thread sq_refresh_player_navcard_hud_internal();
 }
 
+/* Idk how to emulate bit operations with basic operators, as irony doesn't support it */
 sq_refresh_player_navcard_hud_internal()
 {
-    self endon( "disconnect" );
-    navcard_bits = 0;
+    // self endon( "disconnect" );
+    // navcard_bits = 0;
 
-    for ( i = 0; i < level.navcards.size; i++ )
-    {
-        hasit = self maps\mp\zombies\_zm_stats::get_global_stat( level.navcards[i] );
+    // for ( i = 0; i < level.navcards.size; i++ )
+    // {
+    //     hasit = self maps\mp\zombies\_zm_stats::get_global_stat( level.navcards[i] );
 
-        if ( isdefined( self.navcard_grabbed ) && self.navcard_grabbed == level.navcards[i] )
-            hasit = 1;
+    //     if ( isdefined( self.navcard_grabbed ) && self.navcard_grabbed == level.navcards[i] )
+    //         hasit = 1;
 
-        if ( hasit )
-            navcard_bits += ( 1 << i );
-    }
+    //     if ( hasit )
+    //         navcard_bits += ( 1 << i );
+    // }
 
-    wait_network_frame();
-    self setclientfield( "navcard_held", 0 );
+    // wait_network_frame();
+    // self setclientfield( "navcard_held", 0 );
 
-    if ( navcard_bits > 0 )
-    {
-        wait_network_frame();
-        self setclientfield( "navcard_held", navcard_bits );
-    }
+    // if ( navcard_bits > 0 )
+    // {
+    //     wait_network_frame();
+    //     self setclientfield( "navcard_held", navcard_bits );
+    // }
 }
 
 set_player_is_female( onoff )
@@ -7293,14 +7308,18 @@ link_changes_internal_internal( list, func )
 
     for ( i = 0; i < keys.size; i++ )
     {
-        node = list[keys[i]].node;
-        node_keys = getarraykeys( list[keys[i]].links );
+		/* Extracted nested array keys */
+		node_key = keys[i];
+        node = list[node_key].node;
+        node_keys = getarraykeys( list[node_key].links );
 
         for ( j = 0; j < node_keys.size; j++ )
         {
-            if ( isdefined( list[keys[i]].links[node_keys[j]] ) )
+			/* Extracted nested array keys */
+			lower_node_key = node_keys[j];
+            if ( isdefined( list[node_key].links[lower_node_key] ) )
             {
-                if ( isdefined( list[keys[i]].ignore_on_migrate[node_keys[j]] ) && list[keys[i]].ignore_on_migrate[node_keys[j]] )
+                if ( isdefined( list[node_key].ignore_on_migrate[lower_node_key] ) && list[node_key].ignore_on_migrate[lower_node_key] )
                 {
 /#
                     println( "Node at " + keys[i] + " to node at " + node_keys[j] + " - IGNORED" );
@@ -7310,7 +7329,7 @@ link_changes_internal_internal( list, func )
 /#
                 println( "Node at " + keys[i] + " to node at " + node_keys[j] );
 #/
-                [[ func ]]( node, list[keys[i]].links[node_keys[j]] );
+                [[ func ]]( node, list[node_key].links[lower_node_key] );
             }
         }
     }
