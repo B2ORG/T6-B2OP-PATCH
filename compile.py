@@ -14,6 +14,7 @@ GAME_COMP = "t6"
 MODE_PARSE = "parse"
 MODE_COMP = "comp"
 COMPILER_XENSIK = "gsc-tool.exe"
+COMPILER_XENSIK_540 = "gsc-tool-1.0.540.exe"
 COMPILER_IRONY = "Compiler.exe"
 BINARY_IRONY = "irony.dll"
 PARSED_DIR = os.path.join("parsed", GAME_PARSE)
@@ -74,7 +75,8 @@ def main(cfg: list) -> None:
     pluto_update.update({"#define PLUTO 0": "#define PLUTO 1"})
     edit_in_place(os.path.join(CWD, B2OP), **pluto_update)
     wrap_subprocess_call(COMPILER_XENSIK, MODE_PARSE, GAME_PARSE, "pc", B2OP)
-    wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PARSED_DIR, B2OP))
+    # wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PARSED_DIR, B2OP))
+    wrap_subprocess_call(COMPILER_XENSIK_540, MODE_COMP, GAME_COMP, arg_path(CWD, PARSED_DIR, B2OP))
     wrap_subprocess_call("COPY", "/y", arg_path(CWD, PARSED_DIR, B2OP), arg_path(CWD, PARSED_DIR, "b2op_precompiled_pluto.gsc"), shell=True)
     wrap_subprocess_call("COPY", "/y", arg_path(CWD, COMPILED_DIR, B2OP), arg_path(CWD, COMPILED_DIR, "b2op-plutonium.gsc"), shell=True)
 
@@ -98,10 +100,14 @@ def main(cfg: list) -> None:
     wrap_subprocess_call("COPY", "/y", arg_path(CWD, B2OP_COMPILED), arg_path(CWD, COMPILED_DIR, ZMUTILITY_DIR, "_zm_utility.gsc"), shell=True)
 
     # Plugins
-    wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_characters.gsc"))
-    wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_fridge.gsc"))
-    wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_hud.gsc"))
-    wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_splits.gsc"))
+    # wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_characters.gsc"))
+    # wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_fridge.gsc"))
+    # wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_hud.gsc"))
+    # wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PLUGIN_DIR, "b2op_plugin_splits.gsc"))
+    wrap_subprocess_call(COMPILER_XENSIK_540, MODE_COMP, GAME_COMP, arg_path(CWD, PLUGIN_DIR, "b2op_plugin_characters.gsc"))
+    wrap_subprocess_call(COMPILER_XENSIK_540, MODE_COMP, GAME_COMP, arg_path(CWD, PLUGIN_DIR, "b2op_plugin_fridge.gsc"))
+    wrap_subprocess_call(COMPILER_XENSIK_540, MODE_COMP, GAME_COMP, arg_path(CWD, PLUGIN_DIR, "b2op_plugin_hud.gsc"))
+    wrap_subprocess_call(COMPILER_XENSIK_540, MODE_COMP, GAME_COMP, arg_path(CWD, PLUGIN_DIR, "b2op_plugin_splits.gsc"))
 
     # Cleanup
     wrap_subprocess_call("del", "/q", arg_path(CWD, PARSED_DIR, B2OP), shell=True)
