@@ -946,7 +946,7 @@ velocity_meter()
 
     while (true)
     {
-        self.hud_velocity.alpha = self velocity_visible();
+        self velocity_visible(self.hud_velocity);
 
 		velocity = int(length(self getvelocity() * (1, 1, 0)));
 		self.hud_velocity velocity_meter_scale(velocity);
@@ -956,14 +956,12 @@ velocity_meter()
     }
 }
 
-velocity_visible(default_alpha)
+velocity_visible(hud)
 {
-    if (!isDefined(default_alpha))
-        default_alpha = 0.75;
-
     if (is_true(self.afterlife) || getDvar("velocity") == "0")
-        return 0;
-    return default_alpha;
+        hud.alpha = 0;
+    else
+        hud.alpha = 1;
 }
 
 velocity_meter_scale(vel)
