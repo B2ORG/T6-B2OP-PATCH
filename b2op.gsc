@@ -663,18 +663,24 @@ set_dvars()
 	if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
     	level.round_start_custom_func = ::trap_fix;
 
+    /* Rules used in init_dvar() used to disable b2op dvar by default
+    Try not to use init_dvar() outside of this function, in which case dvar_rules
+    has to become a level variable and be manually removed later */
+    dvar_rules = array();
+    dvar_rules["velocity"] = true;
+
     setdvar("player_strafeSpeedScale", 1);
     setdvar("player_backSpeedScale", 0.9);
     setdvar("g_speed", 190);
     setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
     setdvar("sv_cheats", 0);
 
-	init_dvar("timers");
-	init_dvar("buildables");
+	init_dvar("timers", dvar_rules);
+	init_dvar("buildables", dvar_rules);
 #ifndef DISABLE_HORDES
-	init_dvar("hordes");
+	init_dvar("hordes", dvar_rules);
 #endif
-	init_dvar("velocity");
+	init_dvar("velocity", dvar_rules);
 }
 
 check_dvars()
@@ -686,13 +692,14 @@ check_dvars()
         generate_watermark("GSPEED", (0.8, 0, 0));
 }
 
-init_dvar(dvar_str)
+/* It's not explicit, but dvar_rules is optional arg, as long as it's only call remains inside of is_true() */
+init_dvar(dvar_str, dvar_rules)
 {
 	if (getDvar(dvar_str) != "")
 		return;
-	if (b2op_config(dvar_str + "_enabled"))
-		setDvar(dvar_str, "1");
-	else
+
+    setDvar(dvar_str, "1");
+	if (is_true(dvar_rules[dvar_str]))
 		setDvar(dvar_str, "0");
 }
 
@@ -843,9 +850,6 @@ timers()
 	level.FRFIX_START = int(getTime() / 1000);
 	flag_set("game_started");
 
-    if (!b2op_config("hud_enabled"))
-        return;
-
     level.timer_hud = createserverfontstring("big" , 1.6);
 	level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
 	level.timer_hud.alpha = 1;
@@ -892,7 +896,7 @@ show_split()
 {
 	level endon("end_game");
 
-    if (!b2op_config("hud_enabled") || getDvar("timers") == "0")
+    if (getDvar("timers") == "0")
         return;
 
 	split_rounds = array(30, 50, 70, 100, 150, 200);
@@ -915,7 +919,7 @@ show_hordes()
 {
 	level endon("end_game");
 
-    if (!b2op_config("hud_enabled") || getDvar("hordes") == "0")
+    if (getDvar("hordes") == "0")
         return;
 
     wait 0.05;
@@ -932,9 +936,6 @@ velocity_meter()
 {
     self endon("disconnect");
     level endon("end_game");
-
-    if (!b2op_config("hud_enabled"))
-        return;
 
     player_wait_for_initial_blackscreen();
 
@@ -1009,9 +1010,6 @@ velocity_meter_scale(vel)
 
 buildable_hud()
 {
-    if (!b2op_config("hud_enabled"))
-        return;
-	
 	level.springpad_hud = createserverfontstring("objective", 1.3);
 	level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, -17, (1, 1, 1));
 	level.springpad_hud.label = &"SPRINGPADS: ^2";
