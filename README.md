@@ -2,11 +2,11 @@
 
 Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box or fridge overrides are fully optional and invoked in-game by the players.
 
-# Notice
+# Informations
 
-Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured.
+Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured. The main channel for issues is GitHubs Issues section, although it won't hurt to ask about it on [Discord](https://discord.gg/fDY4VR6rNE) first
 
-For additional questions, feel free to join my [Discord](https://discord.gg/fDY4VR6rNE) server and head to section dedicated to B2OP patch when myself or someone qualified can answer them.
+I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2OP section
 
 # Categories
 
@@ -20,23 +20,33 @@ This patch is meant to be used during games of Highrounds, No Powers & Round Spe
 
 # Installation
 
+Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
+
 ## Plutonium - Modern (R2905 & R3000+)
 
-Download the main script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section, and put it Plutonium script folder
+Download script `b2op-plutonium.gsc` from releases section, and put it in your Plutonium folder, by default it's located in:
 
 ```C:\Users\{your username}\AppData\Local\Plutonium\storage\t6\scripts\zm```
 
-## Plutonium - Ancient (r353 and similar)
-
-**Please note, according to recent discoveries, Ancient is not legit for coop games (and it's only really used for that), so for the time being i stop including file dedicated to Ancient in the releases. You can still create it yourself, by taking the file specified for Redacted LAN and compiling it with the Irony compiler**
-
-~~Download the `_clientids.gsc` script from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section, and inject it to the game [Video tutorial](https://youtu.be/Qhmful3ZVkE).~~
+For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted on Plutonium)
 
 ## Redacted LAN
 
-Download the raw [.gsc file](https://github.com/Zi0MIX/T6-B2OP-PATCH/blob/main/b2op.gsc) containing the code (make sure it's downloaded from `main` branch), and insert it in Redacted scripts folder
+Download script `b2op-redacted.gsc` from releases section, and put it in your Redacted folder.
 
 ```{path to your redacted}\data\scripts```
+
+## Plutonium - Ancient (r353 and similar)
+
+**DISCLAIMER**
+
+I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i had to rework bunch of exising logic, and because of that **I CAN NOT** guarantee the integrity of the game the same way i can with versions for Plutonium and Redacted. Network frame is fixed, but potentially other things are broken. I'm willing to maintain that version if bugs are found, but i very strongly recommend playing on Plutonium R2905 with it's dedicated B2OP version instead.
+
+To install, download `b2op-ancient.zip` from releases section, and inject it the same way as other patches for Ancient. Do note, zip contains a directory structure and filename that you're suppose to inject without changing it, so far people always injected files called `_clientids.gsc`, but in this case it would not work.
+
+Another thing to note, if you ever tried to inject a patch into Ancient, you know it tends to fail at times. With this patch it fails more, it sometimes can take few minutes of attempts to successfully inject.
+
+For solo games only, you can inject `b2op-redacted.gsc` instead (if you change the name to `_clientids.gsc` and create a correct folder structure, using dedicated Ancient version is required only for coop, as that's the scenario in which network frame does not behave properly)
 
 # Features
 
@@ -55,28 +65,19 @@ Features in B2OP patch
 - Toogleable velocity meter
 - Optional box override (First Box patch)
 - Optional fridge override
-
-## Network Frame fix
-
-If you play on Plutonium R2905 (or similar), please use additional script from release section 
-
-```network-frame-fix.gsc```
-
-Which will set the network frame to the right values
+- Removed intense lighting on Mob
 
 # HUD
 
-All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar.
+All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar. Do note, disabling hud elements reduces the overhead the patch has over the game, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console
+
+```timers 0;buildables 0```
 
 | HUD element | DVAR | Default |
 | --- | --- | --- |
 | Timers + SPH print | `timers` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
 | Velocity meter | `velocity` 0/1 | Disabled |
-
-If you wish to hide all HUD elements, simply paste this line to the console upon loading to the game (you only need to do once per bo2 restart, DVAR state carries over between games)
-
-```timers 0;buildables 0```
 
 # Box / Fridge
 
@@ -238,12 +239,23 @@ List of permaperks awarded by B2OP
 
 Players are always recommended to restart the game after being given perma perks, restart is done automatically when situation allows for it, otherwise players have to `map_restart` manually (the game will end automatically).
 
-# Contribution / Reporting issues
+# Contributions
 
-If you wish to contribute to the project with feedback, advice, issue report, please open an issue in the Issues section of this repository.
 If you'd like to contribute to the code, please fork this repository, apply changes / fixes and open a pull request. If the change is in line with rules and the purpose of this patch, it'll be merged and a new version of the patch will be released.
 
-# Own additions
+Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
+
+- [Python](https://www.python.org/downloads/windows/) 3.10 or newer
+- [Xensik's compiler](https://github.com/xensik/gsc-tool/releases) (versions 1.0.540 and 1.1.0)
+- [Irony](https://1drv.ms/f/s!AhsJBbdzsgNOgcNghIHVM3lUPb_UtQ?e=sHekry) compiler (binary and executable)
+
+Install Python (and make sure to check adding it to the system PATH while doing so). Download both versions of Xensiks compiler for their release section. Version 1.1.0 should be named `gsc-tool.exe` while version 1.0.540 `gsc-tool-1.0.540.exe`. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
+
+After applying desired changes, run script `compile.py` while in the patch main directory (press on address bar in the folder view, put `cmd` and press enter. A command line will open with that folder already set). Run script by putting in `python compile.py`. If you did everything right, script should compile everything for you and put stuff in right folders.
+
+Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
+
+# B2OP Plugins
 
 THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the `/plugin_templates` directory in this repository. 
 Currently it is possible to:
