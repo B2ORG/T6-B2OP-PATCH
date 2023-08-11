@@ -164,7 +164,8 @@ b2op_main_loop()
         level thread show_hordes();
 #endif
 
-		if (has_permaperks_system())
+        /* Verify based on map, cause someone could sneak a patch that'd give those in offline game */
+		if (is_tranzit() || is_die_rise() || is_buried())
 		{
 #if DEBUG == 1
 			level.players[0] remove_permaperk_wrapper("insta_kill", 2);
@@ -1208,7 +1209,7 @@ remove_permaperk_wrapper(perk_code, round)
 	if (!isDefined(round))
 		round = 1;
 
-	if (is_round(round) && self.pers_upgrades_awarded[perk_code])
+	if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
 		self remove_permaperk(perk_code);
 }
 
