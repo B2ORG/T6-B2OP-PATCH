@@ -182,7 +182,8 @@ b2op_main_loop()
 #ifndef DISABLE_HUD
         level thread show_split();
 #endif
-        setDvar("award_perks", 1);
+        if (has_permaperks_system())
+            setDvar("award_perks", 1);
     }
 }
 
@@ -511,8 +512,11 @@ has_magic()
 
 has_permaperks_system()
 {
+#if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
+    debug_print("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
+#endif
 	/* Refer to init_persistent_abilities() */
-	if (isDefined(level.pers_upgrade_boards))
+	if (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame))
 		return true;
 	return false;
 }
