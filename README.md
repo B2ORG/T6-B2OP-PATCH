@@ -8,6 +8,8 @@ Please inform me about any issues you may encounter with the patch, so they can 
 
 I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2OP section
 
+Before reporting a problem, please check out the FAQ section down below, you may find answers you're looking for there
+
 # Categories
 
 This patch is meant to be used during games of Highrounds, No Powers & Round Speedruns. Below you can see alternatives for other categories
@@ -47,6 +49,38 @@ To install, download `b2op-ancient.zip` from releases section, and inject it the
 Another thing to note, if you ever tried to inject a patch into Ancient, you know it tends to fail at times. With this patch it fails more, it sometimes can take few minutes of attempts to successfully inject.
 
 For solo games only, you can inject `b2op-redacted.gsc` instead (if you change the name to `_clientids.gsc` and create a correct folder structure, using dedicated Ancient version is required only for coop, as that's the scenario in which network frame does not behave properly)
+
+# FAQ
+
+1) My game is restarting automatically, how do i fix it?
+
+- You don't, that's intended behavior of the system that's giving you permaperks to prevent a rare bug where permaperks were not taken away from players sometimes. How it works is you load into the game, each player is scanned for missing permaperks, if anyone is missing something, they're awarded missing permaperks, and then the game will force a restart. After the restart you are free to carry on. Do note, most of the time you are going to lose some of the perks almost instantly, so restarts few minutes in will require the process to repeat. Since version 2.0, if you restart on round 1, the permaperk awarding system will not be initiated to prevent issues like infinite restarts on Tranzit, where players would kill a zombie too fast and game would just keep giving them perma headshot damage back.
+
+2) I put the patch in the right folder but it does not work
+
+- Make sure you downloaded compiled version from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section (do not download the zip file called Source code, it is added to the release automatically by github and contains raw code, that is not going to work) and that you downloaded the right version for the right launcher. Failing to do so may result in the patch not working at all, or misbehaving, which in some situations can cause your game to not be legit. Always match names of released files with the launcher you're using. Read Installation instructions above.
+
+3) It says the patch gives players first box, which is not legit. How come this patch is deemed an official patch for BO2 records?
+
+- That's because in order for weapons in the box to be changed, you have to explicitly execute the right command (or chat message, details below in [Overriding box location](#overriding-box-location) section). If you don't do that, the box will remain untouched.
+
+4) Is there anything i need to worry about regarding legitimacy of my game while using this patch?
+
+- Do not use First Box or Box Location modifiers while playing Highrounds, those are OK only for round speedruns (and other categories that explicitly allow it). Make sure you're using the correct version of the patch in relation to your launcher (for example, Redacted version will not fix Network Frame problem on Plutonium, etc.). Also do not use this patch for categories it's not meant for. I've linked alternatives to other categories in a table above in [Categories](#categories) section
+
+5) I heard this patch may cause early errors
+
+- B2OP was built with optimizations for this kind of things in mind. But yes, technically any patch you load (even something so simple that has 5 lines of code and does only one thing) is an additional overhead for the game. From what we've seen so far from players using it, the patch does not directly contribute to any errors. One thing i can recommend is disabling HUD elements, because from what we've been able to measure, that has the biggest overhead from all of the things this patch does. See [HUD](#hud) section to check how to do that
+
+6) Why version for Ancient is so different
+
+- This is a big topic and there is gonna be a video about it, but long story short, in order to fix flawed behavior of something called "network frame", it is required to inject a very particular file that constains the logic for that functionality. Unfortunately it also contains bunch of other things that i also had to include (and modify due to limitations of the compiler that works with Ancient). That's why it is essential to use the exact folder structure and filename i provide in the zip file.
+
+# Steps for basic troubleshooting
+
+- Make sure you're using correct and up to date version and that the downloaded file is compiled (open in Notepad, if it's bunch of gibbrish, you know it's compiled)
+- Remove other patches. B2OP Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
+- Check if the directory the patch is in is correct. Perhaps you have multiple instances of Plutonium or Redacted and you put it in the directory belonging to another instance.
 
 # Features
 
@@ -190,7 +224,7 @@ For example:
 Player is allowed to override weapons for himself and his time in the fridge until either round 11 or first use of the fridge. It is not possible to put in a weapon that'd not be possible to put during the normal game.
 To override fridge weapon, a DVAR `fridge` has to be set to the right value. 
 
-Values from this DVAR can be seen above (in the `Overriding box weapon` section), but in order to put upgraded weapon in the fridge, a `+` has to be added in front of the weapon key.
+Values from this DVAR can be seen above (in the [Overriding box weapon](#overriding-box-weapon) section), but in order to put upgraded weapon in the fridge, a `+` has to be added in front of the weapon key.
 
 Example for normal weapon:
 
@@ -257,7 +291,7 @@ Please note, as the modding scene for BO2 is still very young, stuff and tech is
 
 # B2OP Plugins
 
-THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the `/plugin_templates` directory in this repository. 
+THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the `./plugin_templates` directory in this repository. 
 Currently it is possible to:
 - Override the behavior of the Fridge controller by providing it with a set of weapons
 - Override the character each player is playing with (yes it is possible to duplicate characters, but please note we do not know if doing so isn't contributing to any errors, as certain characters have some special logic related to them on some maps)
