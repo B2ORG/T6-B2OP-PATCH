@@ -6,6 +6,7 @@ Major version update
 - Added mob lighting fix (by [JezuzLizard](https://github.com/JezuzLizard/))
 - Fixed an issue that'd cause box location override to not work properly [#5](https://github.com/Zi0MIX/T6-B2OP-PATCH/issues/5)
 - Info about First Box is now displayed alongside splits (watermark remains as it was)
+- Prevented infinite restarting on Tranzit if players kill zombie before permaperk function initialize
 
 ## Distribution
 

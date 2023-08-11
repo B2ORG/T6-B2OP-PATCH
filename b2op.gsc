@@ -182,6 +182,7 @@ b2op_main_loop()
 #ifndef DISABLE_HUD
         level thread show_split();
 #endif
+        setDvar("award_perks", 1);
     }
 }
 
@@ -681,6 +682,7 @@ set_dvars()
 	init_dvar("hordes", dvar_rules);
 #endif
 	init_dvar("velocity", dvar_rules);
+    init_dvar("award_perks", dvar_rules);
 }
 
 check_dvars()
@@ -1053,6 +1055,10 @@ perma_perks_setup()
 	if (!has_permaperks_system())
 		return;
 
+    if (getDvar("award_perks") != "1")
+        return;
+
+    setDvar("award_perks", 0);
 	thread watch_permaperk_award();
 
 	foreach (player in level.players)
