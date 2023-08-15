@@ -7,6 +7,8 @@ Major version update
 - Fixed an issue that'd cause box location override to not work properly [#5](https://github.com/Zi0MIX/T6-B2OP-PATCH/issues/5)
 - Info about First Box is now displayed alongside splits (watermark remains as it was)
 - Prevented infinite restarting on Tranzit if players kill zombie before permaperk function initialize
+- Prevented inifnite restarting caused by launching maps in offline mode
+- Fixed conflict that caused First Box to misbehave on maps that have permaperks
 
 ## Distribution
 

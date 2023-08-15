@@ -1603,7 +1603,7 @@ rig_box(gun, player)
 	level.special_weapon_magicbox_check = undefined;
 	foreach(weapon in getarraykeys(level.zombie_weapons))
 	{
-		if ((weapon != weapon_key) && level.zombie_weapons[weapon].is_in_box == 1)
+		if ((weapon != weapon_key) && is_true(level.zombie_weapons[weapon].is_in_box))
 		{
 			removed_guns[removed_guns.size] = weapon;
 			level.zombie_weapons[weapon].is_in_box = 0;
@@ -1612,6 +1612,14 @@ rig_box(gun, player)
 #endif
 		}
 	}
+
+    /* This was causing the pers_treasure_chest_choosespecialweapon() check to fail and return keys[0] */
+    if (has_permaperks_system())
+    {
+        level.pers_box_weapon_lose_round = 1;
+        foreach (player in level.players)
+            player remove_permaperk_wrapper("pers_box_weapon_counter");
+    }
 
 	/* Critical loop responsible for restoring proper state */
 	while ((current_box_hits == level.total_box_hits) || !isDefined(level.total_box_hits))

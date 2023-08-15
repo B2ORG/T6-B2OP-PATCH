@@ -264,7 +264,7 @@ List of permaperks awarded by B2OP
 | Tombstone | - |
 | Mini-Jug | Will not be awarded if game starts past round 15, will also actively be taken from players past round 15 |
 | Flopper | Only on Buried |
-| Better Box | Given only on Die Rise and Buried. Taken away on Tranzit |
+| Better Box | Given only on Die Rise and Buried. Taken away on Tranzit. Will be forcibly taken away if First Box is used |
 | Cash Back | - |
 | Sniper Points | - |
 | Insta Kill | - |
