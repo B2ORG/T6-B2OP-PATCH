@@ -1206,12 +1206,15 @@ award_permaperk(stat_name, perk_code, stat_value)
 	self playsoundtoplayer("evt_player_upgrade", self);
 }
 
+/* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
 remove_permaperk_wrapper(perk_code, round)
 {
 	if (!isDefined(round))
 		round = 1;
 
-	if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
+    if (is_round(round) && isSubStr(perk_code, "pers_"))
+        self maps\mp\zombies\_zm_stats::zero_client_stat(perk_code, 0);
+	else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
 		self remove_permaperk(perk_code);
 }
 
