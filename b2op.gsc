@@ -601,6 +601,7 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 		case 237:       // 21:9
         case 238:       // 21:9
         case 240:       // 21:9
+        case 355:       // 32:9
 			aspect_ratio = "21:9";
 			break;
 	}
