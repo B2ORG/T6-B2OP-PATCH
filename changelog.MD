@@ -9,6 +9,7 @@ Major version update
 - Prevented infinite restarting on Tranzit if players kill zombie before permaperk function initialize
 - Prevented inifnite restarting caused by launching maps in offline mode
 - Fixed conflict that caused First Box to misbehave on maps that have permaperks
+- Added handling for HUD element alignment on Ultra Wide monitors
 
 ## Distribution
 
