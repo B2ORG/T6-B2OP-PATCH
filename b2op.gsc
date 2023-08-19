@@ -598,8 +598,9 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 		case 133:
 			aspect_ratio = "4:3";
 			break;
-		case 237:
-		case 239:
+		case 237:       // 21:9
+        case 238:       // 21:9
+        case 240:       // 21:9
 			aspect_ratio = "21:9";
 			break;
 	}
@@ -623,10 +624,8 @@ recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
 			return xpos + 6;
 		if (aspect_ratio == "4:3")
 			return xpos + 14;
-		/* Need help from someone who can test on UW
 		if (aspect_ratio == "21:9")
-			return xpos;
-		*/
+			return xpos - 21;
 	}
 
 	else if (isSubStr(tolower(xalign), "right") && xpos > 0)
@@ -635,10 +634,8 @@ recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
 			return xpos - 6;
 		if (aspect_ratio == "4:3")
 			return xpos - 14;
-		/* Need help from someone who can test on UW
 		if (aspect_ratio == "21:9")
-			return xpos;
-		*/
+			return xpos + 21;
 	}
 
 	return xpos;
