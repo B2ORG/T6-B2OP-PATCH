@@ -590,12 +590,13 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 	aspect_ratio = "16:9";
 	switch (ratio)
 	{
-		case 160:
+		case 160:       // 16:10
 			aspect_ratio = "16:10";
 			break;
-		// Includes 5:4
-		case 125:
-		case 133:
+		case 125:       // 5:4
+		case 133:       // 4:3
+        case 149:       // 3:2
+        case 150:       // 3:2
 			aspect_ratio = "4:3";
 			break;
 		case 237:       // 21:9
