@@ -587,23 +587,23 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 
 	res_components = strTok(getDvar("r_mode"), "x");
 	ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
-	aspect_ratio = "16:9";
+	aspect_ratio = 1609;
 	switch (ratio)
 	{
 		case 160:       // 16:10
-			aspect_ratio = "16:10";
+			aspect_ratio = 1610;
 			break;
 		case 125:       // 5:4
 		case 133:       // 4:3
         case 149:       // 3:2
         case 150:       // 3:2
-			aspect_ratio = "4:3";
+			aspect_ratio = 43;
 			break;
 		case 237:       // 21:9
         case 238:       // 21:9
         case 240:       // 21:9
         case 355:       // 32:9
-			aspect_ratio = "21:9";
+			aspect_ratio = 2109;
 			break;
 	}
 
@@ -622,21 +622,21 @@ recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
 {
 	if (isSubStr(tolower(xalign), "left") && xpos < 0)
 	{
-		if (aspect_ratio == "16:10")
+		if (aspect_ratio == 1610)
 			return xpos + 6;
-		if (aspect_ratio == "4:3")
+		if (aspect_ratio == 43)
 			return xpos + 14;
-		if (aspect_ratio == "21:9")
+		if (aspect_ratio == 2109)
 			return xpos - 21;
 	}
 
 	else if (isSubStr(tolower(xalign), "right") && xpos > 0)
 	{
-		if (aspect_ratio == "16:10")
+		if (aspect_ratio == 1610)
 			return xpos - 6;
-		if (aspect_ratio == "4:3")
+		if (aspect_ratio == 43)
 			return xpos - 14;
-		if (aspect_ratio == "21:9")
+		if (aspect_ratio == 2109)
 			return xpos + 21;
 	}
 
