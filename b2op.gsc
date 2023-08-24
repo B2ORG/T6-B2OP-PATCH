@@ -2,7 +2,7 @@
 #define REDACTED 0
 #define PLUTO 0
 #define DEBUG 0
-#define BETA 1
+#define BETA 0
 
 #define DISABLE_HORDES
 #define DISABLE_SPH
