@@ -280,7 +280,7 @@ If you'd like to contribute to the code, please fork this repository, apply chan
 Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
 
 - [Python](https://www.python.org/downloads/windows/) 3.10 or newer
-- [Xensik's compiler](https://github.com/xensik/gsc-tool/releases) (versions 1.0.540 and 1.1.0)
+- [Xensik's compiler](https://github.com/xensik/gsc-tool/releases) (version 1.1.1)
 - [Irony](https://1drv.ms/f/s!AhsJBbdzsgNOgcNghIHVM3lUPb_UtQ?e=sHekry) compiler (binary and executable)
 
 Install Python (and make sure to check adding it to the system PATH while doing so). Download both versions of Xensiks compiler for their release section. Version 1.1.0 should be named `gsc-tool.exe` while version 1.0.540 `gsc-tool-1.0.540.exe`. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
