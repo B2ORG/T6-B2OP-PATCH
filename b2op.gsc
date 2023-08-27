@@ -620,6 +620,9 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 
 recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
 {
+    if (level.players.size > 1)
+        return xpos;
+
 	if (isSubStr(tolower(xalign), "left") && xpos < 0)
 	{
 		if (aspect_ratio == 1610)
