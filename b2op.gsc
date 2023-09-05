@@ -89,6 +89,9 @@ on_game_start()
 	level thread fridge_handler();
 	safety_zio();
 
+    if (isDefined(level.B2_POWERUP_TRACKING))
+        level thread [[level.B2_POWERUP_TRACKING]]();
+
 #if DEBUG == 1
 	level thread network_frame_hud();
 	debug_mode();

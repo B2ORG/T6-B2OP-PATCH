@@ -298,5 +298,6 @@ Currently it is possible to:
 - Override the position and color of HUD elements, such as timers.
 - Override list of rounds which get split prints.
 - Enable network frame hud i used for debugging network frame issue.
+- Enable debugging prints related to powerups
 
 After editing a template like that, put it in the same folder as the main patch, and if you did everything right, you'll observe changes you applied. Note, for all Plutonium versions (except for the most recent one), a script will have to be compiled before it'll work. That is not the case for Redacted.
