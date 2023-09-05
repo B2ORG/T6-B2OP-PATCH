@@ -676,12 +676,7 @@ set_dvars()
     has to become a level variable and be manually removed later */
     dvar_rules = array();
     dvar_rules["velocity"] = true;
-
-    setdvar("player_strafeSpeedScale", 1);
-    setdvar("player_backSpeedScale", 0.9);
-    setdvar("g_speed", 190);
-    setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
-    setdvar("sv_cheats", 0);
+    dvar_rules["steam_backspeed"] = true;
 
 	init_dvar("timers", dvar_rules);
 	init_dvar("buildables", dvar_rules);
@@ -689,9 +684,20 @@ set_dvars()
 	init_dvar("hordes", dvar_rules);
 #endif
 	init_dvar("velocity", dvar_rules);
+    init_dvar("steam_backspeed", dvar_rules)
 
     if (has_permaperks_system())
         init_dvar("award_perks", dvar_rules);
+
+    setdvar("player_strafeSpeedScale", 0.8);
+    setdvar("player_backSpeedScale", 0.7);
+    if (getDvar("steam_backspeed") == "0") {
+        setdvar("player_strafeSpeedScale", 1);
+        setdvar("player_backSpeedScale", 0.9);
+    }
+    setdvar("g_speed", 190);
+    setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
+    setdvar("sv_cheats", 0);
 }
 
 check_dvars()

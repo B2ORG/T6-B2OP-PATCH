@@ -91,7 +91,7 @@ Features in B2OP patch
 - Basic anticheat capabilities (DVARs, Box etc.)
 - Automatic permaperks assignment (consistent with in-game logic)
 - Full bank
-- Fixed strafe & backwards speed
+- Fixed strafe & backwards speed (but can be reverted by setting `steam_backspeed` to 1 and restarting)
 - Fixed traps & JetGun (disabled for maps that don't need it)
 - Toogleable game / round timers
 - Toogleable hud counting buildables

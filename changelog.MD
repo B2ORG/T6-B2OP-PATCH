@@ -1,6 +1,7 @@
 # Version 2.1
 
 - Hud scaling based on Aspect Ratio is now solo only
+- It's now possible to turn off backspeed fix by setting dvar `steam_backspeed` to 1 and restarting the match
 
 # Version 2.0
 
