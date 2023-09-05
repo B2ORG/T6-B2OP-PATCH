@@ -91,7 +91,7 @@ on_game_start()
 	debug_mode();
 #endif
 #if BETA == 1
-	safety_beta();
+	beta_mode();
 #endif
 }
 
@@ -757,7 +757,7 @@ debug_mode()
 #endif
 
 #if BETA == 1
-safety_beta()
+beta_mode()
 {
 	generate_watermark("BETA", (0, 0.8, 0));
 }
@@ -864,7 +864,7 @@ timers()
 {
     level endon("end_game");
 
-	level.FRFIX_START = int(getTime() / 1000);
+	level.B2OP_START = int(getTime() / 1000);
 	flag_set("game_started");
 
     level.timer_hud = createserverfontstring("big" , 1.6);
@@ -924,7 +924,7 @@ show_split()
 		return;
 	wait 8.5;
 
-    timestamp = convert_time(int(getTime() / 1000) - level.FRFIX_START);
+    timestamp = convert_time(int(getTime() / 1000) - level.B2OP_START);
 	if (is_true(flag("FIRST BOX")))
     	print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
 	else
@@ -1091,7 +1091,7 @@ watch_permaperk_award()
 		i = 0;
 		foreach (player in level.players)
 		{
-			if (!isDefined(player.frfix_awarding_permaperks))
+			if (!isDefined(player.awarding_permaperks_now))
 				i++;
 		}
 
@@ -1115,8 +1115,8 @@ watch_permaperk_award()
 
 	foreach (player in level.players)
 	{
-		if (isDefined(player.frfix_awarding_permaperks))
-			player.frfix_awarding_permaperks = undefined;
+		if (isDefined(player.awarding_permaperks_now))
+			player.awarding_permaperks_now = undefined;
 	}
 }
 
@@ -1164,7 +1164,7 @@ award_permaperks_safe()
 	perks_to_process[perks_to_process.size] = permaperk_array("pistol_points");
 	perks_to_process[perks_to_process.size] = permaperk_array("double_points");
 
-	self.frfix_awarding_permaperks = true;
+	self.awarding_permaperks_now = true;
 
 	foreach (perk in perks_to_process)
 	{
@@ -1174,7 +1174,7 @@ award_permaperks_safe()
 
 	wait 0.5;
 	perks_to_process = undefined;
-	self.frfix_awarding_permaperks = undefined;
+	self.awarding_permaperks_now = undefined;
 	self maps\mp\zombies\_zm_stats::uploadstatssoon();
 }
 
