@@ -2,6 +2,7 @@
 
 - Hud scaling based on Aspect Ratio is now solo only
 - It's now possible to turn off backspeed fix by setting dvar `steam_backspeed` to 1 and restarting the match
+- Network frame hud used for debugging can now be used in released patch via getting `b2_plugin_network.gsc` plugin
 
 # Version 2.0
 

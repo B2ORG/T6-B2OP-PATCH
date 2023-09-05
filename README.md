@@ -297,5 +297,6 @@ Currently it is possible to:
 - Override the character each player is playing with (yes it is possible to duplicate characters, but please note we do not know if doing so isn't contributing to any errors, as certain characters have some special logic related to them on some maps)
 - Override the position and color of HUD elements, such as timers.
 - Override list of rounds which get split prints.
+- Enable network frame hud i used for debugging network frame issue.
 
 After editing a template like that, put it in the same folder as the main patch, and if you did everything right, you'll observe changes you applied. Note, for all Plutonium versions (except for the most recent one), a script will have to be compiled before it'll work. That is not the case for Redacted.

@@ -80,6 +80,9 @@ on_game_start()
 	level thread timers();
     level thread hud_alpha_controller();
 	level thread buildable_controller();
+
+    if (isDefined(level.B2_NETWORK_HUD))
+        level thread [[level.B2_NETWORK_HUD]]();
 #endif
 	level thread first_box_handler();
 	level thread perma_perks_setup();
@@ -2453,27 +2456,6 @@ watch_stat(stat, map_array)
 	}
 }
 
-#if DEBUG == 1
-network_frame_hud()
-{
-	level endon("end_game");
-
-	netframe_hud = createserverfontstring("default", 1.3);
-	netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
-	netframe_hud.label = &"NETFRAME: ";
-	netframe_hud.alpha = 1;
-
-	while (true)
-	{
-		start_time = int(getTime());
-		wait_network_frame();
-		end_time = int(getTime());
-
-		netframe_hud setValue(end_time - start_time);
-	}
-}
-#endif
-
 #if PLUTO == 1
 fixed_wait_network_frame()
 {
@@ -2492,9 +2474,29 @@ fixed_wait_network_frame()
 #endif
 
 #if ANCIENT == 1
+
+network_frame_hud()
+{
+	level endon("end_game");
+	netframe_hud = createserverfontstring("default", 1.3);
+	netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
+	netframe_hud.label = &"NETFRAME: ";
+	netframe_hud.alpha = 1;
+	while (true)
+	{
+		start_time = int(getTime());
+		wait_network_frame();
+		end_time = int(getTime());
+		netframe_hud setValue(end_time - start_time);
+	}
+}
+
 init_utility()
 {
-
+/* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
+#if DEBUG == 1
+    level.B2_NETWORK_HUD = ::network_frame_hud;
+#endif
 }
 
 is_classic()
