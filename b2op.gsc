@@ -75,6 +75,9 @@ on_game_start()
 
 	flag_wait("initial_blackscreen_passed");
 
+    level.B2OP_START = int(getTime() / 1000);
+	flag_set("game_started");
+
     level thread b2op_main_loop();
 #ifndef DISABLE_HUD
 	level thread timers();
@@ -869,9 +872,6 @@ hud_alpha_controller()
 timers()
 {
     level endon("end_game");
-
-	level.B2OP_START = int(getTime() / 1000);
-	flag_set("game_started");
 
     level.timer_hud = createserverfontstring("big" , 1.6);
 	level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
