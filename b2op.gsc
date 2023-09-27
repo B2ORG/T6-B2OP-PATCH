@@ -131,6 +131,9 @@ on_player_spawned()
 	self thread evaluate_network_frame();
 #ifndef DISABLE_HUD
 	self thread velocity_meter();
+
+	if (isDefined(level.B2_ZONES))
+		self thread [[level.B2_ZONES]]();
 #endif
 	self thread set_characters();
 	self thread fill_up_bank();
