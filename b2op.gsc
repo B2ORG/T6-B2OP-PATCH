@@ -78,6 +78,8 @@ on_game_start()
     level.B2OP_START = int(getTime() / 1000);
 	flag_set("game_started");
 
+	b2safety();
+
     level thread b2op_main_loop();
 #ifndef DISABLE_HUD
 	level thread timers();
@@ -90,7 +92,6 @@ on_game_start()
 	level thread first_box_handler();
 	level thread perma_perks_setup();
 	level thread fridge_handler();
-	b2safety();
 
     if (isDefined(level.B2_POWERUP_TRACKING))
         level thread [[level.B2_POWERUP_TRACKING]]();
@@ -191,6 +192,8 @@ b2op_main_loop()
 		}
 
         level waittill("end_of_round");
+		if (isDefined(level.B2OP_CHECK))
+			level.B2OP_CHECK = undefined;
 #ifndef DISABLE_HUD
         level thread show_split();
 #endif
@@ -747,11 +750,12 @@ b2safety()
 		emulate_menu_call("endround");
 	}
 
-	if (isDefined(level.B2OP_CONFIG))
+	if (isDefined(level.B2OP_CHECK))
 	{
-		print_scheduler("^1B2OP DETECTED!!!");
+		print_scheduler("^1ANOTHER B2OP DETECTED!!!");
 		emulate_menu_call("endround");
 	}
+	level.B2OP_CHECK = true;
 }
 
 #if DEBUG == 1
