@@ -96,7 +96,6 @@ on_game_start()
         level thread [[level.B2_POWERUP_TRACKING]]();
 
 #if DEBUG == 1
-	level thread network_frame_hud();
 	debug_mode();
 #endif
 #if BETA == 1
