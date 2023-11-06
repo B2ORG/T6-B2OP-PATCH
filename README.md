@@ -6,7 +6,7 @@ Patch for playing world record games in Black Ops II Zombies. Made based on comm
 
 Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured. The main channel for issues is GitHubs Issues section, although it won't hurt to ask about it on [Discord](https://discord.gg/fDY4VR6rNE) first
 
-I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2OP section
+I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2 section
 
 Before reporting a problem, please check out the FAQ section down below, you may find answers you're looking for there
 
@@ -16,13 +16,13 @@ This patch is meant to be used during games of Highrounds, No Powers & Round Spe
 
 | Category| Patch | Creator | Link |
 | --- | --- | --- | --- |
-| First Room | First Room Fix | Zi0 | [GitHub](https://github.com/Zi0MIX/T6-FIRST-ROOM-FIX) |
+| First Room | B2FR | Zi0 | [GitHub](https://github.com/B2ORG/T6-B2FR-PATCH) |
 | EE Speedrun | Easter Egg GSC Timer | HuthTV | [GitHub](https://github.com/HuthTV/BO2-Easter-Egg-GSC-timer) |
-| Song Speedruns | Song Auto-Timer | Zi0 | [GitHub](https://github.com/Zi0MIX/T6-SONG-TIMER-PATCH) |
+| Song Speedruns | B2SONG | Zi0 | [GitHub](https://github.com/B2ORG/T6-B2SONG-PATCH) |
 
 # Installation
 
-Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
+Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
 
 ## Plutonium - Modern (R2905 & R3000+)
 
@@ -30,13 +30,15 @@ Download script `b2op-plutonium.gsc` from releases section, and put it in your P
 
 ```C:\Users\{your username}\AppData\Local\Plutonium\storage\t6\scripts\zm```
 
+The appdata directory is hidden by default on windows, in order to access it, press key combination WINDOWS + R on your keyboard and type in `%LOCALAPPDATA%`, press ENTER.
+
 For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted on Plutonium)
 
 ## Redacted LAN
 
-Download script `b2op-redacted.gsc` from releases section, and put it in your Redacted folder.
+Download script `b2op-redacted.gsc` from releases section, and put it in script folder in your Redacted directory.
 
-```{path to your redacted}\data\scripts```
+```.\data\scripts```
 
 ## Plutonium - Ancient (r353 and similar)
 
@@ -58,7 +60,7 @@ For solo games only, you can inject `b2op-redacted.gsc` instead (if you change t
 
 2) I put the patch in the right folder but it does not work
 
-- Make sure you downloaded compiled version from [releases](https://github.com/Zi0MIX/T6-B2OP-PATCH/releases) section (do not download the zip file called Source code, it is added to the release automatically by github and contains raw code, that is not going to work) and that you downloaded the right version for the right launcher. Failing to do so may result in the patch not working at all, or misbehaving, which in some situations can cause your game to not be legit. Always match names of released files with the launcher you're using. Read Installation instructions above.
+- Make sure you downloaded compiled version from [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section (do not download the zip file called Source code, it is added to the release automatically by github and contains raw code, that is not going to work) and that you downloaded the right version for the right launcher. Failing to do so may result in the patch not working at all, or misbehaving, which in some situations can cause your game to not be legit. Always match names of released files with the launcher you're using. Read Installation instructions above.
 
 3) It says the patch gives players first box, which is not legit. How come this patch is deemed an official patch for BO2 records?
 
@@ -279,25 +281,16 @@ If you'd like to contribute to the code, please fork this repository, apply chan
 
 Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
 
-- [Python](https://www.python.org/downloads/windows/) 3.10 or newer
-- [Xensik's compiler](https://github.com/xensik/gsc-tool/releases) (version 1.1.1)
+- [Python](https://www.python.org/downloads/windows/) 3.10 or newer (recommended 3.12)
+- [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.1.1 or newer (recommended 1.2.0)
 - [Irony](https://1drv.ms/f/s!AhsJBbdzsgNOgcNghIHVM3lUPb_UtQ?e=sHekry) compiler (binary and executable)
 
-Install Python (and make sure to check adding it to the system PATH while doing so). Download both versions of Xensiks compiler for their release section. Version 1.1.0 should be named `gsc-tool.exe` while version 1.0.540 `gsc-tool-1.0.540.exe`. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
+Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
 
 After applying desired changes, run script `compile.py` while in the patch main directory (press on address bar in the folder view, put `cmd` and press enter. A command line will open with that folder already set). Run script by putting in `python compile.py`. If you did everything right, script should compile everything for you and put stuff in right folders.
 
 Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
 
-# B2OP Plugins
+# B2 Extensions
 
-THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the `./plugin_templates` directory in this repository. 
-Currently it is possible to:
-- Override the behavior of the Fridge controller by providing it with a set of weapons
-- Override the character each player is playing with (yes it is possible to duplicate characters, but please note we do not know if doing so isn't contributing to any errors, as certain characters have some special logic related to them on some maps)
-- Override the position and color of HUD elements, such as timers.
-- Override list of rounds which get split prints.
-- Enable network frame hud i used for debugging network frame issue.
-- Enable debugging prints related to powerups
-
-After editing a template like that, put it in the same folder as the main patch, and if you did everything right, you'll observe changes you applied. Note, for all Plutonium versions (except for the most recent one), a script will have to be compiled before it'll work. That is not the case for Redacted.
+THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the [B2 Extensions repository](https://github.com/B2ORG/T6-B2EXTENSIONS) alongside further instructions
