@@ -690,7 +690,7 @@ set_dvars()
 	init_dvar("hordes", dvar_rules);
 #endif
 	init_dvar("velocity", dvar_rules);
-    init_dvar("steam_backspeed", dvar_rules)
+    init_dvar("steam_backspeed", dvar_rules);
 
     if (has_permaperks_system())
         init_dvar("award_perks", dvar_rules);
