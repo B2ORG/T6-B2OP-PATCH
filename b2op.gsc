@@ -507,14 +507,6 @@ is_plutonium()
 	return true;
 }
 
-safe_restart()
-{
-	if (is_plutonium())
-		map_restart();
-	else
-		level notify("end_game");
-}
-
 has_magic()
 {
     if (is_true(level.enable_magic))
