@@ -130,8 +130,6 @@ on_player_spawned()
 	self thread welcome_prints();
 	self thread evaluate_network_frame();
 #ifndef DISABLE_HUD
-	self thread velocity_meter();
-
 	if (isDefined(level.B2_ZONES))
 		self thread [[level.B2_ZONES]]();
 #endif
@@ -681,7 +679,6 @@ set_dvars()
     Try not to use init_dvar() outside of this function, in which case dvar_rules
     has to become a level variable and be manually removed later */
     dvar_rules = array();
-    dvar_rules["velocity"] = true;
     dvar_rules["steam_backspeed"] = true;
 
 	init_dvar("timers", dvar_rules);
@@ -689,7 +686,6 @@ set_dvars()
 #ifndef DISABLE_HORDES
 	init_dvar("hordes", dvar_rules);
 #endif
-	init_dvar("velocity", dvar_rules);
     init_dvar("steam_backspeed", dvar_rules);
 
     if (has_permaperks_system())
@@ -956,80 +952,6 @@ show_hordes()
     }
 }
 #endif
-
-velocity_meter()
-{
-    self endon("disconnect");
-    level endon("end_game");
-
-    player_wait_for_initial_blackscreen();
-
-    self.hud_velocity = createfontstring("default" , 1.1);
-	self.hud_velocity set_hud_properties("hud_velocity", "CENTER", "CENTER", "CENTER", 200);
-	self.hud_velocity.alpha = 0.75;
-	self.hud_velocity.hidewheninmenu = 1;
-
-    while (true)
-    {
-        self velocity_visible(self.hud_velocity);
-
-		velocity = int(length(self getvelocity() * (1, 1, 0)));
-		self.hud_velocity velocity_meter_scale(velocity);
-        self.hud_velocity setValue(velocity);
-
-        wait 0.05;
-    }
-}
-
-velocity_visible(hud)
-{
-    if (is_true(self.afterlife) || getDvar("velocity") == "0")
-        hud.alpha = 0;
-    else
-        hud.alpha = 1;
-}
-
-velocity_meter_scale(vel)
-{
-	self.color = (0.6, 0, 0);
-	self.glowcolor = (0.3, 0, 0);
-
-	if (vel < 330)
-	{
-		self.color = (0.6, 1, 0.6);
-		self.glowcolor = (0.4, 0.7, 0.4);
-	}
-
-	else if (vel <= 340)
-	{
-		self.color = (0.8, 1, 0.6);
-		self.glowcolor = (0.6, 0.7, 0.4);
-	}
-
-	else if (vel <= 350)
-	{
-		self.color = (1, 1, 0.6);
-		self.glowcolor = (0.7, 0.7, 0.4);
-	}
-
-	else if (vel <= 360)
-	{
-		self.color = (1, 0.8, 0.4);
-		self.glowcolor = (0.7, 0.6, 0.2);
-	}
-
-	else if (vel <= 370)
-	{
-		self.color = (1, 0.6, 0.2);
-		self.glowcolor = (0.7, 0.4, 0.1);
-	}
-
-	else if (vel <= 380)
-	{
-		self.color = (1, 0.2, 0);
-		self.glowcolor = (0.7, 0.1, 0);
-	}
-}
 
 buildable_hud()
 {

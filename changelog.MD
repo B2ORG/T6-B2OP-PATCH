@@ -1,3 +1,7 @@
+# Version 2.2
+
+- Removed Velocity Meter
+
 # Version 2.1
 
 - Hud scaling based on Aspect Ratio is now solo only

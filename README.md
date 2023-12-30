@@ -98,7 +98,6 @@ Features in B2OP patch
 - Toogleable game / round timers
 - Toogleable hud counting buildables
 - Toogleable prints with time splits for key rounds
-- Toogleable velocity meter
 - Optional box override (First Box patch)
 - Optional fridge override
 - Removed intense lighting on Mob
@@ -113,7 +112,6 @@ All HUD elements are toogleable (with the exception of watermarks), below is the
 | --- | --- | --- |
 | Timers + SPH print | `timers` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
-| Velocity meter | `velocity` 0/1 | Disabled |
 
 # Box / Fridge
 
