@@ -704,6 +704,7 @@ set_dvars()
     setdvar("g_speed", 190);
     setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
     setdvar("sv_cheats", 0);
+    setdvar("r_dof_enable", 0);
 }
 
 check_dvars()

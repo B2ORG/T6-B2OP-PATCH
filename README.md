@@ -102,6 +102,7 @@ Features in B2OP patch
 - Optional box override (First Box patch)
 - Optional fridge override
 - Removed intense lighting on Mob
+- Disabled DOF (Depth of Field)
 
 # HUD
 
