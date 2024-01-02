@@ -1,6 +1,7 @@
 # Version 2.2
 
 - Removed Velocity Meter
+- Disabled DOF (visual)
 
 # Version 2.1
 
