@@ -1,8 +1,64 @@
 from traceback import print_exc
-import subprocess
-import sys
-import os
-import zipfile
+import subprocess, sys, os, zipfile, re
+
+
+class Version:
+    def __init__(self) -> None:
+        self._version: list[int]
+
+
+    def __eq__(self, __object) -> bool:
+        return self._version == __object._version
+    
+
+    def __ne__(self, __object) -> bool:
+        return self._version != __object._version
+
+
+    def __lt__(self, __object) -> bool:
+        if self._version[0] < __object._version[0]:
+            return True
+        if self._version[0] <= __object._version[0] and self._version[1] < __object._version[1]:
+            return True
+        if self._version[0] <= __object._version[0] and self._version[1] <= __object._version[1] and self._version[2] < __object._version[2]:
+            return True
+        return False
+
+
+    def __gt__(self, __object) -> bool:
+        if self._version[0] > __object._version[0]:
+            return True
+        if self._version[0] >= __object._version[0] and self._version[1] > __object._version[1]:
+            return True
+        if self._version[0] >= __object._version[0] and self._version[1] >= __object._version[1] and self._version[2] > __object._version[2]:
+            return True
+        return False
+
+
+    def __le__(self, __object) -> bool:
+        return self == __object or self < __object
+
+
+    def __ge__(self, __object) -> bool:
+        return self == __object or self > __object
+
+
+    def __str__(self) -> str:
+        return ".".join(self._version)
+
+
+    @staticmethod
+    def parse(_version: str):
+        version = Version()
+        version._version: list[int] = _version.split(".")
+        version.trim()
+        return version
+
+
+    def trim(self):
+        if len(self._version) > 3:
+            self._version = self._version[:3]
+        return self
 
 
 # Config
@@ -30,6 +86,7 @@ PRECOMPILED = {
     "redacted": "b2op_precompiled_redacted.gsc",
     "ancient": "b2op_precompiled_ancient.gsc",
 }
+BAD_COMPILER_VERSIONS = [Version.parse("1.2.0")]
 
 
 def edit_in_place(path: str, **replace_pairs) -> None:
@@ -45,16 +102,18 @@ def edit_in_place(path: str, **replace_pairs) -> None:
         gsc_io.write(gsc_content)
 
 
-def wrap_subprocess_call(*calls: str, timeout: int = 5, **sbp_args) -> subprocess.CompletedProcess:
-    call = " ".join(calls)
+def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, **sbp_args) -> subprocess.CompletedProcess:
+    call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
-        process = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout, **sbp_args)
+        process: subprocess.CompletedProcess = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout, **sbp_args)
     except Exception:
         print_exc()
         sys.exit()
     else:
-        print(process.stdout.decode())
+        if cli_output:
+            print(process.stdout.decode())
+        return process
 
 
 def arg_path(*paths: str) -> str:
@@ -73,8 +132,29 @@ def create_zipfile() -> None:
         zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
 
 
+def verify_compiler_version() -> None:
+    compiler: subprocess.CompletedProcess = wrap_subprocess_call(COMPILER_XENSIK, cli_output=False)
+    lines: list[str] = compiler.stdout.decode().split("\n")
+    if not lines:
+        print("Could not verify compiler version")
+        return
+
+    version: list[str] = re.compile(r"([\d.]+)").findall(lines[0])
+    if len(version) != 1:
+        print("Could not verify compiler version")
+        return
+
+    ver: Version = Version.parse(version[0])
+    if (ver >= Version.parse("1.1.1") and ver not in BAD_COMPILER_VERSIONS):
+        return
+    input(f"WARNING! Potentially incompatibile version of the compiler ({str(ver)}) was found. Press ENTER to continue")
+
+
 def main(cfg: list) -> None:
     os.chdir(CWD)
+
+    # Util
+    verify_compiler_version()
 
     # New pluto
     pluto_update = dict(REPLACE_DEFAULT)
