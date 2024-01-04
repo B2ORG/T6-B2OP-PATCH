@@ -1,3 +1,8 @@
+# Version 2.3
+
+- Fixed delayed split prints
+- Updated repository url in welcome print
+
 # Version 2.2
 
 - Removed Velocity Meter
@@ -17,7 +22,7 @@ Major version update
 ## Changes
 
 - Added mob lighting fix (by [JezuzLizard](https://github.com/JezuzLizard/))
-- Fixed an issue that'd cause box location override to not work properly [#5](https://github.com/Zi0MIX/T6-B2OP-PATCH/issues/5)
+- Fixed an issue that'd cause box location override to not work properly [#5](https://github.com/B2ORG/T6-B2OP-PATCH/issues/5)
 - Info about First Box is now displayed alongside splits (watermark remains as it was)
 - Prevented infinite restarting on Tranzit if players kill zombie before permaperk function initialize
 - Prevented inifnite restarting caused by launching maps in offline mode
