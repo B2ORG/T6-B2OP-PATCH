@@ -44,13 +44,13 @@ class Version:
 
 
     def __str__(self) -> str:
-        return ".".join(self._version)
+        return ".".join([str(v) for v in self._version])
 
 
     @staticmethod
     def parse(_version: str):
         version = Version()
-        version._version: list[int] = _version.split(".")
+        version._version: list[int] = [int(v) for v in _version.split(".")]
         version.trim()
         return version
 
