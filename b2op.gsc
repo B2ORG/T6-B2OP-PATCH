@@ -665,7 +665,7 @@ welcome_prints()
 	wait 0.75;
 	self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG["version"]);
 	wait 0.75;
-	self iPrintLn("Source: ^1github.com/Zi0MIX/T6-B2OP-PATCH");
+	self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 }
 
 set_dvars()
