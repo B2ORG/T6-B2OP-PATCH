@@ -927,7 +927,7 @@ show_split()
 
 	if (!IsInArray(split_rounds, level.round_number))
 		return;
-	wait 8.5;
+	wait 6.25;
 
     timestamp = convert_time(int(getTime() / 1000) - level.B2OP_START);
 	if (is_true(flag("FIRST BOX")))
