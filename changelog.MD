@@ -1,3 +1,7 @@
+# Version 2.4
+
+- Removed Mob lighting fix
+
 # Version 2.3
 
 - Fixed delayed split prints
