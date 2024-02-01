@@ -138,8 +138,11 @@ def file_rename(old: str, new: str) -> None:
 
 
 def create_zipfile() -> None:
-    with zipfile.ZipFile(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
-        zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
+    try:
+        with zipfile.ZipFile(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
+            zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
+    except FileNotFoundError:
+        print("WARNING! Failed to create zip file due to missing compiled file")
 
 
 def verify_compiler_version() -> Version:
