@@ -47,7 +47,7 @@ init()
 	flag_init("permaperks_were_set");
 
 	// Patch Config
-	level.B2OP_CONFIG = array();
+	level.B2OP_CONFIG = [];
 	level.B2OP_CONFIG["version"] = 2.3;
 
 	level thread on_game_start();
@@ -133,7 +133,7 @@ on_player_spawned()
 
 	if (is_tracking_buildables())
 	{
-		self.initial_stats = array();
+		self.initial_stats = [];
 		self thread watch_stat("springpad_zm", array("zm_highrise", "zm_buried"));
 		self thread watch_stat("turbine");
 		self thread watch_stat("subwoofer_zm");
@@ -209,14 +209,14 @@ debug_print(text)
 
 generate_watermark_slots()
 {
-	slots = array();
+	slots = [];
 
 	positions = array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630);
 
 	foreach(pos in positions)
 	{
 		i = slots.size;
-		slots[i] = array();
+		slots[i] = [];
 		slots[i]["pos"] = pos;
 		slots[i]["perm_on"] = false;
 		slots[i]["temp_on"] = false;
@@ -673,7 +673,7 @@ set_dvars()
     /* Rules used in init_dvar() used to disable b2op dvar by default
     Try not to use init_dvar() outside of this function, in which case dvar_rules
     has to become a level variable and be manually removed later */
-    dvar_rules = array();
+    dvar_rules = [];
     dvar_rules["steam_backspeed"] = true;
 
 	init_dvar("timers", dvar_rules);
@@ -1053,11 +1053,11 @@ permaperk_array(code, maps_award, maps_take, to_round)
 	if (!isDefined(maps_award))
 		maps_award = array("zm_transit", "zm_highrise", "zm_buried");
 	if (!isDefined(maps_take))
-		maps_take = array();
+		maps_take = [];
 	if (!isDefined(to_round))
 		to_round = 255;
 
-	permaperk = array();
+	permaperk = [];
 	permaperk["code"] = code;
 	permaperk["maps_award"] = maps_award;
 	permaperk["maps_take"] = maps_take;
@@ -1079,7 +1079,7 @@ award_permaperks_safe()
 
 	wait 0.5;
 
-	perks_to_process = array();
+	perks_to_process = [];
 	perks_to_process[perks_to_process.size] = permaperk_array("revive");
 	perks_to_process[perks_to_process.size] = permaperk_array("multikill_headshots");
 	perks_to_process[perks_to_process.size] = permaperk_array("perk_lose");
@@ -1295,7 +1295,7 @@ player_rig_fridge(weapon)
 {
 	self maps\mp\zombies\_zm_stats::clear_stored_weapondata();
 
-	wpn = array();
+	wpn = [];
 	wpn["clip"] = weaponClipSize(weapon);
 	wpn["stock"] = weaponMaxAmmo(weapon);
 	wpn["dw_name"] = weapondualwieldweaponname(weapon);
@@ -1533,7 +1533,7 @@ rig_box(guns, player)
 
 	saved_check = level.special_weapon_magicbox_check;
 	current_box_hits = level.total_box_hits;
-	removed_guns = array();
+	removed_guns = [];
 
 	flag_set("box_rigged");
 #if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
@@ -1596,7 +1596,7 @@ rig_box(guns, player)
     /* Handle gun chaining recursively */
     if (guns.size > 1 && isDefined(level.total_box_hits))
     {
-        new_gun_array = array();
+        new_gun_array = [];
         for (i = 1; i < guns.size; i++)
             new_gun_array[new_gun_array.size] = guns[i];
 
@@ -1675,7 +1675,7 @@ location_watch_dvar()
 			continue;
 		}
 
-		chests_script = array();
+		chests_script = [];
 		foreach(chest in level.chests)
 			chests_script[chests_script.size] = chest.script_noteworthy;
 
@@ -1717,7 +1717,7 @@ location_watch_chat()
 			continue;
 		}
 
-		chests_script = array();
+		chests_script = [];
 		foreach(chest in level.chests)
 			chests_script[chests_script.size] = chest.script_noteworthy;
 
@@ -2116,7 +2116,7 @@ weapon_display_wrapper(weapon_key)
 
 pull_character_preset(character_name)
 {
-	preset = array();
+	preset = [];
 	preset["model"] = undefined;
 	preset["viewmodel"] = undefined;
 	preset["favourite_wall_weapons"] = undefined;
@@ -2351,7 +2351,7 @@ buildable_controller()
 
 	buildable_hud();
 
-	level.buildable_stats = array();
+	level.buildable_stats = [];
 	level.buildable_stats["springpad_zm"] = 0;
 	level.buildable_stats["turbine"] = 0;
 	level.buildable_stats["subwoofer_zm"] = 0;
