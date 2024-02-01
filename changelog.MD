@@ -3,6 +3,7 @@
 - Removed Mob lighting fix
 - Increased frequency of round splits
 - Fixed split prints (again)
+- Adjusted weapon verification for first box module in coop
 
 # Version 2.3
 

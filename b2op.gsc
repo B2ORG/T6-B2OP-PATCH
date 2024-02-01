@@ -1512,8 +1512,10 @@ rig_box(gun, player)
     level endon("end_game");
 
 	weapon_key = get_weapon_key(gun, ::box_weapon_verification);
-	if (isDefined(player))
-		weapon_key = player player_box_weapon_verification(weapon_key);
+    if (level.players.size == 1)
+        weapon_key = level.players[0] player_box_weapon_verification(weapon_key);
+	else
+		weapon_key = server_box_weapon_verification(weapon_key);
 
 	if (weapon_key == "")
 	{
@@ -2031,6 +2033,14 @@ player_box_weapon_verification(weapon_key)
 	}
 
 	return weapon_key;
+}
+
+server_box_weapon_verification(weapon_key)
+{
+    if (!maps\mp\zombies\_zm_weapons::limited_weapon_below_quota(weapon_key, undefined, getentarray("specialty_weapupgrade", "script_noteworthy")))
+        return "";
+
+    return weapon_key;
 }
 
 fridge_weapon_verification(weapon_key)

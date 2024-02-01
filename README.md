@@ -151,7 +151,7 @@ For example:
 
 ## Overriding box weapon
 
-Player is allowed to override weapons in the box until round 11, as long as he would be able to get specified weapon under normal conditions.
+Player is allowed to override weapons in the box until round 11, as long as he would be able to get specified weapon under normal conditions. Note, in a coop game there are scenarios where first box could give players guns they shouldn't be getting, players are responsible for using the module responsibly.
 Player can still get a teddy bear from the box, despite overriding the weapon. If that happens, weapon has to be set again after box appeared in the new spot.
 To set weapon in the box, a DVAR `fb` bas to be set to the right value. Below is table with values that can be used to override weapon. It is also possible to put actual weapon code instead of the key below, assuming players know weapon codes.
 
