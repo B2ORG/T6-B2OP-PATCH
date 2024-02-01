@@ -1,6 +1,7 @@
 # Version 2.4
 
 - Removed Mob lighting fix
+- Increased frequency of round splits
 
 # Version 2.3
 

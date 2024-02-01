@@ -916,13 +916,14 @@ show_split()
     if (getDvar("timers") == "0")
         return;
 
-	split_rounds = array(30, 50, 70, 100, 150, 200);
-	if (isDefined(level.B2_SPLITS))
-		split_rounds = level.B2_SPLITS;
+    /* B2 splits used, only use rounds specified */
+	if (isDefined(level.B2_SPLITS) && !IsInArray(level.B2_SPLITS, level.round_number))
+        return;
+    /* By default every 10 rounds + 255 */
+    if (!isDefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
+        return;
 
-	if (!IsInArray(split_rounds, level.round_number))
-		return;
-	wait 6.25;
+    wait 6.25;
 
     timestamp = convert_time(int(getTime() / 1000) - level.B2OP_START);
 	if (is_true(flag("FIRST BOX")))
