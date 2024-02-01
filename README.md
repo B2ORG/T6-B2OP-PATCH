@@ -219,6 +219,10 @@ For example:
 
 ```fb mk2```
 
+Additionally, players can chain multiple weapons via a single message with both methods, following example will yield the first box module triggering 3 times
+
+```fb mk2|monk|galil```
+
 ## Overriding fridge weapon
 
 Player is allowed to override weapons for himself and his time in the fridge until either round 11 or first use of the fridge. It is not possible to put in a weapon that'd not be possible to put during the normal game.

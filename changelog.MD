@@ -4,6 +4,7 @@
 - Increased frequency of round splits
 - Fixed split prints (again)
 - Adjusted weapon verification for first box module in coop
+- Added queueing to first box module, multiple guns can be queued now via a single message
 
 # Version 2.3
 

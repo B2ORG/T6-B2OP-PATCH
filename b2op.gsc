@@ -1469,7 +1469,7 @@ box_watch_dvar()
 		if (getDvar("fb") == "")
 			continue;
 
-		thread rig_box(getDvar("fb"), level.players[0]);
+		thread rig_box(strtok(getDvar("fb"), "|"), level.players[0]);
 		wait_network_frame();
 
 		while (flag("box_rigged"))
@@ -1496,7 +1496,7 @@ box_watch_chat()
 		else
 			continue;
 
-		thread rig_box(wpn_key, player);
+		thread rig_box(strtok(wpn_key, "|"), player);
 		wait_network_frame();
 
 		wpn_key = undefined;
@@ -1507,11 +1507,11 @@ box_watch_chat()
 }
 #endif
 
-rig_box(gun, player)
+rig_box(guns, player)
 {
     level endon("end_game");
 
-	weapon_key = get_weapon_key(gun, ::box_weapon_verification);
+	weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
     if (level.players.size == 1)
         weapon_key = level.players[0] player_box_weapon_verification(weapon_key);
 	else
@@ -1519,12 +1519,14 @@ rig_box(gun, player)
 
 	if (weapon_key == "")
 	{
-		print_scheduler("Wrong weapon key: ^1" + gun);
+		print_scheduler("Wrong weapon key: ^1" + guns[0]);
 		return;
 	}
 
 	// weapon_name = level.zombie_weapons[weapon_key].name;
 	print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
+    if (guns.size > 1)
+        print_scheduler("^1" + (guns.size - 1) + "^7 more gun codes in the queue");
 	thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
 	level.rigged_hits++;
 
@@ -1554,8 +1556,9 @@ rig_box(gun, player)
     if (has_permaperks_system())
     {
         level.pers_box_weapon_lose_round = 1;
-        foreach (player in level.players)
-            player remove_permaperk_wrapper("pers_box_weapon_counter");
+        /* This is a for so i don't override player var */
+        for (i = 0; i < level.players.size; i++)
+            level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
     }
 
 	/* Critical loop responsible for restoring proper state */
@@ -1588,6 +1591,16 @@ rig_box(gun, player)
 #endif
 		}
 	}
+
+    /* Handle gun chaining recursively */
+    if (guns.size > 1 && isDefined(level.total_box_hits))
+    {
+        new_gun_array = array();
+        for (i = 1; i < guns.size; i++)
+            new_gun_array[new_gun_array.size] = guns[i];
+
+        rig_box(new_gun_array, player);
+    }
 
 	flag_clear("box_rigged");
 }
