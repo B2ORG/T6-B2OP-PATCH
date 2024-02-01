@@ -2,6 +2,7 @@
 
 - Removed Mob lighting fix
 - Increased frequency of round splits
+- Fixed split prints (again)
 
 # Version 2.3
 

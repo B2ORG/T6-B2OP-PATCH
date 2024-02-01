@@ -923,7 +923,7 @@ show_split()
     if (!isDefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
         return;
 
-    wait 6.25;
+    wait 8.25;
 
     timestamp = convert_time(int(getTime() / 1000) - level.B2OP_START);
 	if (is_true(flag("FIRST BOX")))
