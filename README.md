@@ -28,7 +28,9 @@ Since version 2.0, all scripts that are meant to be used by players are availabl
 
 Download script `b2op-plutonium.gsc` from releases section, and put it in your Plutonium folder, by default it's located in:
 
-```C:\Users\{your username}\AppData\Local\Plutonium\storage\t6\scripts\zm```
+```
+C:\Users\{your username}\AppData\Local\Plutonium\storage\t6\scripts\zm
+```
 
 The appdata directory is hidden by default on windows, in order to access it, press key combination WINDOWS + R on your keyboard and type in `%LOCALAPPDATA%`, press ENTER.
 
@@ -38,7 +40,9 @@ For previous versions, network frame fix script was separate, but now it is buil
 
 Download script `b2op-redacted.gsc` from releases section, and put it in script folder in your Redacted directory.
 
-```.\data\scripts```
+```
+.\data\scripts
+```
 
 ## Plutonium - Ancient (r353 and similar)
 
@@ -106,7 +110,9 @@ Features in B2OP patch
 
 All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar. Do note, disabling hud elements reduces the overhead the patch has over the game, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console
 
-```timers 0;splits 0;buildables 0```
+```
+timers 0;splits 0;buildables 0
+```
 
 | HUD element | DVAR | Default |
 | --- | --- | --- |
@@ -142,13 +148,17 @@ To change box location, a DVAR `lb` has to be set to the right value. Below is t
 
 For example:
 
-```lb dt```
+```
+lb dt
+```
 
 Exclusively to new Plutonium, players can send a message in the game chat to make the box move, message would be the same as the DVAR change, so for example. To open in-game chat, players have to press `t`.
 
 For example:
 
-```lb dt```
+```
+lb dt
+```
 
 ## Overriding box weapon
 
@@ -212,17 +222,23 @@ To set weapon in the box, a DVAR `fb` bas to be set to the right value. Below is
 
 For example:
 
-```fb mk2```
+```
+fb mk2
+```
 
 Similar to box location, there is an exclusive feature for New Plutonium, where players can set weapons in the box via chat messages.
 
 For example:
 
-```fb mk2```
+```
+fb mk2
+```
 
 Additionally, players can chain multiple weapons via a single message with both methods, following example will yield the first box module triggering 3 times
 
-```fb mk2|monk|galil```
+```
+fb mk2|monk|galil
+```
 
 ## Overriding fridge weapon
 
@@ -233,29 +249,41 @@ Values from this DVAR can be seen above (in the [Overriding box weapon](#overrid
 
 Example for normal weapon:
 
-```fridge m16```
+```
+fridge m16
+```
 
 Example for upgraded weapon:
 
-```fridge +m16```
+```
+fridge +m16
+```
 
 Exclusively to New Plutonium, fridge can be set using chat commands, and using this feature players can set weapons individially.
 
 Example of player setting weapon for himself:
 
-```fridge m16```
+```
+fridge m16
+```
 
 Example of player setting upgraded weapon for himself:
 
-```fridge +m16```
+```
+fridge +m16
+```
 
 Example of player setting weapons for everyone (host only):
 
-```fridge all m16```
+```
+fridge all m16
+```
 
 Example of player setting upgraded weapons for everyone (host only):
 
-```fridge all +m16```
+```
+fridge all +m16
+```
 
 # Permaperks
 
