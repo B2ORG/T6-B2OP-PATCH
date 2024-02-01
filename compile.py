@@ -3,6 +3,10 @@ import subprocess, sys, os, zipfile, re
 
 
 class Version:
+    UNKNOWN = [-1, -1, -1]
+    """Signature of an unknown version"""
+
+
     def __init__(self) -> None:
         self._version: list[int]
 
@@ -59,6 +63,12 @@ class Version:
         if len(self._version) > 3:
             self._version = self._version[:3]
         return self
+
+
+class UnknownVersion(Version):
+    def __init__(self) -> None:
+        super().__init__()
+        self._version = self.UNKNOWN
 
 
 # Config
@@ -132,22 +142,22 @@ def create_zipfile() -> None:
         zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
 
 
-def verify_compiler_version() -> None:
+def verify_compiler_version() -> Version:
     compiler: subprocess.CompletedProcess = wrap_subprocess_call(COMPILER_XENSIK, cli_output=False)
     lines: list[str] = compiler.stdout.decode().split("\n")
     if not lines:
         print("Could not verify compiler version")
-        return
+        return UnknownVersion()
 
     version: list[str] = re.compile(r"([\d.]+)").findall(lines[0])
     if len(version) != 1:
         print("Could not verify compiler version")
-        return
+        return UnknownVersion()
 
     ver: Version = Version.parse(version[0])
-    if (ver >= Version.parse("1.1.1") and ver not in BAD_COMPILER_VERSIONS):
-        return
-    input(f"WARNING! Potentially incompatibile version of the compiler ({str(ver)}) was found. Press ENTER to continue")
+    if ver < Version.parse("1.1.1") or ver in BAD_COMPILER_VERSIONS:
+        input(f"WARNING! Potentially incompatibile version of the compiler ({str(ver)}) was found. Press ENTER to continue")
+    return ver
 
 
 def main(cfg: list) -> None:
