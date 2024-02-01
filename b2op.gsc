@@ -678,6 +678,7 @@ set_dvars()
 
 	init_dvar("timers", dvar_rules);
 	init_dvar("buildables", dvar_rules);
+    init_dvar("splits", dvar_rules);
 #ifndef DISABLE_HORDES
 	init_dvar("hordes", dvar_rules);
 #endif
@@ -913,7 +914,7 @@ show_split()
 {
 	level endon("end_game");
 
-    if (getDvar("timers") == "0")
+    if (getDvar("splits") == "0")
         return;
 
     /* B2 splits used, only use rounds specified */

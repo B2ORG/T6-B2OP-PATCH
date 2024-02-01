@@ -5,6 +5,7 @@
 - Fixed split prints (again)
 - Adjusted weapon verification for first box module in coop
 - Added queueing to first box module, multiple guns can be queued now via a single message
+- Added separate dvar for toggling splits on and off (`splits` 0/1)
 
 # Version 2.3
 

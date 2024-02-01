@@ -106,11 +106,12 @@ Features in B2OP patch
 
 All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar. Do note, disabling hud elements reduces the overhead the patch has over the game, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console
 
-```timers 0;buildables 0```
+```timers 0;splits 0;buildables 0```
 
 | HUD element | DVAR | Default |
 | --- | --- | --- |
-| Timers + SPH print | `timers` 0/1 | Enabled |
+| Timers | `timers` 0/1 | Enabled |
+| SPH print | `splits` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
 
 # Box / Fridge
