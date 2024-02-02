@@ -6,6 +6,7 @@
 - Adjusted weapon verification for first box module in coop
 - Added queueing to first box module, multiple guns can be queued now via a single message
 - Added separate dvar for toggling splits on and off (`splits` 0/1)
+- Changed round timer to appear on screen when lobby timer does (similar to b2fr)
 
 # Version 2.3
 

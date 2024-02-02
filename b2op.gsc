@@ -875,7 +875,8 @@ timers()
 
 	level.round_hud = createserverfontstring("big" , 1.6);
 	level.round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
-	level.round_hud.alpha = 0;
+	level.round_hud.alpha = 1;
+    level.round_hud setText("0:00");
 
     level waittill("start_of_round");
     while (isDefined(level.round_hud))
