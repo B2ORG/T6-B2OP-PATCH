@@ -48,7 +48,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = [];
-	level.B2OP_CONFIG["version"] = 2.3;
+	level.B2OP_CONFIG["version"] = 2.4;
 
 	level thread on_game_start();
 }
