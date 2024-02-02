@@ -2,6 +2,13 @@
 
 Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box or fridge overrides are fully optional and invoked in-game by the players.
 
+Patch has already proved itself in multiple top games, including, but not limited to:
+- Town [99](https://www.twitch.tv/videos/1923623612) No Jug WR by Slewya
+- Origins [164](https://www.twitch.tv/videos/2007798756) WR by Dxruma
+- Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
+- Mob of the Dead [31:09] (https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
+- Buried [150](https://www.twitch.tv/videos/1866405878) No Power coop WR by Astrox & Nessquik
+
 # Informations
 
 Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured. The main channel for issues is GitHubs Issues section, although it won't hurt to ask about it on [Discord](https://discord.gg/fDY4VR6rNE) first
@@ -162,8 +169,12 @@ lb dt
 
 ## Overriding box weapon
 
-Player is allowed to override weapons in the box until round 11, as long as he would be able to get specified weapon under normal conditions. Note, in a coop game there are scenarios where first box could give players guns they shouldn't be getting, players are responsible for using the module responsibly.
+Player is allowed to override weapons in the box until round 11, as long as he would be able to get specified weapon under normal conditions. 
+
+Note, in a coop game there are scenarios where first box could give players guns they shouldn't be getting, players are responsible for using the module responsibly. Here is an [example](https://youtu.be/5Tvlf50d6Ec) of something like this happening.
+
 Player can still get a teddy bear from the box, despite overriding the weapon. If that happens, weapon has to be set again after box appeared in the new spot.
+
 To set weapon in the box, a DVAR `fb` bas to be set to the right value. Below is table with values that can be used to override weapon. It is also possible to put actual weapon code instead of the key below, assuming players know weapon codes.
 
 | Weapon | DVAR value |
