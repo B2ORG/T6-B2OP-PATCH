@@ -1,3 +1,7 @@
+# Version 2.5
+
+- [Pluto only] Added `scr_skip_devblock` dvar to mitigate dev prints problem in Pluto R3904
+
 # Version 2.4
 
 - Removed Mob lighting fix
