@@ -48,7 +48,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = [];
-	level.B2OP_CONFIG["version"] = 2.4;
+	level.B2OP_CONFIG["version"] = 2.5;
 
 	level thread on_game_start();
 }
@@ -697,6 +697,9 @@ set_dvars()
     setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
     setdvar("sv_cheats", 0);
     setdvar("r_dof_enable", 0);
+#if PLUTO == 1
+    setdvar("scr_skip_devblock", 1);
+#endif
 }
 
 check_dvars()
