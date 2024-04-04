@@ -3025,6 +3025,7 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
     for ( i = 0; i < self.num_attract_dists; i++ )
     {
 		/* Refactor to avoid continue */
+        do_continue = false;
         if ( num_attracts_per_dist > max_positions[i] + diff )
         {
             actual_num_positions[i] = max_positions[i];
@@ -3093,6 +3094,7 @@ generated_radius_attract_positions( forward, offset, num_positions, attract_radi
         }
 		else
 		{
+            not_failed = false;
 			if ( isdefined( level.use_alternate_poi_positioning ) && level.use_alternate_poi_positioning )
 			{
 				if ( isdefined( self ) && isdefined( self.origin ) )
@@ -3169,6 +3171,7 @@ get_zombie_point_of_interest( origin, poi_array )
     for ( i = 0; i < ent_array.size; i++ )
     {
 		/* Refactor to avoid continue */
+        ignore = 1;
         if ( isdefined( ent_array[i].poi_active ) && ent_array[i].poi_active )
 		{
 			if ( isdefined( self.ignore_poi_targetname ) && self.ignore_poi_targetname.size > 0 )
@@ -3561,6 +3564,7 @@ get_closest_player_using_paths( origin, players )
         length_to_player = get_path_length_to_enemy( player );
 
 		/* Refactor to avoid continue */
+        do_continue = false;
         if ( isdefined( level.validate_enemy_path_length ) )
         {
             if ( length_to_player == 0 )
@@ -4327,7 +4331,8 @@ get_non_destroyed_chunks( barrier, barrier_chunks )
             }
 
 			/* Refactor to remove continue */
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "new_barricade" )
+            do_continue = false;
+            if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "new_barricade" )
             {
 				/* Split into 2 ifs */
                 if ( isdefined( barrier_chunks[i].script_parameters ) )
@@ -4341,37 +4346,46 @@ get_non_destroyed_chunks( barrier, barrier_chunks )
 						}
 					}
                 }
+                do_continue = true;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_bent" )
-            {
-                if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
+            if ( !is_true( do_continue ) ) {
+                if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_bent" )
                 {
-                    if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+                    if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
                     {
-                        if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
-                            array[array.size] = barrier_chunks[i];
+                        if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+                        {
+                            if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
+                                array[array.size] = barrier_chunks[i];
+                        }
                     }
+                    do_continue = true;
                 }
             }
 
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_prestine" )
-            {
-                if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
+            if ( !is_true( do_continue ) ) {
+                if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_prestine" )
                 {
-                    if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+                    if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
                     {
-                        if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
-                            array[array.size] = barrier_chunks[i];
+                        if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+                        {
+                            if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
+                                array[array.size] = barrier_chunks[i];
+                        }
                     }
+                    do_continue = true;
                 }
             }
         }
 
-        if ( array.size == 0 )
-            return undefined;
+        if ( !is_true( do_continue ) ) {
+            if ( array.size == 0 )
+                return undefined;
 
-        return array;
+            return array;
+        }
     }
 }
 
@@ -4747,6 +4761,7 @@ unitrigger_set_hint_string( ent, default_ref, cost )
             ref = ent.script_hint;
 
 		/* Refactor to avoid continue */
+        do_continue = false;
         if ( isdefined( level.legacy_hint_system ) && level.legacy_hint_system )
         {
             ref = ref + "_" + cost;
@@ -6624,6 +6639,7 @@ track_players_intersection_tracker()
 			{
 				for ( j = 0; j < players.size; j++ )
 				{
+                    do_continue = false;
 					if ( i == j || players[j] maps\mp\zombies\_zm_laststand::player_is_in_laststand() || "playing" != players[j].sessionstate )
 						do_continue = true;
 
