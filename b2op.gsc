@@ -2448,7 +2448,7 @@ init_utility()
 
 is_classic()
 {
-    var = getdvar( "ui_zm_gamemodegroup" );
+    var = getdvar( #"ui_zm_gamemodegroup" );
 
     if ( var == "zclassic" )
         return true;
@@ -2458,7 +2458,7 @@ is_classic()
 
 is_standard()
 {
-    var = getdvar( "ui_gametype" );
+    var = getdvar( #"ui_gametype" );
 
     if ( var == "zstandard" )
         return true;
@@ -2534,9 +2534,9 @@ get_current_actor_count()
     actors = getaispeciesarray( level.zombie_team, "all" );
 
     if ( isdefined( actors ) )
-        count += actors.size;
+        count = count + actors.size;
 
-    count += get_current_corpse_count();
+    count = count + get_current_corpse_count();
     return count;
 }
 
@@ -2724,6 +2724,7 @@ run_spawn_functions()
             func = self.spawn_funcs[i];
             single_thread( self, func["function"], func["param1"], func["param2"], func["param3"], func["param4"] );
         }
+
 /#
         self.saved_spawn_functions = self.spawn_funcs;
 #/
@@ -2805,7 +2806,7 @@ no_valid_repairable_boards( barrier, barrier_chunks )
 
 is_survival()
 {
-    var = getdvar( "ui_zm_gamemodegroup" );
+    var = getdvar( #"ui_zm_gamemodegroup" );
 
     if ( var == "zsurvival" )
         return true;
@@ -2818,7 +2819,7 @@ is_encounter()
     if ( isdefined( level._is_encounter ) && level._is_encounter )
         return true;
 
-    var = getdvar( "ui_zm_gamemodegroup" );
+    var = getdvar( #"ui_zm_gamemodegroup" );
 
     if ( var == "zencounter" )
     {
@@ -2908,7 +2909,6 @@ round_up_to_ten( score )
     new_score = score - score % 10;
 
     if ( new_score < score )
-        new_score += 10;
 
     return new_score;
 }
@@ -2919,7 +2919,7 @@ round_up_score( score, value )
     new_score = score - score % value;
 
     if ( new_score < score )
-        new_score += value;
+        new_score = new_score + value;
 
     return new_score;
 }
@@ -2941,8 +2941,8 @@ places_before_decimal( num )
 
     while ( true )
     {
-        abs_num *= 0.1;
-        count += 1;
+        abs_num = abs_num * 0.1;
+        count = count + 1;
 
         if ( abs_num < 1 )
             return count;
@@ -3029,8 +3029,8 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
         if ( num_attracts_per_dist > max_positions[i] + diff )
         {
             actual_num_positions[i] = max_positions[i];
-            diff += num_attracts_per_dist - max_positions[i];
             do_continue = true;
+            diff = diff + ( num_attracts_per_dist - max_positions[i] );
         }
 
 		if ( !is_true( do_continue ) )
@@ -3049,7 +3049,7 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
     {
         if ( actual_num_positions[j] + failed < max_positions[j] )
         {
-            actual_num_positions[j] += failed;
+            actual_num_positions[j] = actual_num_positions[j] + failed;
             failed = 0;
         }
         else if ( actual_num_positions[j] < max_positions[j] )
@@ -3058,8 +3058,8 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
             failed = max_positions[j] - actual_num_positions[j];
         }
 
-        failed += self generated_radius_attract_positions( forward, angle_offset, actual_num_positions[j], self.attract_dists[j] );
-        angle_offset += 15;
+        failed = failed + self generated_radius_attract_positions( forward, angle_offset, actual_num_positions[j], self.attract_dists[j] );
+        angle_offset = angle_offset + 15;
         self.last_index[j] = int( actual_num_positions[j] - failed + prev_last_index );
         prev_last_index = self.last_index[j];
     }
@@ -3075,7 +3075,7 @@ generated_radius_attract_positions( forward, offset, num_positions, attract_radi
     failed = 0;
     degs_per_pos = 360 / num_positions;
 
-    for ( i = offset; i < 360 + offset; i += degs_per_pos )
+    for ( i = offset; i < 360 + offset; i = i + degs_per_pos )
     {
         altforward = forward * attract_radius;
         rotated_forward = ( cos( i ) * altforward[0] - sin( i ) * altforward[1], sin( i ) * altforward[0] + cos( i ) * altforward[1], altforward[2] );
@@ -3435,9 +3435,7 @@ can_attract( attractor )
 update_poi_on_death( zombie_poi )
 {
     self endon( "kill_poi" );
-
     self waittill( "death" );
-
     self remove_poi_attractor( zombie_poi );
 }
 
@@ -3715,7 +3713,7 @@ get_number_of_valid_players()
     for ( i = 0; i < players.size; i++ )
     {
         if ( is_player_valid( players[i] ) )
-            num_player_valid += 1;
+            num_player_valid = num_player_valid + 1;
     }
 
     return num_player_valid;
@@ -4204,7 +4202,7 @@ disable_trigger()
     if ( !isdefined( self.disabled ) || !self.disabled )
     {
         self.disabled = 1;
-        self.origin -= vectorscale( ( 0, 0, 1 ), 10000.0 );
+        self.origin = self.origin - vectorscale( ( 0, 0, 1 ), 10000.0 );
     }
 }
 
@@ -4214,7 +4212,7 @@ enable_trigger()
         return;
 
     self.disabled = 0;
-    self.origin += vectorscale( ( 0, 0, 1 ), 10000.0 );
+    self.origin = self.origin + vectorscale( ( 0, 0, 1 ), 10000.0 );
 }
 
 in_playable_area()
@@ -4678,7 +4676,7 @@ add_spawner( spawner )
 fake_physicslaunch( target_pos, power )
 {
     start_pos = self.origin;
-    gravity = getdvarint( "bg_gravity" ) * -1;
+    gravity = getdvarint( #"bg_gravity" ) * -1;
     dist = distance( start_pos, target_pos );
     time = dist / power;
     delta = target_pos - start_pos;
@@ -4702,6 +4700,7 @@ get_zombie_hint( ref )
 {
     if ( isdefined( level.zombie_hints[ref] ) )
         return level.zombie_hints[ref];
+
 /#
     println( "UNABLE TO FIND HINT STRING " + ref );
 #/
@@ -4892,11 +4891,11 @@ onplayerdisconnect_callback( func )
 
 set_zombie_var( var, value, is_float, column, is_team_based )
 {
-	/* Originally kwargs */
-	if ( !isdefined( is_float ) )
-		is_float = 0;
-	if ( !isdefined( column ) )
-		column = 1;
+    if ( !isdefined( is_float ) )
+        is_float = 0;
+
+    if ( !isdefined( column ) )
+        column = 1;
 
     table = "mp/zombiemode.csv";
     table_value = tablelookup( table, 0, var, column );
@@ -4922,13 +4921,14 @@ set_zombie_var( var, value, is_float, column, is_team_based )
 
 get_table_var( table, var_name, value, is_float, column )
 {
-	/* Originally kwargs */
-	if ( !isdefined( table ) )
-		table = "mp/zombiemode.csv";
-	if ( !isdefined( is_float ) )
-		is_float = 0;
-	if ( !isdefined( column ) )
-		column = 1;
+    if ( !isdefined( table ) )
+        table = "mp/zombiemode.csv";
+
+    if ( !isdefined( is_float ) )
+        is_float = 0;
+
+    if ( !isdefined( column ) )
+        column = 1;
 
     table_value = tablelookup( table, 0, var_name, column );
 
@@ -4992,7 +4992,7 @@ print_run_speed( speed )
 draw_line_ent_to_ent( ent1, ent2 )
 {
 /#
-    if ( getdvarint( "zombie_debug" ) != 1 )
+    if ( getdvarint( #"zombie_debug" ) != 1 )
         return;
 
     ent1 endon( "death" );
@@ -5009,7 +5009,7 @@ draw_line_ent_to_ent( ent1, ent2 )
 draw_line_ent_to_pos( ent, pos, end_on )
 {
 /#
-    if ( getdvarint( "zombie_debug" ) != 1 )
+    if ( getdvarint( #"zombie_debug" ) != 1 )
         return;
 
     ent endon( "death" );
@@ -5030,7 +5030,7 @@ draw_line_ent_to_pos( ent, pos, end_on )
 debug_print( msg )
 {
 /#
-    if ( getdvarint( "zombie_debug" ) > 0 )
+    if ( getdvarint( #"zombie_debug" ) > 0 )
         println( "######### ZOMBIE: " + msg );
 #/
 }
@@ -5043,7 +5043,7 @@ debug_blocker( pos, rad, height )
 
     for (;;)
     {
-        if ( getdvarint( "zombie_debug" ) != 1 )
+        if ( getdvarint( #"zombie_debug" ) != 1 )
             return;
 
         wait 0.05;
@@ -5100,7 +5100,7 @@ debug_breadcrumbs()
 
     while ( true )
     {
-        if ( getdvarint( "zombie_debug" ) != 1 )
+        if ( getdvarint( #"zombie_debug" ) != 1 )
         {
             wait 1;
             continue;
@@ -5122,7 +5122,7 @@ debug_attack_spots_taken()
 
     while ( true )
     {
-        if ( getdvarint( "zombie_debug" ) != 2 )
+        if ( getdvarint( #"zombie_debug" ) != 2 )
         {
             wait 1;
             continue;
@@ -5158,7 +5158,7 @@ float_print3d( msg, time )
 
     while ( gettime() < time )
     {
-        offset += vectorscale( ( 0, 0, 1 ), 2.0 );
+        offset = offset + vectorscale( ( 0, 0, 1 ), 2.0 );
         print3d( self.origin + offset, msg, ( 1, 1, 1 ) );
         wait 0.05;
     }
@@ -5180,9 +5180,7 @@ do_player_vo( snd, variation_count )
     {
         level.player_is_speaking = 1;
         self playsoundwithnotify( sound, "sound_done" );
-
         self waittill( "sound_done" );
-
         wait 2;
         level.player_is_speaking = 0;
     }
@@ -5206,6 +5204,7 @@ magic_bullet_shield()
 /#
             level thread debug_magic_bullet_shield_death( self );
 #/
+
             if ( !isdefined( self._mbs ) )
                 self._mbs = spawnstruct();
 
@@ -5236,16 +5235,14 @@ debug_magic_bullet_shield_death( guy )
         targetname = guy.targetname;
 
     guy endon( "stop_magic_bullet_shield" );
-
     guy waittill( "death" );
-
     // assert( !isdefined( guy ), "Guy died with magic bullet shield on with targetname: " + targetname );
 }
 
 is_magic_bullet_shield_enabled( ent )
 {
     if ( !isdefined( ent ) )
-        return 0;
+        return false;
 
     return isdefined( ent.magic_bullet_shield ) && ent.magic_bullet_shield == 1;
 }
@@ -5254,9 +5251,7 @@ really_play_2d_sound( sound )
 {
     temp_ent = spawn( "script_origin", ( 0, 0, 0 ) );
     temp_ent playsoundwithnotify( sound, sound + "wait" );
-
     temp_ent waittill( sound + "wait" );
-
     wait 0.05;
     temp_ent delete();
 }
@@ -5271,6 +5266,7 @@ include_weapon( weapon_name, in_box, collector, weighting_func )
 /#
     println( "ZM >> include_weapon = " + weapon_name );
 #/
+
     if ( !isdefined( in_box ) )
         in_box = 1;
 
@@ -5312,7 +5308,6 @@ is_buildable()
 wait_for_buildable( buildable_name )
 {
     level waittill( buildable_name + "_built", player );
-
     return player;
 }
 
@@ -5427,9 +5422,8 @@ isplayerexplosiveweapon( weapon, meansofdeath )
 
 create_counter_hud( x )
 {
-	/* Originally kwarg */
-	if ( !isdefined( x ) )
-		x = 0;
+    if ( !isdefined( x ) )
+        x = 0;
 
     hud = create_simple_hud();
     hud.alignx = "left";
@@ -5511,13 +5505,12 @@ shock_onpain()
     self notify( "stop_shock_onpain" );
     self endon( "stop_shock_onpain" );
 
-    if ( getdvar( "blurpain" ) == "" )
+    if ( getdvar( #"blurpain" ) == "" )
         setdvar( "blurpain", "on" );
 
     while ( true )
     {
         oldhealth = self.health;
-
         self waittill( "damage", damage, attacker, direction_vec, point, mod );
 
         if ( isdefined( level.shock_onpain ) && !level.shock_onpain )
@@ -5544,7 +5537,7 @@ shock_onpain()
 
             self shock_onexplosion( damage, shocktype, shocklight );
         }
-        else if ( getdvar( "blurpain" ) == "on" )
+        else if ( getdvar( #"blurpain" ) == "on" )
             self shellshock( "pain", 0.5 );
     }
 }
@@ -5583,6 +5576,7 @@ increment_is_drinking()
         return;
     }
 #/
+
     if ( !isdefined( self.is_drinking ) )
         self.is_drinking = 0;
 
@@ -5646,9 +5640,8 @@ getweaponclasszm( weapon )
 
 spawn_weapon_model( weapon, model, origin, angles, options )
 {
-	/* Originally kwarg */
-	if ( !isdefined( model ) )
-		model = getweaponmodel( weapon );
+    if ( !isdefined( model ) )
+        model = getweaponmodel( weapon );
 
     weapon_model = spawn( "script_model", origin );
 
@@ -5715,7 +5708,7 @@ is_lethal_grenade( weaponname )
 is_player_lethal_grenade( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_lethal_grenade ) )
-        return 0;
+        return false;
 
     return self.current_lethal_grenade == weaponname;
 }
@@ -5762,7 +5755,7 @@ is_tactical_grenade( weaponname )
 is_player_tactical_grenade( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_tactical_grenade ) )
-        return 0;
+        return false;
 
     return self.current_tactical_grenade == weaponname;
 }
@@ -5810,7 +5803,7 @@ is_placeable_mine( weaponname )
 is_player_placeable_mine( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_placeable_mine ) )
-        return 0;
+        return false;
 
     return self.current_placeable_mine == weaponname;
 }
@@ -5852,7 +5845,7 @@ is_melee_weapon( weaponname )
 is_player_melee_weapon( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_melee_weapon ) )
-        return 0;
+        return false;
 
     return self.current_melee_weapon == weaponname;
 }
@@ -5904,7 +5897,7 @@ is_equipment_that_blocks_purchase( weaponname )
 is_player_equipment( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_equipment ) )
-        return 0;
+        return false;
 
     return self.current_equipment == weaponname;
 }
@@ -6363,7 +6356,7 @@ isads( player )
 bullet_attack( type )
 {
     if ( type == "MOD_PISTOL_BULLET" )
-        return 1;
+        return true;
 
     return type == "MOD_RIFLE_BULLET";
 }
@@ -6538,6 +6531,7 @@ ent_flag_clear( message )
     assert( self.ent_flag[message] == self.ent_flags_lock[message] );
     self.ent_flags_lock[message] = 0;
 #/
+
     if ( self.ent_flag[message] )
     {
         self.ent_flag[message] = 0;
@@ -6578,9 +6572,7 @@ ent_flag_init_ai_standards()
 ent_flag_wait_ai_standards( message )
 {
     self endon( "death" );
-
     self waittill( message );
-
     self.ent_flag[message] = 1;
 }
 
@@ -6702,8 +6694,7 @@ get_eye()
     {
         linked_ent = self getlinkedent();
 
-		/* Seems to be debug related dvar ~ Zi0 */
-        if ( isdefined( linked_ent )/* && getdvarint( _hash_5AEFD7E9 ) > 0 */)
+        if ( isdefined( linked_ent ) && getdvarint( #"cg_cameraUseTagCamera" ) > 0 )
         {
             camera = linked_ent gettagorigin( "tag_camera" );
 
@@ -6754,9 +6745,8 @@ add_gameloc( gl, dummy1, name, dummy2 )
 
 get_closest_index( org, array, dist )
 {
-	/* Originally kwarg */
-	if ( !isdefined( dist ) )
-		dist = 9999999;
+    if ( !isdefined( dist ) )
+        dist = 9999999;
 
     distsq = dist * dist;
 
@@ -6916,7 +6906,6 @@ waittill_subset( min_num, string1, string2, string3, string4, string5 )
     while ( ent.threads )
     {
         ent waittill( "returned" );
-
         ent.threads--;
         returned_threads++;
 
@@ -6930,10 +6919,10 @@ waittill_subset( min_num, string1, string2, string3, string4, string5 )
 is_headshot( sweapon, shitloc, smeansofdeath )
 {
     if ( shitloc != "head" && shitloc != "helmet" )
-        return 0;
+        return false;
 
     if ( smeansofdeath == "MOD_IMPACT" && issubstr( sweapon, "knife_ballistic" ) )
-        return 1;
+        return true;
 
     return smeansofdeath != "MOD_MELEE" && smeansofdeath != "MOD_BAYONET" && smeansofdeath != "MOD_IMPACT" && smeansofdeath != "MOD_UNKNOWN";
 }
@@ -6998,6 +6987,7 @@ general_vox_timer( timer, type )
 /#
     println( "ZM >> VOX TIMER STARTED FOR  " + type + " ( " + timer + ")" );
 #/
+
     while ( timer > 0 )
     {
         wait 1;
@@ -7168,7 +7158,7 @@ sq_refresh_player_navcard_hud_internal()
     //         hasit = 1;
 
     //     if ( hasit )
-    //         navcard_bits += ( 1 << i );
+    //         navcard_bits = navcard_bits + ( 1 << i );
     // }
 
     // wait_network_frame();
@@ -7239,9 +7229,8 @@ check_and_create_node_lists()
 
 link_nodes( a, b, bdontunlinkonmigrate )
 {
-	/* Originally kwarg */
-	if ( !isdefined( bdontunlinkonmigrate ) )
-		bdontunlinkonmigrate = 0;
+    if ( !isdefined( bdontunlinkonmigrate ) )
+        bdontunlinkonmigrate = 0;
 
     if ( nodesarelinked( a, b ) )
         return;
@@ -7278,9 +7267,8 @@ link_nodes( a, b, bdontunlinkonmigrate )
 
 unlink_nodes( a, b, bdontlinkonmigrate )
 {
-	/* Originally kwarg */
-	if ( !isdefined( bdontunlinkonmigrate ) )
-		bdontunlinkonmigrate = 0;
+    if ( !isdefined( bdontlinkonmigrate ) )
+        bdontlinkonmigrate = 0;
 
     if ( !nodesarelinked( a, b ) )
         return;
@@ -7491,7 +7479,7 @@ is_gametype_active( a_gametypes )
 
     for ( i = 0; i < a_gametypes.size; i++ )
     {
-        if ( getdvar( "g_gametype" ) == a_gametypes[i] )
+        if ( getdvar( #"g_gametype" ) == a_gametypes[i] )
             b_is_gametype_active = 1;
     }
 
@@ -7501,7 +7489,7 @@ is_gametype_active( a_gametypes )
 is_createfx_active()
 {
     if ( !isdefined( level.createfx_enabled ) )
-        level.createfx_enabled = getdvar( "createfx" ) != "";
+        level.createfx_enabled = getdvar( #"createfx" ) != "";
 
     return level.createfx_enabled;
 }
@@ -7510,20 +7498,20 @@ is_zombie_perk_bottle( str_weapon )
 {
     switch ( str_weapon )
     {
-        case "zombie_perk_bottle_whoswho":
-        case "zombie_perk_bottle_vulture":
-        case "zombie_perk_bottle_tombstone":
-        case "zombie_perk_bottle_sleight":
-        case "zombie_perk_bottle_sixth_sense":
-        case "zombie_perk_bottle_revive":
-        case "zombie_perk_bottle_oneinch":
-        case "zombie_perk_bottle_nuke":
-        case "zombie_perk_bottle_marathon":
-        case "zombie_perk_bottle_jugg":
-        case "zombie_perk_bottle_doubletap":
-        case "zombie_perk_bottle_deadshot":
-        case "zombie_perk_bottle_cherry":
         case "zombie_perk_bottle_additionalprimaryweapon":
+        case "zombie_perk_bottle_cherry":
+        case "zombie_perk_bottle_deadshot":
+        case "zombie_perk_bottle_doubletap":
+        case "zombie_perk_bottle_jugg":
+        case "zombie_perk_bottle_marathon":
+        case "zombie_perk_bottle_nuke":
+        case "zombie_perk_bottle_oneinch":
+        case "zombie_perk_bottle_revive":
+        case "zombie_perk_bottle_sixth_sense":
+        case "zombie_perk_bottle_sleight":
+        case "zombie_perk_bottle_tombstone":
+        case "zombie_perk_bottle_vulture":
+        case "zombie_perk_bottle_whoswho":
             b_is_perk_bottle = 1;
             break;
         default:
