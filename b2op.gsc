@@ -2448,7 +2448,7 @@ init_utility()
 
 is_classic()
 {
-    var = getdvar( #"ui_zm_gamemodegroup" );
+    var = getdvar( "ui_zm_gamemodegroup" );
 
     if ( var == "zclassic" )
         return true;
@@ -2458,7 +2458,7 @@ is_classic()
 
 is_standard()
 {
-    var = getdvar( #"ui_gametype" );
+    var = getdvar( "ui_gametype" );
 
     if ( var == "zstandard" )
         return true;
@@ -2806,7 +2806,7 @@ no_valid_repairable_boards( barrier, barrier_chunks )
 
 is_survival()
 {
-    var = getdvar( #"ui_zm_gamemodegroup" );
+    var = getdvar( "ui_zm_gamemodegroup" );
 
     if ( var == "zsurvival" )
         return true;
@@ -2819,7 +2819,7 @@ is_encounter()
     if ( isdefined( level._is_encounter ) && level._is_encounter )
         return true;
 
-    var = getdvar( #"ui_zm_gamemodegroup" );
+    var = getdvar( "ui_zm_gamemodegroup" );
 
     if ( var == "zencounter" )
     {
@@ -4676,7 +4676,7 @@ add_spawner( spawner )
 fake_physicslaunch( target_pos, power )
 {
     start_pos = self.origin;
-    gravity = getdvarint( #"bg_gravity" ) * -1;
+    gravity = getdvarint( "bg_gravity" ) * -1;
     dist = distance( start_pos, target_pos );
     time = dist / power;
     delta = target_pos - start_pos;
@@ -4992,7 +4992,7 @@ print_run_speed( speed )
 draw_line_ent_to_ent( ent1, ent2 )
 {
 /#
-    if ( getdvarint( #"zombie_debug" ) != 1 )
+    if ( getdvarint( "zombie_debug" ) != 1 )
         return;
 
     ent1 endon( "death" );
@@ -5009,7 +5009,7 @@ draw_line_ent_to_ent( ent1, ent2 )
 draw_line_ent_to_pos( ent, pos, end_on )
 {
 /#
-    if ( getdvarint( #"zombie_debug" ) != 1 )
+    if ( getdvarint( "zombie_debug" ) != 1 )
         return;
 
     ent endon( "death" );
@@ -5030,7 +5030,7 @@ draw_line_ent_to_pos( ent, pos, end_on )
 debug_print( msg )
 {
 /#
-    if ( getdvarint( #"zombie_debug" ) > 0 )
+    if ( getdvarint( "zombie_debug" ) > 0 )
         println( "######### ZOMBIE: " + msg );
 #/
 }
@@ -5043,7 +5043,7 @@ debug_blocker( pos, rad, height )
 
     for (;;)
     {
-        if ( getdvarint( #"zombie_debug" ) != 1 )
+        if ( getdvarint( "zombie_debug" ) != 1 )
             return;
 
         wait 0.05;
@@ -5100,7 +5100,7 @@ debug_breadcrumbs()
 
     while ( true )
     {
-        if ( getdvarint( #"zombie_debug" ) != 1 )
+        if ( getdvarint( "zombie_debug" ) != 1 )
         {
             wait 1;
             continue;
@@ -5122,7 +5122,7 @@ debug_attack_spots_taken()
 
     while ( true )
     {
-        if ( getdvarint( #"zombie_debug" ) != 2 )
+        if ( getdvarint( "zombie_debug" ) != 2 )
         {
             wait 1;
             continue;
@@ -5505,7 +5505,7 @@ shock_onpain()
     self notify( "stop_shock_onpain" );
     self endon( "stop_shock_onpain" );
 
-    if ( getdvar( #"blurpain" ) == "" )
+    if ( getdvar( "blurpain" ) == "" )
         setdvar( "blurpain", "on" );
 
     while ( true )
@@ -5537,7 +5537,7 @@ shock_onpain()
 
             self shock_onexplosion( damage, shocktype, shocklight );
         }
-        else if ( getdvar( #"blurpain" ) == "on" )
+        else if ( getdvar( "blurpain" ) == "on" )
             self shellshock( "pain", 0.5 );
     }
 }
@@ -7479,7 +7479,7 @@ is_gametype_active( a_gametypes )
 
     for ( i = 0; i < a_gametypes.size; i++ )
     {
-        if ( getdvar( #"g_gametype" ) == a_gametypes[i] )
+        if ( getdvar( "g_gametype" ) == a_gametypes[i] )
             b_is_gametype_active = 1;
     }
 
@@ -7489,7 +7489,7 @@ is_gametype_active( a_gametypes )
 is_createfx_active()
 {
     if ( !isdefined( level.createfx_enabled ) )
-        level.createfx_enabled = getdvar( #"createfx" ) != "";
+        level.createfx_enabled = getdvar( "createfx" ) != "";
 
     return level.createfx_enabled;
 }
