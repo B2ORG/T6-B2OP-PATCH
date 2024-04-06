@@ -2531,9 +2531,9 @@ get_current_actor_count()
     actors = getaispeciesarray( level.zombie_team, "all" );
 
     if ( isdefined( actors ) )
-        count += actors.size;
+        count = count + actors.size;
 
-    count += get_current_corpse_count();
+    count = count + get_current_corpse_count();
     return count;
 }
 
@@ -2551,9 +2551,10 @@ get_round_enemy_array()
 
     for ( i = 0; i < enemies.size; i++ )
     {
-		/* Refactor to avoid continue */
-        if ( !is_true( enemies[i].ignore_enemy_count ) )
-            valid_enemies[valid_enemies.size] = enemies[i];
+        if ( isdefined( enemies[i].ignore_enemy_count ) && enemies[i].ignore_enemy_count )
+            continue;
+
+        valid_enemies[valid_enemies.size] = enemies[i];
     }
 
     return valid_enemies;
@@ -2721,6 +2722,7 @@ run_spawn_functions()
             func = self.spawn_funcs[i];
             single_thread( self, func["function"], func["param1"], func["param2"], func["param3"], func["param4"] );
         }
+
 /#
         self.saved_spawn_functions = self.spawn_funcs;
 #/
@@ -2837,7 +2839,7 @@ all_chunks_destroyed( barrier, barrier_chunks )
     }
     else if ( isdefined( barrier_chunks ) )
     {
-        // assert( isdefined( barrier_chunks ), "_zm_utility::all_chunks_destroyed - Barrier chunks undefined" );
+        assert( isdefined( barrier_chunks ), "_zm_utility::all_chunks_destroyed - Barrier chunks undefined" );
 
         for ( i = 0; i < barrier_chunks.size; i++ )
         {
@@ -2880,18 +2882,15 @@ check_point_in_enabled_zone( origin, zone_is_active, player_zones )
     {
         if ( scr_org istouching( player_zones[i] ) )
         {
-            targetname = player_zones[i].targetname;
-            zone = level.zones[targetname];
+            zone = level.zones[player_zones[i].targetname];
 
-            /* Split into 2 ifs */
-            if ( isdefined( zone ) )
+            if ( isdefined( zone ) && ( isdefined( zone.is_enabled ) && zone.is_enabled ) )
             {
-				/* Refactor to avoid continue */
-                if ( isdefined( zone.is_enabled ) && zone.is_enabled )
-                {
-					one_valid_zone = 1;
-					break;
-				}
+                if ( isdefined( zone_is_active ) && zone_is_active == 1 && !( isdefined( zone.is_active ) && zone.is_active ) )
+                    continue;
+
+                one_valid_zone = 1;
+                break;
             }
         }
     }
@@ -2905,7 +2904,7 @@ round_up_to_ten( score )
     new_score = score - score % 10;
 
     if ( new_score < score )
-        new_score += 10;
+        new_score = new_score + 10;
 
     return new_score;
 }
@@ -2916,7 +2915,7 @@ round_up_score( score, value )
     new_score = score - score % value;
 
     if ( new_score < score )
-        new_score += value;
+        new_score = new_score + value;
 
     return new_score;
 }
@@ -2938,8 +2937,8 @@ places_before_decimal( num )
 
     while ( true )
     {
-        abs_num *= 0.1;
-        count += 1;
+        abs_num = abs_num * 0.1;
+        count = count + 1;
 
         if ( abs_num < 1 )
             return count;
@@ -3021,19 +3020,15 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
 
     for ( i = 0; i < self.num_attract_dists; i++ )
     {
-		/* Refactor to avoid continue */
         if ( num_attracts_per_dist > max_positions[i] + diff )
         {
             actual_num_positions[i] = max_positions[i];
-            diff += num_attracts_per_dist - max_positions[i];
-            do_continue = true;
+            diff = diff + ( num_attracts_per_dist - max_positions[i] );
+            continue;
         }
 
-		if ( !is_true( do_continue ) )
-		{
-			actual_num_positions[i] = num_attracts_per_dist + diff;
-			diff = 0;
-		}
+        actual_num_positions[i] = num_attracts_per_dist + diff;
+        diff = 0;
     }
 
     self.attractor_positions = [];
@@ -3045,7 +3040,7 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
     {
         if ( actual_num_positions[j] + failed < max_positions[j] )
         {
-            actual_num_positions[j] += failed;
+            actual_num_positions[j] = actual_num_positions[j] + failed;
             failed = 0;
         }
         else if ( actual_num_positions[j] < max_positions[j] )
@@ -3054,8 +3049,8 @@ create_zombie_point_of_interest_attractor_positions( num_attract_dists, diff_per
             failed = max_positions[j] - actual_num_positions[j];
         }
 
-        failed += self generated_radius_attract_positions( forward, angle_offset, actual_num_positions[j], self.attract_dists[j] );
-        angle_offset += 15;
+        failed = failed + self generated_radius_attract_positions( forward, angle_offset, actual_num_positions[j], self.attract_dists[j] );
+        angle_offset = angle_offset + 15;
         self.last_index[j] = int( actual_num_positions[j] - failed + prev_last_index );
         prev_last_index = self.last_index[j];
     }
@@ -3071,7 +3066,7 @@ generated_radius_attract_positions( forward, offset, num_positions, attract_radi
     failed = 0;
     degs_per_pos = 360 / num_positions;
 
-    for ( i = offset; i < 360 + offset; i += degs_per_pos )
+    for ( i = offset; i < 360 + offset; i = i + degs_per_pos )
     {
         altforward = forward * attract_radius;
         rotated_forward = ( cos( i ) * altforward[0] - sin( i ) * altforward[1], sin( i ) * altforward[0] + cos( i ) * altforward[1], altforward[2] );
@@ -3083,43 +3078,40 @@ generated_radius_attract_positions( forward, offset, num_positions, attract_radi
         else
             pos = maps\mp\zombies\_zm_server_throttle::server_safe_ground_trace( "poi_trace", 10, self.origin + rotated_forward + vectorscale( ( 0, 0, 1 ), 100.0 ) );
 
-		/* Refactor to avoid continue */
         if ( !isdefined( pos ) )
         {
             failed++;
+            continue;
         }
-		else
-		{
-			if ( isdefined( level.use_alternate_poi_positioning ) && level.use_alternate_poi_positioning )
-			{
-				if ( isdefined( self ) && isdefined( self.origin ) )
-				{
-					if ( self.origin[2] >= pos[2] - epsilon && self.origin[2] - pos[2] <= 150 )
-					{
-						pos_array = [];
-						pos_array[0] = pos;
-						pos_array[1] = self;
-						self.attractor_positions[self.attractor_positions.size] = pos_array;
-					}
-				}
-				else
-					failed++;
 
-				not_failed = true;
-			}
+        if ( isdefined( level.use_alternate_poi_positioning ) && level.use_alternate_poi_positioning )
+        {
+            if ( isdefined( self ) && isdefined( self.origin ) )
+            {
+                if ( self.origin[2] >= pos[2] - epsilon && self.origin[2] - pos[2] <= 150 )
+                {
+                    pos_array = [];
+                    pos_array[0] = pos;
+                    pos_array[1] = self;
+                    self.attractor_positions[self.attractor_positions.size] = pos_array;
+                }
+            }
+            else
+                failed++;
 
-			else if ( abs( pos[2] - self.origin[2] ) < 60 )
-			{
-				pos_array = [];
-				pos_array[0] = pos;
-				pos_array[1] = self;
-				self.attractor_positions[self.attractor_positions.size] = pos_array;
-				not_failed = true;
-			}
+            continue;
+        }
 
-			if ( !is_true( not_failed ) )
-				failed++;
-		}
+        if ( abs( pos[2] - self.origin[2] ) < 60 )
+        {
+            pos_array = [];
+            pos_array[0] = pos;
+            pos_array[1] = self;
+            self.attractor_positions[self.attractor_positions.size] = pos_array;
+            continue;
+        }
+
+        failed++;
     }
 
     return failed;
@@ -3165,58 +3157,57 @@ get_zombie_point_of_interest( origin, poi_array )
 
     for ( i = 0; i < ent_array.size; i++ )
     {
-		/* Refactor to avoid continue */
-        if ( isdefined( ent_array[i].poi_active ) && ent_array[i].poi_active )
-		{
-			if ( isdefined( self.ignore_poi_targetname ) && self.ignore_poi_targetname.size > 0 )
-			{
-				if ( isdefined( ent_array[i].targetname ) )
-				{
-					ignore = 0;
+        if ( !isdefined( ent_array[i].poi_active ) || !ent_array[i].poi_active )
+            continue;
 
-					for ( j = 0; j < self.ignore_poi_targetname.size; j++ )
-					{
-						if ( ent_array[i].targetname == self.ignore_poi_targetname[j] )
-						{
-							ignore = 1;
-							break;
-						}
-					}
-				}
-			}
+        if ( isdefined( self.ignore_poi_targetname ) && self.ignore_poi_targetname.size > 0 )
+        {
+            if ( isdefined( ent_array[i].targetname ) )
+            {
+                ignore = 0;
 
-			if ( !is_true( ignore ) )
-			{
-				if ( isdefined( self.ignore_poi ) && self.ignore_poi.size > 0 )
-				{
-					ignore = 0;
+                for ( j = 0; j < self.ignore_poi_targetname.size; j++ )
+                {
+                    if ( ent_array[i].targetname == self.ignore_poi_targetname[j] )
+                    {
+                        ignore = 1;
+                        break;
+                    }
+                }
 
-					for ( j = 0; j < self.ignore_poi.size; j++ )
-					{
-						if ( self.ignore_poi[j] == ent_array[i] )
-						{
-							ignore = 1;
-							break;
-						}
-					}
-				}
+                if ( ignore )
+                    continue;
+            }
+        }
 
-				if ( !is_true( ignore ) )
-				{
-					dist = distancesquared( origin, ent_array[i].origin );
-					dist -= ent_array[i].added_poi_value;
+        if ( isdefined( self.ignore_poi ) && self.ignore_poi.size > 0 )
+        {
+            ignore = 0;
 
-					if ( isdefined( ent_array[i].poi_radius ) )
-						curr_radius = ent_array[i].poi_radius;
+            for ( j = 0; j < self.ignore_poi.size; j++ )
+            {
+                if ( self.ignore_poi[j] == ent_array[i] )
+                {
+                    ignore = 1;
+                    break;
+                }
+            }
 
-					if ( ( !isdefined( curr_radius ) || dist < curr_radius ) && dist < best_dist && ent_array[i] can_attract( self ) )
-					{
-						best_poi = ent_array[i];
-						best_dist = dist;
-					}
-				}
-			}
-		}
+            if ( ignore )
+                continue;
+        }
+
+        dist = distancesquared( origin, ent_array[i].origin );
+        dist = dist - ent_array[i].added_poi_value;
+
+        if ( isdefined( ent_array[i].poi_radius ) )
+            curr_radius = ent_array[i].poi_radius;
+
+        if ( ( !isdefined( curr_radius ) || dist < curr_radius ) && dist < best_dist && ent_array[i] can_attract( self ) )
+        {
+            best_poi = ent_array[i];
+            best_dist = dist;
+        }
     }
 
     if ( isdefined( best_poi ) )
@@ -3367,23 +3358,22 @@ add_poi_attractor( zombie_poi )
 
         for ( i = int( start ); i <= int( end ); i++ )
         {
-			/* Refactor to avoid continue */
-            if ( isdefined( zombie_poi.attractor_positions[i] ) )
-			{
-				if ( array_check_for_dupes_using_compare( zombie_poi.claimed_attractor_positions, zombie_poi.attractor_positions[i], ::poi_locations_equal ) )
-				{
-					if ( isdefined( zombie_poi.attractor_positions[i][0] ) && isdefined( self.origin ) )
-					{
-						dist = distancesquared( zombie_poi.attractor_positions[i][0], self.origin );
+            if ( !isdefined( zombie_poi.attractor_positions[i] ) )
+                continue;
 
-						if ( dist < best_dist || !isdefined( best_pos ) )
-						{
-							best_dist = dist;
-							best_pos = zombie_poi.attractor_positions[i];
-						}
-					}
-				}
-			}
+            if ( array_check_for_dupes_using_compare( zombie_poi.claimed_attractor_positions, zombie_poi.attractor_positions[i], ::poi_locations_equal ) )
+            {
+                if ( isdefined( zombie_poi.attractor_positions[i][0] ) && isdefined( self.origin ) )
+                {
+                    dist = distancesquared( zombie_poi.attractor_positions[i][0], self.origin );
+
+                    if ( dist < best_dist || !isdefined( best_pos ) )
+                    {
+                        best_dist = dist;
+                        best_pos = zombie_poi.attractor_positions[i];
+                    }
+                }
+            }
         }
 
         if ( !isdefined( best_pos ) )
@@ -3429,9 +3419,7 @@ can_attract( attractor )
 update_poi_on_death( zombie_poi )
 {
     self endon( "kill_poi" );
-
     self waittill( "death" );
-
     self remove_poi_attractor( zombie_poi );
 }
 
@@ -3557,7 +3545,6 @@ get_closest_player_using_paths( origin, players )
         player = players[i];
         length_to_player = get_path_length_to_enemy( player );
 
-		/* Refactor to avoid continue */
         if ( isdefined( level.validate_enemy_path_length ) )
         {
             if ( length_to_player == 0 )
@@ -3565,31 +3552,29 @@ get_closest_player_using_paths( origin, players )
                 valid = self thread [[ level.validate_enemy_path_length ]]( player );
 
                 if ( !valid )
-                    do_continue = true;
+                    continue;
             }
         }
 
-		if ( !is_true( do_continue ) )
-		{
-			if ( length_to_player < min_length_to_player )
-			{
-				min_length_to_player = length_to_player;
-				player_to_return = player;
-				n_2d_distance_squared = distance2dsquared( self.origin, player.origin );
-			}
+        if ( length_to_player < min_length_to_player )
+        {
+            min_length_to_player = length_to_player;
+            player_to_return = player;
+            n_2d_distance_squared = distance2dsquared( self.origin, player.origin );
+            continue;
+        }
 
-			else if ( length_to_player == min_length_to_player && length_to_player <= 5 )
-			{
-				n_new_distance = distance2dsquared( self.origin, player.origin );
+        if ( length_to_player == min_length_to_player && length_to_player <= 5 )
+        {
+            n_new_distance = distance2dsquared( self.origin, player.origin );
 
-				if ( n_new_distance < n_2d_distance_squared )
-				{
-					min_length_to_player = length_to_player;
-					player_to_return = player;
-					n_2d_distance_squared = n_new_distance;
-				}
-			}
-		}
+            if ( n_new_distance < n_2d_distance_squared )
+            {
+                min_length_to_player = length_to_player;
+                player_to_return = player;
+                n_2d_distance_squared = n_new_distance;
+            }
+        }
     }
 
     return player_to_return;
@@ -3708,7 +3693,7 @@ get_number_of_valid_players()
     for ( i = 0; i < players.size; i++ )
     {
         if ( is_player_valid( players[i] ) )
-            num_player_valid += 1;
+            num_player_valid = num_player_valid + 1;
     }
 
     return num_player_valid;
@@ -3762,12 +3747,8 @@ non_destroyed_bar_board_order( origin, chunks )
         }
         else if ( isdefined( chunks[i].script_team ) && chunks[i].script_team == "new_barricade" )
         {
-			/* Split into 2 ifs */
-            if ( isdefined( chunks[i].script_parameters ) )
-			{
-				if ( chunks[i].script_parameters == "repair_board" || chunks[i].script_parameters == "barricade_vents" ) 
-                	return get_closest_2d( origin, chunks );
-			}
+            if ( isdefined( chunks[i].script_parameters ) && ( chunks[i].script_parameters == "repair_board" || chunks[i].script_parameters == "barricade_vents" ) )
+                return get_closest_2d( origin, chunks );
         }
     }
 
@@ -4197,7 +4178,7 @@ disable_trigger()
     if ( !isdefined( self.disabled ) || !self.disabled )
     {
         self.disabled = 1;
-        self.origin -= vectorscale( ( 0, 0, 1 ), 10000.0 );
+        self.origin = self.origin - vectorscale( ( 0, 0, 1 ), 10000.0 );
     }
 }
 
@@ -4207,7 +4188,7 @@ enable_trigger()
         return;
 
     self.disabled = 0;
-    self.origin += vectorscale( ( 0, 0, 1 ), 10000.0 );
+    self.origin = self.origin + vectorscale( ( 0, 0, 1 ), 10000.0 );
 }
 
 in_playable_area()
@@ -4323,24 +4304,21 @@ get_non_destroyed_chunks( barrier, barrier_chunks )
                 }
             }
 
-			/* Refactor to remove continue */
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "new_barricade" )
+            if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "new_barricade" )
             {
-				/* Split into 2 ifs */
-                if ( isdefined( barrier_chunks[i].script_parameters ) )
+                if ( isdefined( barrier_chunks[i].script_parameters ) && ( barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" ) )
                 {
-					if ( barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" )
-					{
-						if ( barrier_chunks[i] get_chunk_state() == "repaired" )
-						{
-							if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
-								array[array.size] = barrier_chunks[i];
-						}
-					}
+                    if ( barrier_chunks[i] get_chunk_state() == "repaired" )
+                    {
+                        if ( barrier_chunks[i].origin == barrier_chunks[i].og_origin )
+                            array[array.size] = barrier_chunks[i];
+                    }
                 }
+
+                continue;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_bent" )
+            if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_bent" )
             {
                 if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
                 {
@@ -4350,9 +4328,11 @@ get_non_destroyed_chunks( barrier, barrier_chunks )
                             array[array.size] = barrier_chunks[i];
                     }
                 }
+
+                continue;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_prestine" )
+            if ( isdefined( barrier_chunks[i].script_team ) && barrier_chunks[i].script_team == "6_bars_prestine" )
             {
                 if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
                 {
@@ -4480,23 +4460,25 @@ get_destroyed_chunks( barrier_chunks )
     {
         if ( barrier_chunks[i] get_chunk_state() == "destroyed" )
         {
-			/* Refactor to remove continue */
             if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "board" )
             {
                 array[array.size] = barrier_chunks[i];
+                continue;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" )
+            if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "repair_board" || barrier_chunks[i].script_parameters == "barricade_vents" )
             {
                 array[array.size] = barrier_chunks[i];
+                continue;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
+            if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "bar" )
             {
                 array[array.size] = barrier_chunks[i];
+                continue;
             }
 
-            else if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "grate" )
+            if ( isdefined( barrier_chunks[i].script_parameters ) && barrier_chunks[i].script_parameters == "grate" )
                 return undefined;
         }
     }
@@ -4608,7 +4590,7 @@ show_grate_repair()
 
 get_chunk_state()
 {
-    // assert( isdefined( self.state ) );
+    assert( isdefined( self.state ) );
     return self.state;
 }
 
@@ -4685,6 +4667,7 @@ get_zombie_hint( ref )
 {
     if ( isdefined( level.zombie_hints[ref] ) )
         return level.zombie_hints[ref];
+
 /#
     println( "UNABLE TO FIND HINT STRING " + ref );
 #/
@@ -4743,23 +4726,22 @@ unitrigger_set_hint_string( ent, default_ref, cost )
         if ( isdefined( ent.script_hint ) )
             ref = ent.script_hint;
 
-		/* Refactor to avoid continue */
         if ( isdefined( level.legacy_hint_system ) && level.legacy_hint_system )
         {
             ref = ref + "_" + cost;
             trigger sethintstring( get_zombie_hint( ref ) );
-            do_continue = true;
+            continue;
         }
 
-		if ( !is_true( do_continue ) )
-		{
-			hint = get_zombie_hint( ref );
-		}
+        hint = get_zombie_hint( ref );
 
         if ( isdefined( cost ) )
-			trigger sethintstring( hint, cost );
-		else
-			trigger sethintstring( hint );
+        {
+            trigger sethintstring( hint, cost );
+            continue;
+        }
+
+        trigger sethintstring( hint );
     }
 }
 
@@ -4874,11 +4856,11 @@ onplayerdisconnect_callback( func )
 
 set_zombie_var( var, value, is_float, column, is_team_based )
 {
-	/* Originally kwargs */
-	if ( !isdefined( is_float ) )
-		is_float = 0;
-	if ( !isdefined( column ) )
-		column = 1;
+    if ( !isdefined( is_float ) )
+        is_float = 0;
+
+    if ( !isdefined( column ) )
+        column = 1;
 
     table = "mp/zombiemode.csv";
     table_value = tablelookup( table, 0, var, column );
@@ -4904,13 +4886,14 @@ set_zombie_var( var, value, is_float, column, is_team_based )
 
 get_table_var( table, var_name, value, is_float, column )
 {
-	/* Originally kwargs */
-	if ( !isdefined( table ) )
-		table = "mp/zombiemode.csv";
-	if ( !isdefined( is_float ) )
-		is_float = 0;
-	if ( !isdefined( column ) )
-		column = 1;
+    if ( !isdefined( table ) )
+        table = "mp/zombiemode.csv";
+
+    if ( !isdefined( is_float ) )
+        is_float = 0;
+
+    if ( !isdefined( column ) )
+        column = 1;
 
     table_value = tablelookup( table, 0, var_name, column );
 
@@ -5140,7 +5123,7 @@ float_print3d( msg, time )
 
     while ( gettime() < time )
     {
-        offset += vectorscale( ( 0, 0, 1 ), 2.0 );
+        offset = offset + vectorscale( ( 0, 0, 1 ), 2.0 );
         print3d( self.origin + offset, msg, ( 1, 1, 1 ) );
         wait 0.05;
     }
@@ -5162,9 +5145,7 @@ do_player_vo( snd, variation_count )
     {
         level.player_is_speaking = 1;
         self playsoundwithnotify( sound, "sound_done" );
-
         self waittill( "sound_done" );
-
         wait 2;
         level.player_is_speaking = 0;
     }
@@ -5188,12 +5169,13 @@ magic_bullet_shield()
 /#
             level thread debug_magic_bullet_shield_death( self );
 #/
+
             if ( !isdefined( self._mbs ) )
                 self._mbs = spawnstruct();
 
             if ( isai( self ) )
             {
-                // assert( isalive( self ), "Tried to do magic_bullet_shield on a dead or undefined guy." );
+                assert( isalive( self ), "Tried to do magic_bullet_shield on a dead or undefined guy." );
                 self._mbs.last_pain_time = 0;
                 self._mbs.ignore_time = 2;
                 self._mbs.turret_ignore_time = 5;
@@ -5218,16 +5200,14 @@ debug_magic_bullet_shield_death( guy )
         targetname = guy.targetname;
 
     guy endon( "stop_magic_bullet_shield" );
-
     guy waittill( "death" );
-
-    // assert( !isdefined( guy ), "Guy died with magic bullet shield on with targetname: " + targetname );
+    assert( !isdefined( guy ), "Guy died with magic bullet shield on with targetname: " + targetname );
 }
 
 is_magic_bullet_shield_enabled( ent )
 {
     if ( !isdefined( ent ) )
-        return 0;
+        return false;
 
     return isdefined( ent.magic_bullet_shield ) && ent.magic_bullet_shield == 1;
 }
@@ -5236,9 +5216,7 @@ really_play_2d_sound( sound )
 {
     temp_ent = spawn( "script_origin", ( 0, 0, 0 ) );
     temp_ent playsoundwithnotify( sound, sound + "wait" );
-
     temp_ent waittill( sound + "wait" );
-
     wait 0.05;
     temp_ent delete();
 }
@@ -5253,6 +5231,7 @@ include_weapon( weapon_name, in_box, collector, weighting_func )
 /#
     println( "ZM >> include_weapon = " + weapon_name );
 #/
+
     if ( !isdefined( in_box ) )
         in_box = 1;
 
@@ -5294,7 +5273,6 @@ is_buildable()
 wait_for_buildable( buildable_name )
 {
     level waittill( buildable_name + "_built", player );
-
     return player;
 }
 
@@ -5383,12 +5361,8 @@ isprimarydamage( meansofdeath )
 
 isfiredamage( weapon, meansofdeath )
 {
-	/* Split into 2 ifs */
-    if ( issubstr( weapon, "flame" ) || issubstr( weapon, "molotov_" ) || issubstr( weapon, "napalmblob_" ) )
-	{
-		if ( meansofdeath == "MOD_BURNED" || meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH" )
-        	return true;
-	}
+    if ( ( issubstr( weapon, "flame" ) || issubstr( weapon, "molotov_" ) || issubstr( weapon, "napalmblob_" ) ) && ( meansofdeath == "MOD_BURNED" || meansofdeath == "MOD_GRENADE" || meansofdeath == "MOD_GRENADE_SPLASH" ) )
+        return true;
 
     return false;
 }
@@ -5409,9 +5383,8 @@ isplayerexplosiveweapon( weapon, meansofdeath )
 
 create_counter_hud( x )
 {
-	/* Originally kwarg */
-	if ( !isdefined( x ) )
-		x = 0;
+    if ( !isdefined( x ) )
+        x = 0;
 
     hud = create_simple_hud();
     hud.alignx = "left";
@@ -5499,7 +5472,6 @@ shock_onpain()
     while ( true )
     {
         oldhealth = self.health;
-
         self waittill( "damage", damage, attacker, direction_vec, point, mod );
 
         if ( isdefined( level.shock_onpain ) && !level.shock_onpain )
@@ -5565,6 +5537,7 @@ increment_is_drinking()
         return;
     }
 #/
+
     if ( !isdefined( self.is_drinking ) )
         self.is_drinking = 0;
 
@@ -5609,7 +5582,7 @@ clear_is_drinking()
 
 getweaponclasszm( weapon )
 {
-    // assert( isdefined( weapon ) );
+    assert( isdefined( weapon ) );
 
     if ( !isdefined( weapon ) )
         return undefined;
@@ -5628,9 +5601,8 @@ getweaponclasszm( weapon )
 
 spawn_weapon_model( weapon, model, origin, angles, options )
 {
-	/* Originally kwarg */
-	if ( !isdefined( model ) )
-		model = getweaponmodel( weapon );
+    if ( !isdefined( model ) )
+        model = getweaponmodel( weapon );
 
     weapon_model = spawn( "script_model", origin );
 
@@ -5697,7 +5669,7 @@ is_lethal_grenade( weaponname )
 is_player_lethal_grenade( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_lethal_grenade ) )
-        return 0;
+        return false;
 
     return self.current_lethal_grenade == weaponname;
 }
@@ -5744,7 +5716,7 @@ is_tactical_grenade( weaponname )
 is_player_tactical_grenade( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_tactical_grenade ) )
-        return 0;
+        return false;
 
     return self.current_tactical_grenade == weaponname;
 }
@@ -5792,7 +5764,7 @@ is_placeable_mine( weaponname )
 is_player_placeable_mine( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_placeable_mine ) )
-        return 0;
+        return false;
 
     return self.current_placeable_mine == weaponname;
 }
@@ -5834,7 +5806,7 @@ is_melee_weapon( weaponname )
 is_player_melee_weapon( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_melee_weapon ) )
-        return 0;
+        return false;
 
     return self.current_melee_weapon == weaponname;
 }
@@ -5886,7 +5858,7 @@ is_equipment_that_blocks_purchase( weaponname )
 is_player_equipment( weaponname )
 {
     if ( !isdefined( weaponname ) || !isdefined( self.current_equipment ) )
-        return 0;
+        return false;
 
     return self.current_equipment == weaponname;
 }
@@ -6026,9 +5998,10 @@ array_removedead( array )
 
     for ( i = 0; i < array.size; i++ )
     {
-		/* Refactor to avoid continue */
-        if ( isalive( array[i] ) && !isdefined( array[i].isacorpse ) )
-        	newarray[newarray.size] = array[i];
+        if ( !isalive( array[i] ) || isdefined( array[i].isacorpse ) && array[i].isacorpse )
+            continue;
+
+        newarray[newarray.size] = array[i];
     }
 
     return newarray;
@@ -6178,11 +6151,15 @@ init_button_wrappers()
     }
 }
 
-/* Do note, this may behave differently than vanilla in some very extreme cases */
 wait_network_frame()
 {
-    if ( level.players.size > 1 )
-        wait 0.05;
+    if ( numremoteclients() )
+    {
+        snapshot_ids = getsnapshotindexarray();
+
+        for ( acked = undefined; !isdefined( acked ); acked = snapshotacknowledged( snapshot_ids ) )
+            level waittill( "snapacknowledged" );
+    }
     else
         wait 0.1;
 }
@@ -6275,19 +6252,17 @@ getyaw( org )
     return angles[1];
 }
 
-/* That will probably break some zombie audio stuff */
 getyawtospot( spot )
 {
     pos = spot;
     yaw = self.angles[1] - getyaw( pos );
-    // yaw = angleclamp180( yaw );
+    yaw = angleclamp180( yaw );
     return yaw;
 }
 
 add_spawn_function( function, param1, param2, param3, param4 )
 {
-	/* Disabled the assert */
-    // assert( !isdefined( level._loadstarted ) || !isalive( self ), "Tried to add_spawn_function to a living guy." );
+    assert( !isdefined( level._loadstarted ) || !isalive( self ), "Tried to add_spawn_function to a living guy." );
     func = [];
     func["function"] = function;
     func["param1"] = param1;
@@ -6303,14 +6278,14 @@ add_spawn_function( function, param1, param2, param3, param4 )
 
 disable_react()
 {
-    // assert( isalive( self ), "Tried to disable react on a non ai" );
+    assert( isalive( self ), "Tried to disable react on a non ai" );
     self.a.disablereact = 1;
     self.allowreact = 0;
 }
 
 enable_react()
 {
-    // assert( isalive( self ), "Tried to enable react on a non ai" );
+    assert( isalive( self ), "Tried to enable react on a non ai" );
     self.a.disablereact = 0;
     self.allowreact = 1;
 }
@@ -6345,7 +6320,7 @@ isads( player )
 bullet_attack( type )
 {
     if ( type == "MOD_PISTOL_BULLET" )
-        return 1;
+        return true;
 
     return type == "MOD_RIFLE_BULLET";
 }
@@ -6460,7 +6435,7 @@ ent_flag_init( message, val )
     }
 
     if ( !isdefined( level.first_frame ) )
-        // assert( !isdefined( self.ent_flag[message] ), "Attempt to reinitialize existing flag '" + message + "' on entity." );
+        assert( !isdefined( self.ent_flag[message] ), "Attempt to reinitialize existing flag '" + message + "' on entity." );
 
     if ( isdefined( val ) && val )
     {
@@ -6520,6 +6495,7 @@ ent_flag_clear( message )
     assert( self.ent_flag[message] == self.ent_flags_lock[message] );
     self.ent_flags_lock[message] = 0;
 #/
+
     if ( self.ent_flag[message] )
     {
         self.ent_flag[message] = 0;
@@ -6535,8 +6511,8 @@ ent_flag_clear_delayed( message, delay )
 
 ent_flag( message )
 {
-    // assert( isdefined( message ), "Tried to check flag but the flag was not defined." );
-    // assert( isdefined( self.ent_flag[message] ), "Tried to check entity flag '" + message + "', but the flag was not initialized." );
+    assert( isdefined( message ), "Tried to check flag but the flag was not defined." );
+    assert( isdefined( self.ent_flag[message] ), "Tried to check entity flag '" + message + "', but the flag was not initialized." );
 
     if ( !self.ent_flag[message] )
         return false;
@@ -6560,9 +6536,7 @@ ent_flag_init_ai_standards()
 ent_flag_wait_ai_standards( message )
 {
     self endon( "death" );
-
     self waittill( message );
-
     self.ent_flag[message] = 1;
 }
 
@@ -6574,7 +6548,7 @@ flat_angle( angle )
 
 waittill_any_or_timeout( timer, string1, string2, string3, string4, string5 )
 {
-    // assert( isdefined( string1 ) );
+    assert( isdefined( string1 ) );
     self endon( string1 );
 
     if ( isdefined( string2 ) )
@@ -6616,61 +6590,48 @@ track_players_intersection_tracker()
 
         for ( i = 0; i < players.size; i++ )
         {
-			/* Refactor to avoid continue */
-            if ( !players[i] maps\mp\zombies\_zm_laststand::player_is_in_laststand() && "playing" == players[i].sessionstate )
-			{
-				for ( j = 0; j < players.size; j++ )
-				{
-					if ( i == j || players[j] maps\mp\zombies\_zm_laststand::player_is_in_laststand() || "playing" != players[j].sessionstate )
-						do_continue = true;
+            if ( players[i] maps\mp\zombies\_zm_laststand::player_is_in_laststand() || "playing" != players[i].sessionstate )
+                continue;
 
-					if ( !is_true( do_continue ) )
-					{
-						if ( isdefined( level.player_intersection_tracker_override ) )
-						{
-							if ( players[i] [[ level.player_intersection_tracker_override ]]( players[j] ) )
-								do_continue = true;
-						}
+            for ( j = 0; j < players.size; j++ )
+            {
+                if ( i == j || players[j] maps\mp\zombies\_zm_laststand::player_is_in_laststand() || "playing" != players[j].sessionstate )
+                    continue;
 
-						if ( !is_true( do_continue ) )
-						{
-							playeri_origin = players[i].origin;
-							playerj_origin = players[j].origin;
+                if ( isdefined( level.player_intersection_tracker_override ) )
+                {
+                    if ( players[i] [[ level.player_intersection_tracker_override ]]( players[j] ) )
+                        continue;
+                }
 
-							if ( abs( playeri_origin[2] - playerj_origin[2] ) > 60 )
-								do_continue = true;
+                playeri_origin = players[i].origin;
+                playerj_origin = players[j].origin;
 
-							if ( !is_true( do_continue ) )
-							{
-								distance_apart = distance2d( playeri_origin, playerj_origin );
+                if ( abs( playeri_origin[2] - playerj_origin[2] ) > 60 )
+                    continue;
 
-								if ( abs( distance_apart ) > 18 )
-									do_continue = true;
-								
-								if ( !is_true( do_continue ) )
-								{
-									/#
-									iprintlnbold( "PLAYERS ARE TOO FRIENDLY!!!!!" );
-									#/
-									players[i] dodamage( 1000, ( 0, 0, 0 ) );
-									players[j] dodamage( 1000, ( 0, 0, 0 ) );
+                distance_apart = distance2d( playeri_origin, playerj_origin );
 
-									if ( !killed_players )
-										players[i] playlocalsound( level.zmb_laugh_alias );
+                if ( abs( distance_apart ) > 18 )
+                    continue;
 
-									players[i] maps\mp\zombies\_zm_stats::increment_map_cheat_stat( "cheat_too_friendly" );
-									players[i] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_too_friendly", 0 );
-									players[i] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_total", 0 );
-									players[j] maps\mp\zombies\_zm_stats::increment_map_cheat_stat( "cheat_too_friendly" );
-									players[j] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_too_friendly", 0 );
-									players[j] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_total", 0 );
-									killed_players = 1;
-								}
-							}
-						}
-					}
-				}
-			}
+/#
+                iprintlnbold( "PLAYERS ARE TOO FRIENDLY!!!!!" );
+#/
+                players[i] dodamage( 1000, ( 0, 0, 0 ) );
+                players[j] dodamage( 1000, ( 0, 0, 0 ) );
+
+                if ( !killed_players )
+                    players[i] playlocalsound( level.zmb_laugh_alias );
+
+                players[i] maps\mp\zombies\_zm_stats::increment_map_cheat_stat( "cheat_too_friendly" );
+                players[i] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_too_friendly", 0 );
+                players[i] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_total", 0 );
+                players[j] maps\mp\zombies\_zm_stats::increment_map_cheat_stat( "cheat_too_friendly" );
+                players[j] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_too_friendly", 0 );
+                players[j] maps\mp\zombies\_zm_stats::increment_client_stat( "cheat_total", 0 );
+                killed_players = 1;
+            }
         }
 
         wait 0.5;
@@ -6683,8 +6644,7 @@ get_eye()
     {
         linked_ent = self getlinkedent();
 
-		/* Seems to be debug related dvar ~ Zi0 */
-        if ( isdefined( linked_ent )/* && getdvarint( _hash_5AEFD7E9 ) > 0 */)
+        if ( isdefined( linked_ent ) && getdvarint( "cg_cameraUseTagCamera" ) > 0 )
         {
             camera = linked_ent gettagorigin( "tag_camera" );
 
@@ -6699,7 +6659,7 @@ get_eye()
 
 is_player_looking_at( origin, dot, do_trace, ignore_ent )
 {
-    // assert( isplayer( self ), "player_looking_at must be called on a player." );
+    assert( isplayer( self ), "player_looking_at must be called on a player." );
 
     if ( !isdefined( dot ) )
         dot = 0.7;
@@ -6735,9 +6695,8 @@ add_gameloc( gl, dummy1, name, dummy2 )
 
 get_closest_index( org, array, dist )
 {
-	/* Originally kwarg */
-	if ( !isdefined( dist ) )
-		dist = 9999999;
+    if ( !isdefined( dist ) )
+        dist = 9999999;
 
     distsq = dist * dist;
 
@@ -6750,12 +6709,11 @@ get_closest_index( org, array, dist )
     {
         newdistsq = distancesquared( array[i].origin, org );
 
-		/* Refactor to avoid continue */
-        if ( newdistsq < distsq )
-		{
-			distsq = newdistsq;
-			index = i;
-		}
+        if ( newdistsq >= distsq )
+            continue;
+
+        distsq = newdistsq;
+        index = i;
     }
 
     return index;
@@ -6793,21 +6751,16 @@ get_closest_index_to_entity( entity, array, dist, extra_check )
 
     for ( i = 0; i < array.size; i++ )
     {
-		/* Refactor to avoid continue */
         if ( isdefined( extra_check ) && ![[ extra_check ]]( entity, array[i] ) )
-		{
+            continue;
 
-		}
-		else
-		{
-			newdistsq = distancesquared( array[i].origin, org );
+        newdistsq = distancesquared( array[i].origin, org );
 
-			if ( newdistsq < distsq )
-			{
-				distsq = newdistsq;
-				index = i;
-			}
-		}
+        if ( newdistsq >= distsq )
+            continue;
+
+        distsq = newdistsq;
+        index = i;
     }
 
     return index;
@@ -6897,7 +6850,6 @@ waittill_subset( min_num, string1, string2, string3, string4, string5 )
     while ( ent.threads )
     {
         ent waittill( "returned" );
-
         ent.threads--;
         returned_threads++;
 
@@ -6911,10 +6863,10 @@ waittill_subset( min_num, string1, string2, string3, string4, string5 )
 is_headshot( sweapon, shitloc, smeansofdeath )
 {
     if ( shitloc != "head" && shitloc != "helmet" )
-        return 0;
+        return false;
 
     if ( smeansofdeath == "MOD_IMPACT" && issubstr( sweapon, "knife_ballistic" ) )
-        return 1;
+        return true;
 
     return smeansofdeath != "MOD_MELEE" && smeansofdeath != "MOD_BAYONET" && smeansofdeath != "MOD_IMPACT" && smeansofdeath != "MOD_UNKNOWN";
 }
@@ -6979,6 +6931,7 @@ general_vox_timer( timer, type )
 /#
     println( "ZM >> VOX TIMER STARTED FOR  " + type + " ( " + timer + ")" );
 #/
+
     while ( timer > 0 )
     {
         wait 1;
@@ -7042,10 +6995,9 @@ set_demo_intermission_point()
         {
             tokens = strtok( spawnpoints[i].script_string, " " );
 
-			/* Changed foreach to for */
-			for (j = 0; j < tokens.size; j++)
+            foreach ( token in tokens )
             {
-                if ( tokens[j] == match_string )
+                if ( token == match_string )
                 {
                     spawnpoint = spawnpoints[i];
                     i = spawnpoints.size;
@@ -7135,31 +7087,30 @@ sq_refresh_player_navcard_hud()
         player thread sq_refresh_player_navcard_hud_internal();
 }
 
-/* Idk how to emulate bit operations with basic operators, as irony doesn't support it */
 sq_refresh_player_navcard_hud_internal()
 {
-    // self endon( "disconnect" );
-    // navcard_bits = 0;
+    self endon( "disconnect" );
+    navcard_bits = 0;
 
-    // for ( i = 0; i < level.navcards.size; i++ )
-    // {
-    //     hasit = self maps\mp\zombies\_zm_stats::get_global_stat( level.navcards[i] );
+    for ( i = 0; i < level.navcards.size; i++ )
+    {
+        hasit = self maps\mp\zombies\_zm_stats::get_global_stat( level.navcards[i] );
 
-    //     if ( isdefined( self.navcard_grabbed ) && self.navcard_grabbed == level.navcards[i] )
-    //         hasit = 1;
+        if ( isdefined( self.navcard_grabbed ) && self.navcard_grabbed == level.navcards[i] )
+            hasit = 1;
 
-    //     if ( hasit )
-    //         navcard_bits += ( 1 << i );
-    // }
+        if ( hasit )
+            navcard_bits = navcard_bits + ( 1 << i );
+    }
 
-    // wait_network_frame();
-    // self setclientfield( "navcard_held", 0 );
+    wait_network_frame();
+    self setclientfield( "navcard_held", 0 );
 
-    // if ( navcard_bits > 0 )
-    // {
-    //     wait_network_frame();
-    //     self setclientfield( "navcard_held", navcard_bits );
-    // }
+    if ( navcard_bits > 0 )
+    {
+        wait_network_frame();
+        self setclientfield( "navcard_held", navcard_bits );
+    }
 }
 
 set_player_is_female( onoff )
@@ -7220,9 +7171,8 @@ check_and_create_node_lists()
 
 link_nodes( a, b, bdontunlinkonmigrate )
 {
-	/* Originally kwarg */
-	if ( !isdefined( bdontunlinkonmigrate ) )
-		bdontunlinkonmigrate = 0;
+    if ( !isdefined( bdontunlinkonmigrate ) )
+        bdontunlinkonmigrate = 0;
 
     if ( nodesarelinked( a, b ) )
         return;
@@ -7259,9 +7209,8 @@ link_nodes( a, b, bdontunlinkonmigrate )
 
 unlink_nodes( a, b, bdontlinkonmigrate )
 {
-	/* Originally kwarg */
-	if ( !isdefined( bdontunlinkonmigrate ) )
-		bdontunlinkonmigrate = 0;
+    if ( !isdefined( bdontlinkonmigrate ) )
+        bdontlinkonmigrate = 0;
 
     if ( !nodesarelinked( a, b ) )
         return;
@@ -7351,31 +7300,25 @@ link_changes_internal_internal( list, func )
 
     for ( i = 0; i < keys.size; i++ )
     {
-		/* Extracted nested array keys */
-		node_key = keys[i];
-        node = list[node_key].node;
-        node_keys = getarraykeys( list[node_key].links );
+        node = list[keys[i]].node;
+        node_keys = getarraykeys( list[keys[i]].links );
 
         for ( j = 0; j < node_keys.size; j++ )
         {
-			/* Extracted nested array keys */
-			lower_node_key = node_keys[j];
-            if ( isdefined( list[node_key].links[lower_node_key] ) )
+            if ( isdefined( list[keys[i]].links[node_keys[j]] ) )
             {
-				/* Refactor to remove continue */
-                if ( isdefined( list[node_key].ignore_on_migrate[lower_node_key] ) && list[node_key].ignore_on_migrate[lower_node_key] )
+                if ( isdefined( list[keys[i]].ignore_on_migrate[node_keys[j]] ) && list[keys[i]].ignore_on_migrate[node_keys[j]] )
                 {
 /#
                     println( "Node at " + keys[i] + " to node at " + node_keys[j] + " - IGNORED" );
 #/
+                    continue;
                 }
-				else
-				{
+
 /#
-                	println( "Node at " + keys[i] + " to node at " + node_keys[j] );
+                println( "Node at " + keys[i] + " to node at " + node_keys[j] );
 #/
-                	[[ func ]]( node, list[node_key].links[lower_node_key] );
-				}
+                [[ func ]]( node, list[keys[i]].links[node_keys[j]] );
             }
         }
     }
@@ -7491,20 +7434,20 @@ is_zombie_perk_bottle( str_weapon )
 {
     switch ( str_weapon )
     {
-        case "zombie_perk_bottle_whoswho":
-        case "zombie_perk_bottle_vulture":
-        case "zombie_perk_bottle_tombstone":
-        case "zombie_perk_bottle_sleight":
-        case "zombie_perk_bottle_sixth_sense":
-        case "zombie_perk_bottle_revive":
-        case "zombie_perk_bottle_oneinch":
-        case "zombie_perk_bottle_nuke":
-        case "zombie_perk_bottle_marathon":
-        case "zombie_perk_bottle_jugg":
-        case "zombie_perk_bottle_doubletap":
-        case "zombie_perk_bottle_deadshot":
-        case "zombie_perk_bottle_cherry":
         case "zombie_perk_bottle_additionalprimaryweapon":
+        case "zombie_perk_bottle_cherry":
+        case "zombie_perk_bottle_deadshot":
+        case "zombie_perk_bottle_doubletap":
+        case "zombie_perk_bottle_jugg":
+        case "zombie_perk_bottle_marathon":
+        case "zombie_perk_bottle_nuke":
+        case "zombie_perk_bottle_oneinch":
+        case "zombie_perk_bottle_revive":
+        case "zombie_perk_bottle_sixth_sense":
+        case "zombie_perk_bottle_sleight":
+        case "zombie_perk_bottle_tombstone":
+        case "zombie_perk_bottle_vulture":
+        case "zombie_perk_bottle_whoswho":
             b_is_perk_bottle = 1;
             break;
         default:
@@ -7543,4 +7486,3 @@ get_player_perk_purchase_limit()
 
     return level.perk_purchase_limit;
 }
-#endif
