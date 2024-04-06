@@ -54,7 +54,7 @@ class Version:
     @staticmethod
     def parse(_version: str):
         version = Version()
-        version._version: list[int] = [int(v) for v in _version.split(".")]
+        version._version = [int(v) for v in _version.split(".")]
         version.trim()
         return version
 
