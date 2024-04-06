@@ -7486,3 +7486,4 @@ get_player_perk_purchase_limit()
 
     return level.perk_purchase_limit;
 }
+#endif
