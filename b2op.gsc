@@ -51,6 +51,11 @@ init()
 	level.B2OP_CONFIG["version"] = 2.5;
 
 	level thread on_game_start();
+
+/* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
+#if DEBUG == 1
+    level.B2_NETWORK_HUD = ::network_frame_hud;
+#endif
 }
 
 on_game_start()
@@ -2436,14 +2441,6 @@ network_frame_hud()
 		end_time = int(getTime());
 		netframe_hud setValue(end_time - start_time);
 	}
-}
-
-init_utility()
-{
-/* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
-#if DEBUG == 1
-    level.B2_NETWORK_HUD = ::network_frame_hud;
-#endif
 }
 
 is_classic()
