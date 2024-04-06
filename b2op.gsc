@@ -6153,15 +6153,10 @@ init_button_wrappers()
 
 wait_network_frame()
 {
-    if ( numremoteclients() )
-    {
-        snapshot_ids = getsnapshotindexarray();
-
-        for ( acked = undefined; !isdefined( acked ); acked = snapshotacknowledged( snapshot_ids ) )
-            level waittill( "snapacknowledged" );
-    }
-    else
+    if (level.players.size == 1)
         wait 0.1;
+    else
+        wait 0.05;
 }
 
 ignore_triggers( timer )
