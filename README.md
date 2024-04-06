@@ -36,12 +36,12 @@ Since version 2.0, all scripts that are meant to be used by players are availabl
 Download script `b2op-plutonium.gsc` from releases section, and put it in your Plutonium folder, by default it's located in:
 
 ```
-C:\Users\{your username}\AppData\Local\Plutonium\storage\t6\scripts\zm
+%LOCALAPPDATA%\Plutonium\storage\t6\scripts\zm
 ```
 
-The appdata directory is hidden by default on windows, in order to access it, press key combination WINDOWS + R on your keyboard and type in `%LOCALAPPDATA%`, press ENTER.
+You may access above directory by pressing WINDOWS + R on your keyboard, paste above line to the prompt and press enter.
 
-For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted on Plutonium)
+For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted or Ancient on Plutonium)
 
 ## Redacted LAN
 
@@ -55,13 +55,11 @@ Download script `b2op-redacted.gsc` from releases section, and put it in script 
 
 **DISCLAIMER**
 
-I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i had to rework bunch of exising logic, and because of that **I CAN NOT** guarantee the integrity of the game the same way i can with versions for Plutonium and Redacted. Network frame is fixed, but potentially other things are broken. I'm willing to maintain that version if bugs are found, but i very strongly recommend playing on Plutonium R2905 with it's dedicated B2OP version instead.
+I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i need to ship B2OP for that launcher alongside existing 3arc code, which we obtained by decompiling game scripts. Because of it, they many not 100% reflect the proper game logic, we believe it's accurate but it's only as good as the decompiler. Because of that fact, **I CAN NOT** guarantee the game integrity to the extent i can do that with other versions of this patch, use at your own risk!
 
 To install, download `b2op-ancient.zip` from releases section, and inject it the same way as other patches for Ancient. Do note, zip contains a directory structure and filename that you're suppose to inject without changing it, so far people always injected files called `_clientids.gsc`, but in this case it would not work.
 
 Another thing to note, if you ever tried to inject a patch into Ancient, you know it tends to fail at times. With this patch it fails more, it sometimes can take few minutes of attempts to successfully inject.
-
-For solo games only, you can inject `b2op-redacted.gsc` instead (if you change the name to `_clientids.gsc` and create a correct folder structure, using dedicated Ancient version is required only for coop, as that's the scenario in which network frame does not behave properly)
 
 # FAQ
 
@@ -87,7 +85,7 @@ For solo games only, you can inject `b2op-redacted.gsc` instead (if you change t
 
 6) Why version for Ancient is so different
 
-- This is a big topic and there is gonna be a video about it, but long story short, in order to fix flawed behavior of something called "network frame", it is required to inject a very particular file that constains the logic for that functionality. Unfortunately it also contains bunch of other things that i also had to include (and modify due to limitations of the compiler that works with Ancient). That's why it is essential to use the exact folder structure and filename i provide in the zip file.
+- Ancient has an internal bug that's causing something called **network frame** to have a wrong values on coop. What it does, is it's causing certain scripts to execute at different rates. In order to fix it on Ancient specifically, B2OP has to contain a big chunk of the 3arc code that it's replacing (alongside the function that has to be changed in order to fix the flawed network frame behavior). This is causing the file to be distributed as a zip (so you can extract the directory inside of it and it's ready for injection) and is noticeably bigger in size.
 
 # Steps for basic troubleshooting
 
@@ -324,8 +322,7 @@ If you'd like to contribute to the code, please fork this repository, apply chan
 Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
 
 - [Python](https://www.python.org/downloads/windows/) 3.10 or newer (recommended 3.12)
-- [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.1.1 or newer (avoid using 1.2.0, as it contains certain error that might cause errors in game)
-- [Irony](https://1drv.ms/f/s!AhsJBbdzsgNOgcNghIHVM3lUPb_UtQ?e=sHekry) compiler (binary and executable)
+- [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.4.0 or newer
 
 Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
 
