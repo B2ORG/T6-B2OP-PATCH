@@ -71,6 +71,21 @@ class UnknownVersion(Version):
         self._version = self.UNKNOWN
 
 
+class Chunk:
+    def __init__(self, header: str = None) -> None:
+        self.header = header
+
+
+    def __enter__(self):
+        if self.header is not None:
+            print(self.header)
+        print("-" * 100)
+
+
+    def __exit__(self, *args):
+        print("-" * 100, "\n")
+
+
 # Config
 CWD = os.path.dirname(os.path.abspath(__file__))
 B2OP = "b2op.gsc"
@@ -79,7 +94,7 @@ GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
 GAME_COMP = "t6"
 MODE_PARSE = "parse"
 MODE_COMP = "comp"
-COMPILER_XENSIK = "gsc-tool.exe"
+COMPILER_GSCTOOL = "gsc-tool.exe"
 COMPILER_IRONY = "Compiler.exe"
 BINARY_IRONY = "irony.dll"
 PARSED_DIR = os.path.join("parsed", GAME_PARSE)
@@ -96,7 +111,7 @@ PRECOMPILED = {
     "redacted": "b2op_precompiled_redacted.gsc",
     "ancient": "b2op_precompiled_ancient.gsc",
 }
-BAD_COMPILER_VERSIONS = [Version.parse("1.2.0")]
+BAD_COMPILER_VERSIONS = []
 
 
 def edit_in_place(path: str, **replace_pairs) -> None:
@@ -116,13 +131,13 @@ def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True,
     call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
-        process: subprocess.CompletedProcess = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout, **sbp_args)
+        process: subprocess.CompletedProcess = subprocess.run(call, capture_output=True, universal_newlines=True, timeout=timeout, **sbp_args)
     except Exception:
         print_exc()
-        sys.exit()
+        sys.exit(1)
     else:
-        if cli_output:
-            print(process.stdout.decode())
+        print("Output:")
+        print(process.stdout.strip() if cli_output else "suppressed")
         return process
 
 
@@ -145,9 +160,13 @@ def create_zipfile() -> None:
         print("WARNING! Failed to create zip file due to missing compiled file")
 
 
+def verify_compiler() -> Version | bool:
+    return verify_compiler_version() if os.path.isfile(os.path.join(CWD, COMPILER_GSCTOOL)) else False
+
+
 def verify_compiler_version() -> Version:
-    compiler: subprocess.CompletedProcess = wrap_subprocess_call(COMPILER_XENSIK, cli_output=False)
-    lines: list[str] = compiler.stdout.decode().split("\n")
+    compiler: subprocess.CompletedProcess = wrap_subprocess_call(COMPILER_GSCTOOL, cli_output=False)
+    lines: list[str] = compiler.stdout.split("\n")
     if not lines:
         print("Could not verify compiler version")
         return UnknownVersion()
@@ -163,38 +182,45 @@ def verify_compiler_version() -> Version:
     return ver
 
 
-def main(cfg: list) -> None:
+def main() -> None:
+    print()
     os.chdir(CWD)
 
     # Util
-    version: Version = verify_compiler_version()
+    compiler: Version | bool = verify_compiler_version()
+    if compiler is False:
+        print(f"'{COMPILER_GSCTOOL}' compiler executable not found in '{CWD}'")
+        sys.exit(1)
 
     # New pluto
-    pluto_update = dict(REPLACE_DEFAULT)
-    pluto_update.update({"#define PLUTO 0": "#define PLUTO 1"})
-    edit_in_place(os.path.join(CWD, B2OP), **pluto_update)
-    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
-    file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["pluto"]))
-    file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
+    with Chunk("PLUTONIUM:"):
+        pluto_update = dict(REPLACE_DEFAULT)
+        pluto_update.update({"#define PLUTO 0": "#define PLUTO 1"})
+        edit_in_place(os.path.join(CWD, B2OP), **pluto_update)
+        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
+        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["pluto"]))
+        file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
 
     # Redacted
-    redacted_update = dict(REPLACE_DEFAULT)
-    redacted_update.update({"#define REDACTED 0": "#define REDACTED 1"})
-    edit_in_place(os.path.join(CWD, B2OP), **redacted_update)
-    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-    file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
+    with Chunk("REDACTED:"):
+        redacted_update = dict(REPLACE_DEFAULT)
+        redacted_update.update({"#define REDACTED 0": "#define REDACTED 1"})
+        edit_in_place(os.path.join(CWD, B2OP), **redacted_update)
+        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
 
     # Ancient
-    ancient_update = dict(REPLACE_DEFAULT)
-    ancient_update.update({"#define ANCIENT 0": "#define ANCIENT 1"})
-    edit_in_place(os.path.join(CWD, B2OP), **ancient_update)
-    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
-    file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["ancient"]))
-    file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
-    create_zipfile()
+    with Chunk("ANCIENT:"):
+        ancient_update = dict(REPLACE_DEFAULT)
+        ancient_update.update({"#define ANCIENT 0": "#define ANCIENT 1"})
+        edit_in_place(os.path.join(CWD, B2OP), **ancient_update)
+        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
+        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["ancient"]))
+        file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
+        create_zipfile()
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
