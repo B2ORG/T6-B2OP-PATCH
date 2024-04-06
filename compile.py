@@ -182,10 +182,8 @@ def main(cfg: list) -> None:
     redacted_update = dict(REPLACE_DEFAULT)
     redacted_update.update({"#define REDACTED 0": "#define REDACTED 1"})
     edit_in_place(os.path.join(CWD, B2OP), **redacted_update)
-    wrap_subprocess_call(COMPILER_IRONY, arg_path(CWD, PARSED_DIR, B2OP))
-    file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["redacted"]))
-    file_rename(os.path.join(CWD, B2OP_COMPILED), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
     wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+    file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
 
     # Ancient
     ancient_update = dict(REPLACE_DEFAULT)
