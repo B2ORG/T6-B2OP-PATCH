@@ -191,11 +191,10 @@ def main(cfg: list) -> None:
     ancient_update = dict(REPLACE_DEFAULT)
     ancient_update.update({"#define ANCIENT 0": "#define ANCIENT 1"})
     edit_in_place(os.path.join(CWD, B2OP), **ancient_update)
-    wrap_subprocess_call(COMPILER_IRONY, arg_path(CWD, PARSED_DIR, B2OP), timeout=30)
     wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
     wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
     file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["ancient"]))
-    file_rename(os.path.join(CWD, B2OP_COMPILED), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
+    file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
     create_zipfile()
 
 
