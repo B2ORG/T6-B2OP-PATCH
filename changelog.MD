@@ -1,3 +1,11 @@
+# Version 2.6
+
+## Distribution
+
+- [Ancient] Version for Ancient is now compiled with new compiler which *should* remove most of the issues with it.
+- [Redacted] Version for Redacted is now distributed as uncompiled code (which simplifies development process). That being said, it is still required to use file from releases.
+- [Development] gsc-tool version requirement went up to 1.4.0 + improvements to the compilation script
+
 # Version 2.5
 
 - [Pluto only] Added `scr_skip_devblock` dvar to mitigate dev prints problem in Pluto R3904

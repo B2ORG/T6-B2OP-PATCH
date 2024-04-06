@@ -48,7 +48,7 @@ init()
 
 	// Patch Config
 	level.B2OP_CONFIG = [];
-	level.B2OP_CONFIG["version"] = 2.5;
+	level.B2OP_CONFIG["version"] = 2.6;
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
