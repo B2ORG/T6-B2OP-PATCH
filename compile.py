@@ -158,7 +158,7 @@ def verify_compiler_version() -> Version:
         return UnknownVersion()
 
     ver: Version = Version.parse(version[0])
-    if ver < Version.parse("1.1.1") or ver in BAD_COMPILER_VERSIONS:
+    if ver < Version.parse("1.4.0") or ver in BAD_COMPILER_VERSIONS:
         input(f"WARNING! Potentially incompatibile version of the compiler ({str(ver)}) was found. Press ENTER to continue")
     return ver
 
@@ -173,12 +173,8 @@ def main(cfg: list) -> None:
     pluto_update = dict(REPLACE_DEFAULT)
     pluto_update.update({"#define PLUTO 0": "#define PLUTO 1"})
     edit_in_place(os.path.join(CWD, B2OP), **pluto_update)
-    if version >= Version.parse("1.4.0") or isinstance(version, UnknownVersion):
-        wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-        wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
-    else:
-        wrap_subprocess_call(COMPILER_XENSIK, MODE_PARSE, GAME_PARSE, "pc", B2OP)
-        wrap_subprocess_call(COMPILER_XENSIK, MODE_COMP, GAME_COMP, "pc", arg_path(CWD, PARSED_DIR, B2OP))
+    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
     file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["pluto"]))
     file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
 
@@ -186,23 +182,18 @@ def main(cfg: list) -> None:
     redacted_update = dict(REPLACE_DEFAULT)
     redacted_update.update({"#define REDACTED 0": "#define REDACTED 1"})
     edit_in_place(os.path.join(CWD, B2OP), **redacted_update)
-    if version >= Version.parse("1.4.0") or isinstance(version, UnknownVersion):
-        wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-    else:
-        wrap_subprocess_call(COMPILER_XENSIK, MODE_PARSE, GAME_PARSE, "pc", B2OP)
     wrap_subprocess_call(COMPILER_IRONY, arg_path(CWD, PARSED_DIR, B2OP))
     file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["redacted"]))
     file_rename(os.path.join(CWD, B2OP_COMPILED), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
+    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
 
     # Ancient
     ancient_update = dict(REPLACE_DEFAULT)
     ancient_update.update({"#define ANCIENT 0": "#define ANCIENT 1"})
     edit_in_place(os.path.join(CWD, B2OP), **ancient_update)
-    if version >= Version.parse("1.4.0") or isinstance(version, UnknownVersion):
-        wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-    else:
-        wrap_subprocess_call(COMPILER_XENSIK, MODE_PARSE, GAME_PARSE, "pc", B2OP)
     wrap_subprocess_call(COMPILER_IRONY, arg_path(CWD, PARSED_DIR, B2OP), timeout=30)
+    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
+    wrap_subprocess_call(COMPILER_XENSIK, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
     file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["ancient"]))
     file_rename(os.path.join(CWD, B2OP_COMPILED), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
     create_zipfile()

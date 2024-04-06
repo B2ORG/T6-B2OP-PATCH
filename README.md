@@ -324,7 +324,7 @@ If you'd like to contribute to the code, please fork this repository, apply chan
 Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
 
 - [Python](https://www.python.org/downloads/windows/) 3.10 or newer (recommended 3.12)
-- [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.1.1 or newer (avoid using 1.2.0, as it contains certain error that might cause errors in game)
+- [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.4.0 or newer
 - [Irony](https://1drv.ms/f/s!AhsJBbdzsgNOgcNghIHVM3lUPb_UtQ?e=sHekry) compiler (binary and executable)
 
 Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
