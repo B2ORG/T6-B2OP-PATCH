@@ -50,12 +50,12 @@ init()
 	level.B2OP_CONFIG = [];
 	level.B2OP_CONFIG["version"] = 2.5;
 
-	level thread on_game_start();
-
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
-#if DEBUG == 1
+#if DEBUG == 1 && ANCIENT == 1
     level.B2_NETWORK_HUD = ::network_frame_hud;
 #endif
+
+	level thread on_game_start();
 }
 
 on_game_start()
