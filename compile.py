@@ -101,6 +101,7 @@ PARSED_DIR = os.path.join("parsed", GAME_PARSE)
 COMPILED_DIR = os.path.join("compiled", GAME_COMP)
 ZMUTILITY_DIR = os.path.join("maps", "mp", "zombies")
 PLUGIN_DIR = "plugin_templates"
+FORCE_SPACES = True
 REPLACE_DEFAULT = {
     "#define ANCIENT 1": "#define ANCIENT 0",
     "#define REDACTED 1": "#define REDACTED 0",
@@ -125,6 +126,18 @@ def edit_in_place(path: str, **replace_pairs) -> None:
 
     with open(path, "w", encoding="utf-8") as gsc_io:
         gsc_io.write(gsc_content)
+
+
+def check_for_tabs(path: str) -> None:
+    with open(path, "r", encoding="utf-8") as gsc_io:
+        gsc_content = gsc_io.read()
+
+    tab: int = gsc_content.find("\t")
+    if tab != -1:
+        line: int = gsc_content.count("\n", 0, tab)
+        print(f"TAB found in line {line + 1}. Make sure to use 4 spaces instead of a tab!")
+        if FORCE_SPACES:
+            sys.exit(1)
 
 
 def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, **sbp_args) -> subprocess.CompletedProcess:
@@ -183,14 +196,17 @@ def verify_compiler_version() -> Version:
 
 
 def main() -> None:
-    print()
     os.chdir(CWD)
+    print(f"\nSet CWD to: {os.getcwd()}\n")
 
     # Util
-    compiler: Version | bool = verify_compiler_version()
+    compiler: Version | bool = verify_compiler()
     if compiler is False:
         print(f"'{COMPILER_GSCTOOL}' compiler executable not found in '{CWD}'")
         sys.exit(1)
+    print()
+
+    check_for_tabs(os.path.join(CWD, B2OP))
 
     # New pluto
     with Chunk("PLUTONIUM:"):
