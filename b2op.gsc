@@ -166,7 +166,6 @@ b2op_main_loop()
     while (true)
     {
         level waittill("start_of_round");
-        check_dvars();
 #ifndef DISABLE_HORDES
         level thread show_hordes();
 #endif
@@ -692,56 +691,93 @@ set_dvars()
     if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
         level.round_start_custom_func = ::trap_fix;
 
-    /* Rules used in init_dvar() used to disable b2op dvar by default
-    Try not to use init_dvar() outside of this function, in which case dvar_rules
-    has to become a level variable and be manually removed later */
-    dvar_rules = [];
-    dvar_rules["steam_backspeed"] = true;
-
-    init_dvar("timers", dvar_rules);
-    init_dvar("buildables", dvar_rules);
-    init_dvar("splits", dvar_rules);
+    dvars = [];
+    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
+    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
 #ifndef DISABLE_HORDES
-    init_dvar("hordes", dvar_rules);
+    dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
 #endif
-    init_dvar("steam_backspeed", dvar_rules);
-
-    if (has_permaperks_system())
-        init_dvar("award_perks", dvar_rules);
-
-    setdvar("player_strafeSpeedScale", 0.8);
-    setdvar("player_backSpeedScale", 0.7);
-    if (getDvar("steam_backspeed") == "0") {
-        setdvar("player_strafeSpeedScale", 1);
-        setdvar("player_backSpeedScale", 0.9);
+    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+    if (getDvar("steam_backspeed") == "1")
+    {
+        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
+        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.7",                  false,  false);
     }
-    setdvar("g_speed", 190);
-    setdvar("con_gameMsgWindow0Filter", "gamenotify obituary");
-    setdvar("sv_cheats", 0);
-    setdvar("r_dof_enable", 0);
-#if PLUTO == 1
-    setdvar("scr_skip_devblock", 1);
+    else
+    {
+        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "1",                    false,  false);
+        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.9",                  false,  false);
+    }
+    dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
+    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
+    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);                                 // Prevent host migration
+    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,  false);                                 // Force post dlc1 patch on recoil
+    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);                                  // Remove Depth of Field
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_plutonium);            // Fix for devblocks in r3903/3904
+
+    protected = [];
+    foreach (dvar in dvars)
+    {
+        if (!isDefined(dvar))
+            continue;
+        if (dvar.init_only && getdvar(dvar.name) != "")
+            continue;
+        setdvar(dvar.name, dvar.value);
+        if (dvar.protected)
+            protected[protected.size] = dvar;
+    }
+
+    dvars = undefined;
+
+    level thread dvar_watcher(protected);
+}
+
+register_dvar(dvar, set_value, b2_protect, init_only, closure)
+{
+    if (isDefined(closure) && ![[closure]]())
+        return undefined;
+
+    dvar_data = SpawnStruct();
+    dvar_data.name = dvar;
+    dvar_data.value = set_value;
+    dvar_data.protected = b2_protect;
+    dvar_data.init_only = init_only;
+
+#if DEBUG == 1
+    debug_print("registered dvar " + dvar);
 #endif
+
+    return dvar_data;
 }
 
-check_dvars()
+dvar_watcher(dvars)
 {
-    if (getDvar("sv_cheats") != "0")
-        generate_watermark("SVCHEATS", (0.8, 0, 0));
+    level endon("end_game");
 
-    if (getDvar("g_speed") != "190")
-        generate_watermark("GSPEED", (0.8, 0, 0));
-}
+    flag_wait("initial_blackscreen_passed");
 
-/* It's not explicit, but dvar_rules is optional arg, as long as it's only call remains inside of is_true() */
-init_dvar(dvar_str, dvar_rules)
-{
-    if (getDvar(dvar_str) != "")
-        return;
+    /* We're setting them once again, to ensure lack of accidental detections */
+    foreach (dvar in dvars )
+        setdvar(dvar.name, dvar.value);
 
-    setDvar(dvar_str, "1");
-    if (is_true(dvar_rules[dvar_str]))
-        setDvar(dvar_str, "0");
+    while (true)
+    {
+        foreach (dvar in dvars)
+        {
+            if (getDvar(dvar.name) != dvar.value)
+            {
+                /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
+                generate_watermark("DVAR " + ToUpper(dvar.name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
+                ArrayRemoveIndex(dvars, dvar, true);
+            }
+        }
+
+        wait 0.1;
+    }
 }
 
 award_points(amount)

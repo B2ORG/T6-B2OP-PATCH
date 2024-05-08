@@ -1,6 +1,7 @@
 # Version 2.7
 
 - Patch will now attempt to detect usage of the wrong file and inform players about it
+- Improved detection of certain dvars players shouldn't be using
 
 # Version 2.6
 
