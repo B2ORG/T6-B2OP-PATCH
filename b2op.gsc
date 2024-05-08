@@ -48,9 +48,8 @@ init()
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
 
-    // Patch Config
-    level.B2OP_CONFIG = [];
-    level.B2OP_CONFIG["version"] = 2.6;
+    // B2OP identifier
+    level.B2OP_CONFIG = 2.6;
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
@@ -63,14 +62,6 @@ init()
 on_game_start()
 {
     level endon("end_game");
-
-    // Func Config
-#ifndef DISABLE_HUD
-    level.B2OP_CONFIG["hud_color"] = (1, 1, 1);
-#endif
-    level.B2OP_CONFIG["give_permaperks"] = true;
-    level.B2OP_CONFIG["fridge"] = true;
-    level.B2OP_CONFIG["first_box_module"] = true;
 
     thread set_dvars();
     level thread on_player_joined();
@@ -92,8 +83,12 @@ on_game_start()
         level thread [[level.B2_NETWORK_HUD]]();
 #endif
     level thread first_box_handler();
+#ifndef DISABLE_PERMAPERKS
     level thread perma_perks_setup();
+#endif
+#ifndef DISABLE_FRIDGE
     level thread fridge_handler();
+#endif
 
     if (isDefined(level.B2_POWERUP_TRACKING))
         level thread [[level.B2_POWERUP_TRACKING]]();
@@ -197,8 +192,10 @@ b2op_main_loop()
 #ifndef DISABLE_HUD
         level thread show_split();
 #endif
+#ifndef DISABLE_PERMAPERKS
         if (has_permaperks_system())
             setDvar("award_perks", 1);
+#endif
     }
 }
 
@@ -586,17 +583,10 @@ wait_for_message_end()
     wait getDvarFloat("con_gameMsgWindow0FadeInTime") + getDvarFloat("con_gameMsgWindow0MsgTime") + getDvarFloat("con_gameMsgWindow0FadeOutTime");
 }
 
-b2op_config(key)
-{
-    if (is_true(level.B2OP_CONFIG[key]))
-        return true;
-    return false;
-}
-
 set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 {
     if (!isDefined(col))
-        col = level.B2OP_CONFIG["hud_color"];
+        col = (1, 1, 1);
 
     if (isDefined(level.B2_HUD))
     {
@@ -690,7 +680,7 @@ emulate_menu_call(content, ent)
 welcome_prints()
 {
     wait 0.75;
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG["version"]);
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG);
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 }
@@ -926,7 +916,7 @@ timers()
         round_end = int(getTime() / 1000) - round_start;
 
 #ifndef DISABLE_SPH
-        if (is_round(57) && hordes_count > 2 && b2op_config("sph_enabled"))
+        if (is_round(57) && hordes_count > 2)
             print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
 #endif
 
@@ -1107,9 +1097,6 @@ award_permaperks_safe()
     level endon("end_game");
     self endon("disconnect");
 
-    if (!b2op_config("give_permaperks"))
-        return;
-
     while (!isalive(self))
         wait 0.05;
 
@@ -1203,7 +1190,7 @@ fridge_handler()
 {
     level endon("end_game");
 
-    if (!has_permaperks_system() || !b2op_config("fridge"))
+    if (!has_permaperks_system())
         return;
 
 #if DEBUG == 1 && ANCIENT == 0 && REDACTED == 0
@@ -1383,10 +1370,12 @@ first_box_handler()
     thread init_boxhits_watcher();
     // Scan weapons in the box
     thread scan_in_box();
+#ifndef DISABLE_FIRSTBOX
     // First Box main loop
     thread first_box();
     // First Box location main loop
     thread first_box_location();
+#endif
 }
 
 init_boxhits_watcher()
@@ -1481,9 +1470,6 @@ scan_in_box()
 
 first_box()
 {   
-    if (!b2op_config("first_box_module"))
-        return;
-
     level.rigged_hits = 0;
     thread print_scheduler("First Box module: ^2AVAILABLE");
     thread watch_for_finish_firstbox();
@@ -1665,9 +1651,6 @@ first_box_location()
 {
     level endon("end_game");
     level endon("break_firstbox");
-
-    if (!b2op_config("first_box_module"))
-        return;
 
     if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
         return;
