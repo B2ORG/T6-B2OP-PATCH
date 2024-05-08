@@ -104,6 +104,7 @@ class Chunk:
 
 class Gsc:
     REPLACEMENTS: dict[str, str] = {
+        "#define RAW 1": "#define RAW 0",
         "#define ANCIENT 1": "#define ANCIENT 0",
         "#define REDACTED 1": "#define REDACTED 0",
         "#define PLUTO 1": "#define PLUTO 0"

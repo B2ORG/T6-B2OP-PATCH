@@ -1,4 +1,5 @@
-#define ANCIENT 1
+#define RAW 1
+#define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
 #define DEBUG 0
@@ -42,6 +43,7 @@ init_utility()
 init()
 #endif
 {
+    protect_file();
     flag_init("game_started");
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
@@ -198,6 +200,31 @@ b2op_main_loop()
         if (has_permaperks_system())
             setDvar("award_perks", 1);
     }
+}
+
+protect_file()
+{
+#if RAW == 1
+    bad_file();
+#elif DEBUG == 0 && REDACTED == 1
+    if (is_plutonium())
+        bad_file();
+#elif DEBUG == 0 && PLUTONIUM == 1
+    if (!is_plutonium())
+        bad_file();
+#endif
+}
+
+bad_file()
+{
+    wait 0.75;
+    iPrintLn("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
+    wait 0.75;
+    iPrintLn("Please read the installation instructions on the patch ^5GitHub^7 page");
+    wait 0.75;
+    iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
+    wait 0.75;
+    level notify("end_game");
 }
 
 // Utilities
