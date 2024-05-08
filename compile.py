@@ -1,5 +1,21 @@
 from traceback import print_exc
+from copy import copy, deepcopy
 import subprocess, sys, os, zipfile, re
+
+
+# Config
+CWD = os.path.dirname(os.path.abspath(__file__))
+B2OP = "b2op.gsc"
+GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
+GAME_COMP = "t6"
+MODE_PARSE = "parse"
+MODE_COMP = "comp"
+COMPILER_GSCTOOL = "gsc-tool.exe"
+PARSED_DIR = "parsed/" + GAME_PARSE
+COMPILED_DIR = "compiled/" + GAME_COMP
+ZMUTILITY_DIR = "maps/mp/zombies"
+FORCE_SPACES = True
+BAD_COMPILER_VERSIONS = []
 
 
 class Version:
@@ -13,7 +29,7 @@ class Version:
 
     def __eq__(self, __object) -> bool:
         return self._version == __object._version
-    
+
 
     def __ne__(self, __object) -> bool:
         return self._version != __object._version
@@ -86,33 +102,40 @@ class Chunk:
         print("-" * 100, "\n")
 
 
-# Config
-CWD = os.path.dirname(os.path.abspath(__file__))
-B2OP = "b2op.gsc"
-B2OP_COMPILED = "b2op-compiled.gsc"
-GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
-GAME_COMP = "t6"
-MODE_PARSE = "parse"
-MODE_COMP = "comp"
-COMPILER_GSCTOOL = "gsc-tool.exe"
-COMPILER_IRONY = "Compiler.exe"
-BINARY_IRONY = "irony.dll"
-PARSED_DIR = os.path.join("parsed", GAME_PARSE)
-COMPILED_DIR = os.path.join("compiled", GAME_COMP)
-ZMUTILITY_DIR = os.path.join("maps", "mp", "zombies")
-PLUGIN_DIR = "plugin_templates"
-FORCE_SPACES = True
-REPLACE_DEFAULT = {
-    "#define ANCIENT 1": "#define ANCIENT 0",
-    "#define REDACTED 1": "#define REDACTED 0",
-    "#define PLUTO 1": "#define PLUTO 0"
-}
-PRECOMPILED = {
-    "pluto": "b2op_precompiled_pluto.gsc",
-    "redacted": "b2op_precompiled_redacted.gsc",
-    "ancient": "b2op_precompiled_ancient.gsc",
-}
-BAD_COMPILER_VERSIONS = []
+class Gsc:
+    REPLACEMENTS: dict[str, str] = {
+        "#define ANCIENT 1": "#define ANCIENT 0",
+        "#define REDACTED 1": "#define REDACTED 0",
+        "#define PLUTO 1": "#define PLUTO 0"
+    }
+    def __init__(self) -> None:
+        self._code: str
+
+
+    def load_file(self, path: str) -> "Gsc":
+        with open(path, "r", encoding="utf-8") as gsc_io:
+            self._code = gsc_io.read()
+        return self
+
+
+    def check_whitespace(self) -> "Gsc":
+        tab: int = self._code.find("\t")
+        if tab != -1:
+            line: int = self._code.count("\n", 0, tab)
+            print(f"TAB found in line {line + 1}. Make sure to use 4 spaces instead of a tab!")
+            if FORCE_SPACES:
+                sys.exit(1)
+        return self
+
+
+    def save(self, path: str, local_changes: dict[str, str]) -> "Gsc":
+        changes: dict[str, str] = deepcopy(Gsc.REPLACEMENTS) | local_changes
+        changed: str = copy(self._code)
+        for old, new in changes.items():
+            changed = changed.replace(old, new)
+        with open(path, "w", encoding="utf-8") as gsc_io:
+            gsc_io.write(changed)
+        return self
 
 
 def edit_in_place(path: str, **replace_pairs) -> None:
@@ -126,18 +149,6 @@ def edit_in_place(path: str, **replace_pairs) -> None:
 
     with open(path, "w", encoding="utf-8") as gsc_io:
         gsc_io.write(gsc_content)
-
-
-def check_for_tabs(path: str) -> None:
-    with open(path, "r", encoding="utf-8") as gsc_io:
-        gsc_content = gsc_io.read()
-
-    tab: int = gsc_content.find("\t")
-    if tab != -1:
-        line: int = gsc_content.count("\n", 0, tab)
-        print(f"TAB found in line {line + 1}. Make sure to use 4 spaces instead of a tab!")
-        if FORCE_SPACES:
-            sys.exit(1)
 
 
 def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, **sbp_args) -> subprocess.CompletedProcess:
@@ -206,36 +217,59 @@ def main() -> None:
         sys.exit(1)
     print()
 
-    check_for_tabs(os.path.join(CWD, B2OP))
+    gsc: Gsc = Gsc().load_file(os.path.join(CWD, B2OP)).check_whitespace()
 
     # New pluto
     with Chunk("PLUTONIUM:"):
-        pluto_update = dict(REPLACE_DEFAULT)
-        pluto_update.update({"#define PLUTO 0": "#define PLUTO 1"})
-        edit_in_place(os.path.join(CWD, B2OP), **pluto_update)
-        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
-        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["pluto"]))
-        file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
+        gsc.save(
+            os.path.join(CWD, B2OP), {"#define PLUTO 0": "#define PLUTO 1"}
+        )
+        wrap_subprocess_call(
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+        )
+        wrap_subprocess_call(
+            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP)
+        )
+        file_rename(
+            os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, "b2op_precompiled_pluto.gsc")
+        )
+        file_rename(
+            os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc")
+        )
 
     # Redacted
     with Chunk("REDACTED:"):
-        redacted_update = dict(REPLACE_DEFAULT)
-        redacted_update.update({"#define REDACTED 0": "#define REDACTED 1"})
-        edit_in_place(os.path.join(CWD, B2OP), **redacted_update)
-        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
+        gsc.save(
+            os.path.join(CWD, B2OP), {"#define REDACTED 0": "#define REDACTED 1"}
+        )
+        wrap_subprocess_call(
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+        )
+        file_rename(
+            os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc")
+        )
 
     # Ancient
     with Chunk("ANCIENT:"):
-        ancient_update = dict(REPLACE_DEFAULT)
-        ancient_update.update({"#define ANCIENT 0": "#define ANCIENT 1"})
-        edit_in_place(os.path.join(CWD, B2OP), **ancient_update)
-        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP)
-        wrap_subprocess_call(COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP))
-        file_rename(os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, PRECOMPILED["ancient"]))
-        file_rename(os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
+        gsc.save(
+            os.path.join(CWD, B2OP), {"#define ANCIENT 0": "#define ANCIENT 1"}
+        )
+        wrap_subprocess_call(
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+        )
+        wrap_subprocess_call(
+            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP)
+        )
+        file_rename(
+            os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, "b2op_precompiled_ancient.gsc")
+        )
+        file_rename(
+            os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc")
+        )
         create_zipfile()
+
+    # Reset file
+    gsc.save(os.path.join(CWD, B2OP), {"#define RAW 0": "#define RAW 1"})
 
 
 if __name__ == "__main__":
