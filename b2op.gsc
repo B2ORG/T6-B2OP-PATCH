@@ -49,7 +49,7 @@ init()
     flag_init("permaperks_were_set");
 
     // B2OP identifier
-    level.B2OP_CONFIG = 2.6;
+    level.B2OP_CONFIG = 2.7;
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
