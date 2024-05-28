@@ -376,7 +376,7 @@ player_print_scheduler(content)
     level endon("end_game");
     self endon("disconnect");
 
-    while (isDefined(self.scheduled_prints) && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
+    while (isDefined(self.scheduled_prints) && getDvarInt("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
         wait 0.05;
 
     if (isDefined(self.scheduled_prints))
