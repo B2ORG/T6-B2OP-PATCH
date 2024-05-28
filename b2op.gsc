@@ -7,6 +7,7 @@
 
 #define DISABLE_HORDES
 #define DISABLE_SPH
+#define DISABLE_LIVE_PROTECTION
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -756,6 +757,7 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
 
 dvar_watcher(dvars)
 {
+#ifndef DISABLE_LIVE_PROTECTION
     level endon("end_game");
 
     flag_wait("initial_blackscreen_passed");
@@ -778,6 +780,7 @@ dvar_watcher(dvars)
 
         wait 0.1;
     }
+#endif
 }
 
 award_points(amount)
