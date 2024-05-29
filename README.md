@@ -6,7 +6,7 @@ Patch has already proved itself in multiple top games, including, but not limite
 - Town [99](https://www.twitch.tv/videos/1923623612) No Jug WR by Slewya
 - Origins [164](https://www.twitch.tv/videos/2007798756) WR by Dxruma
 - Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
-- Mob of the Dead [31:09] (https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
+- Mob of the Dead [31:09](https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
 - Buried [150](https://www.twitch.tv/videos/1866405878) No Power coop WR by Astrox & Nessquik
 
 # Informations
