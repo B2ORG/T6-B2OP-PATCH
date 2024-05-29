@@ -1054,7 +1054,7 @@ fill_up_bank()
 
     flag_wait("initial_blackscreen_passed");
 
-    if (has_permaperks_system())
+    if (has_permaperks_system() && did_game_just_start())
         self.account_value = level.bank_account_max;
 }
 
