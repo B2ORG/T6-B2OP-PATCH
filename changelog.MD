@@ -1,7 +1,9 @@
 # Version 2.7
 
 - Patch will now attempt to detect usage of the wrong file and inform players about it
-- Improved detection of certain dvars players shouldn't be using
+- Added explicit removal of RayGun permaperk
+- Bank now only fills up at the beginning of the game
+- Various changes to the compilation script and the patch itself for easier development process
 
 # Version 2.6
 

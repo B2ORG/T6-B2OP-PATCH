@@ -324,7 +324,7 @@ Since version 2.0, it's become a bit harder to work on the patch (natural progre
 - [Python](https://www.python.org/downloads/windows/) 3.10 or newer (recommended 3.12)
 - [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.4.0 or newer
 
-Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. For Irony, leave both filenames as they are on the cloud. Put everything in the patch main directory.
+Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. Put everything in the patch main directory.
 
 After applying desired changes, run script `compile.py` while in the patch main directory (press on address bar in the folder view, put `cmd` and press enter. A command line will open with that folder already set). Run script by putting in `python compile.py`. If you did everything right, script should compile everything for you and put stuff in right folders.
 
