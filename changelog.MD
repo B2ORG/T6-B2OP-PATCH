@@ -2,6 +2,7 @@
 
 - Patch will now attempt to detect usage of the wrong file and inform players about it
 - Added explicit removal of RayGun permaperk
+- Added platform identifiers to welcome prints
 - Bank now only fills up at the beginning of the game
 - Various changes to the compilation script and the patch itself for easier development process
 

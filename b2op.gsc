@@ -680,7 +680,15 @@ emulate_menu_call(content, ent)
 welcome_prints()
 {
     wait 0.75;
+#if PLUTO == 1
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [PLUTONIUM]");
+#elif REDACTED == 1
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [REDACTED]");
+#elif ANCIENT == 1
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [ANCIENT]");
+#else
     self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG);
+#endif
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 }
