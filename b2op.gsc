@@ -206,7 +206,7 @@ protect_file()
 #elif DEBUG == 0 && REDACTED == 1
     if (is_plutonium())
         bad_file();
-#elif DEBUG == 0 && PLUTONIUM == 1
+#elif DEBUG == 0 && PLUTO == 1
     if (!is_plutonium())
         bad_file();
 #endif
