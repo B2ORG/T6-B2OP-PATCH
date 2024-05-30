@@ -57,6 +57,8 @@ Download script `b2op-redacted.gsc` from releases section, and put it in script 
 
 I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i need to ship B2OP for that launcher alongside existing 3arc code, which we obtained by decompiling game scripts. Because of it, they many not 100% reflect the proper game logic, we believe it's accurate but it's only as good as the decompiler. Because of that fact, **I CAN NOT** guarantee the game integrity to the extent i can do that with other versions of this patch, use at your own risk!
 
+**INSTALLATION**
+
 To install, download `b2op-ancient.zip` from releases section, and inject it the same way as other patches for Ancient. Do note, zip contains a directory structure and filename that you're suppose to inject without changing it, so far people always injected files called `_clientids.gsc`, but in this case it would not work.
 
 Another thing to note, if you ever tried to inject a patch into Ancient, you know it tends to fail at times. With this patch it fails more, it sometimes can take few minutes of attempts to successfully inject.
@@ -87,17 +89,21 @@ Another thing to note, if you ever tried to inject a patch into Ancient, you kno
 
 - Ancient has an internal bug that's causing something called **network frame** to have a wrong values on coop. What it does, is it's causing certain scripts to execute at different rates. In order to fix it on Ancient specifically, B2OP has to contain a big chunk of the 3arc code that it's replacing (alongside the function that has to be changed in order to fix the flawed network frame behavior). This is causing the file to be distributed as a zip (so you can extract the directory inside of it and it's ready for injection) and is noticeably bigger in size.
 
+7) What is a DVAR
+
+- DVAR is a variable that player can (usually) modify from the game console. DVARs mentioned in this document are all changeable. In order to set a DVAR, press `~` button, then type in dvar name, and value you want to assign to it, like so
+
+```
+steam_backspeed 1
+```
+
 # Steps for basic troubleshooting
 
-- Make sure you're using correct and up to date version and that the downloaded file is compiled (open in Notepad, if it's bunch of gibbrish, you know it's compiled)
-- Remove other patches. B2OP Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
+- Make sure you're using correct and up to date version downloaded from releases section on this page. Versions
+- Remove other patches. B2 Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
 - Check if the directory the patch is in is correct. Perhaps you have multiple instances of Plutonium or Redacted and you put it in the directory belonging to another instance.
 
-# Features
-
-Features in B2OP patch
-
-## List of the patch features
+# B2OP Features
 
 - Basic anticheat capabilities (DVARs, Box etc.)
 - Automatic permaperks assignment (consistent with in-game logic)
