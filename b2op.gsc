@@ -846,32 +846,19 @@ evaluate_network_frame()
 
     flag_wait("initial_blackscreen_passed");
 
-    start_time = int(getTime());
+    start_time = getTime();
     wait_network_frame();
-    end_time = int(getTime());
-    network_frame_len = (end_time - start_time) / 1000;
-    net_frame_good = false;
+    network_frame_len = getTime() - start_time;
 
-    /* To avoid direct float equality evaluation */
-    if (level.players.size == 1)
+    if ((level.players.size == 1 && network_frame_len == 100) || (level.players.size > 1 && network_frame_len == 50))
     {
-        if (network_frame_len > 0.06 && network_frame_len < 0.14)
-            net_frame_good = true;
-    }
-    else
-    {
-        if (network_frame_len < 0.09)
-            net_frame_good = true;
-    }
-
-    if (net_frame_good)
         print_scheduler("Network Frame: ^2GOOD", self);
-    else
-    {
-        print_scheduler("Network Frame: ^1BAD", self);
-        level waittill("start_of_round");
-        self thread evaluate_network_frame();
+        return;
     }
+
+    print_scheduler("Network Frame: ^1BAD", self);
+    level waittill("start_of_round");
+    self thread evaluate_network_frame();
 }
 
 trap_fix()
