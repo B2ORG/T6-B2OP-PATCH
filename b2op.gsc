@@ -681,11 +681,11 @@ welcome_prints()
 {
     wait 0.75;
 #if PLUTO == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [PLUTONIUM]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[PLUTONIUM]");
 #elif REDACTED == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [REDACTED]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[REDACTED]");
 #elif ANCIENT == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " [ANCIENT]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[ANCIENT]");
 #else
     self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG);
 #endif
