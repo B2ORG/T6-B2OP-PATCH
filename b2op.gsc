@@ -50,7 +50,7 @@ init()
     flag_init("permaperks_were_set");
 
     // B2OP identifier
-    level.B2OP_CONFIG = 2.7;
+    level.B2OP_CONFIG = 2.8;
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
@@ -731,18 +731,23 @@ set_dvars()
     protected = [];
     foreach (dvar in dvars)
     {
-        if (!isDefined(dvar))
-            continue;
-        if (dvar.init_only && getdvar(dvar.name) != "")
-            continue;
-        setdvar(dvar.name, dvar.value);
-        if (dvar.protected)
+        set_dvar_internal(dvar);
+        if (is_true(dvar.protected))
             protected[protected.size] = dvar;
     }
 
     dvars = undefined;
 
     level thread dvar_watcher(protected);
+}
+
+set_dvar_internal(dvar)
+{
+    if (!isDefined(dvar))
+        return;
+    if (dvar.init_only && getdvar(dvar.name) != "")
+        return;
+    setdvar(dvar.name, dvar.value);
 }
 
 register_dvar(dvar, set_value, b2_protect, init_only, closure)

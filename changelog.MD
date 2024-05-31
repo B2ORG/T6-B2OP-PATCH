@@ -1,3 +1,7 @@
+# Version 2.8
+
+- Fixed patch not working on Redacted
+
 # Version 2.7
 
 - Patch will now attempt to detect usage of the wrong file and inform players about it
