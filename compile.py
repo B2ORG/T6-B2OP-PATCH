@@ -15,7 +15,7 @@ PARSED_DIR = "parsed/" + GAME_PARSE
 COMPILED_DIR = "compiled/" + GAME_COMP
 ZMUTILITY_DIR = "maps/mp/zombies"
 FORCE_SPACES = True
-BAD_COMPILER_VERSIONS = []
+BAD_COMPILER_VERSIONS: set["Version"] = set()
 
 
 class Version:
@@ -88,7 +88,7 @@ class UnknownVersion(Version):
 
 
 class Chunk:
-    def __init__(self, header: str = None) -> None:
+    def __init__(self, header: str | None = None) -> None:
         self.header = header
 
 
