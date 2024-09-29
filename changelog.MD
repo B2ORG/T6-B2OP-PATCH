@@ -1,3 +1,7 @@
+# Version 2.9
+
+- Fixed death machine shortcode `dm`
+
 # Version 2.8
 
 - Fixed patch not working on Redacted
