@@ -1997,6 +1997,7 @@ get_weapon_key(weapon_str, verifier)
             break;
         case "dm":
             key = "minigun_alcatraz_zm";
+            break;
         case "mp40":
             key = "mp40_stalker_zm";
             break;
