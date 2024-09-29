@@ -67,6 +67,10 @@ class Version:
         return ".".join([str(v) for v in self._version])
 
 
+    def __hash__(self) -> int:
+        return hash(f"{self._version[0]}|{self._version[1]}|{self._version[2]}")
+
+
     @staticmethod
     def parse(_version: str):
         version = Version()
