@@ -495,11 +495,77 @@ is_round(rnd)
     return rnd <= level.round_number;
 }
 
-
+fetch_pluto_definition()
+{
+    /*
+    Noteworthy versions:
+    353 - Ancient
+    2905 - Best modern offline version
+    4516 - Refactor
+    */
+    dvar_defs = [];
+    dvar_defs["zombies_minplayers"] = 920;
+    dvar_defs["sv_allowDof"] = 1137;
+    dvar_defs["g_randomSeed"] = 1205;
+    dvar_defs["g_playerCollision"] = 2016;
+    dvar_defs["sv_allowAimAssist"] = 2107;
+    dvar_defs["gpad_stick_deadzone_min"] = 2190;
+    dvar_defs["cg_weaponCycleDelay"] = 2693;
+    dvar_defs["cl_enableStreamerMode"] = 2905;
+    dvar_defs["scr_max_loop_time"] = 3755;
+    dvar_defs["rcon_timeout"] = 3855;
+    dvar_defs["snd_debug"] = 3963;
+    dvar_defs["con_displayRconOutput"] = 4035;
+    dvar_defs["scr_allowFileIo"] = 4516;
+    return dvar_defs;
 }
 
+try_parse_pluto_version()
 {
+    dvar = getDvar("version");
+    if (!isSubStr(dvar, "Plutonium"))
+        return 0;
 
+    parsed = getSubStr(dvar, 23, 27);
+    return int(parsed);
+}
+
+get_plutonium_version()
+{
+#if PLUTO == 1
+    version = try_parse_pluto_version();
+    if (version > 0)
+        return version;
+
+    definitions = fetch_pluto_definition();
+    foreach (definition in getArrayKeys(definitions))
+    {
+
+        if (getDvar(definition) != "")
+            return definitions[definition];
+    }
+    return 353;
+#else
+    return 0;
+#endif
+}
+
+get_next_plutonium_version()
+{
+#if PLUTO == 1
+    current = get_plutonium_version();
+    foreach(ver in fetch_pluto_definition())
+    {
+        if (current < ver) {
+            return ver;
+        }
+    }
+    return ver;
+#elif ANCIENT == 1
+    return 353;
+#else
+    return 0;
+#endif
 }
 
 is_plutonium()
