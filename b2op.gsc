@@ -726,6 +726,7 @@ welcome_prints()
     wait 0.75;
 #if PLUTO == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[PLUTONIUM]");
+    self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
 #elif REDACTED == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[REDACTED]");
 #elif ANCIENT == 1
