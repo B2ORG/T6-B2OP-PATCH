@@ -235,12 +235,14 @@ bad_file()
 debug_print(text)
 {
 #if PLUTO == 1
-    if (get_plutonium_version() >= 2693) {
+    /* print GSC built-in no longer adds the newline char (like in previous games) */
+    if (is_4k())
+        print("DEBUG: " + text + "\n");
+    else if (get_plutonium_version() >= 2693)
         print("DEBUG: " + text);
-        return;
-    }
+    else
 #endif
-    iprintln("DEBUG: " + text);
+        iprintln("DEBUG: " + text);
 }
 #endif
 
