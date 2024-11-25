@@ -160,7 +160,7 @@ def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True,
     call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
-        process: subprocess.CompletedProcess = subprocess.run(call, capture_output=True, universal_newlines=True, timeout=timeout, **sbp_args)
+        process: subprocess.CompletedProcess = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, timeout=timeout, **sbp_args)
     except Exception:
         print_exc()
         sys.exit(1)
