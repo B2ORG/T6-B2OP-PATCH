@@ -2,7 +2,7 @@
 #define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
-#define DEBUG 0
+#define DEBUG 1
 #define BETA 0
 
 #define DISABLE_HORDES
@@ -231,7 +231,7 @@ bad_file()
 
 // Utilities
 
-#if DEBUG == 1
+#if DEBUG == 1 && ANCIENT == 0
 debug_print(text)
 {
 #if PLUTO == 1
