@@ -77,8 +77,8 @@ on_game_start()
     level thread b2op_main_loop();
 #ifndef DISABLE_HUD
     level thread timers();
-    level thread hud_alpha_controller();
-    level thread buildable_controller();
+    level thread hud_alpha_component();
+    level thread buildable_component();
 
     if (isDefined(level.B2_NETWORK_HUD))
         level thread [[level.B2_NETWORK_HUD]]();
@@ -928,7 +928,7 @@ trap_fix()
 }
 
 #ifndef DISABLE_HUD
-hud_alpha_controller()
+hud_alpha_component()
 {
     level endon("end_game");
 
@@ -2449,7 +2449,7 @@ set_characters()
 }
 
 #ifndef DISABLE_HUD
-buildable_controller()
+buildable_component()
 {
     level endon("end_game");
 
