@@ -442,101 +442,99 @@ player_wait_for_initial_blackscreen()
 
 is_town()
 {
-    if (level.script == "zm_transit" && level.scr_zm_map_start_location == "town" && level.scr_zm_ui_gametype_group == "zsurvival")
-        return true;
-    return false;
+    return level.script == "zm_transit" && level.scr_zm_map_start_location == "town" && level.scr_zm_ui_gametype_group == "zsurvival";
 }
 
 is_farm()
 {
-    if (level.script == "zm_transit" && level.scr_zm_map_start_location == "farm" && level.scr_zm_ui_gametype_group == "zsurvival")
-        return true;
-    return false;
+    return level.script == "zm_transit" && level.scr_zm_map_start_location == "farm" && level.scr_zm_ui_gametype_group == "zsurvival";
 }
 
 is_depot()
 {
-    if (level.script == "zm_transit" && level.scr_zm_map_start_location == "transit" && level.scr_zm_ui_gametype_group == "zsurvival")
-        return true;
-    return false;
+    return level.script == "zm_transit" && level.scr_zm_map_start_location == "transit" && level.scr_zm_ui_gametype_group == "zsurvival";
 }
 
 is_tranzit()
 {
-    if (level.script == "zm_transit" && level.scr_zm_map_start_location == "transit" && level.scr_zm_ui_gametype_group == "zclassic")
-        return true;
-    return false;
+    return level.script == "zm_transit" && level.scr_zm_map_start_location == "transit" && level.scr_zm_ui_gametype_group == "zclassic";
 }
 
 is_nuketown()
 {
-    if (level.script == "zm_nuked")
-        return true;
-    return false;
+    return level.script == "zm_nuked";
 }
 
 is_die_rise()
 {
-    if (level.script == "zm_highrise")
-        return true;
-    return false;
+    return level.script == "zm_highrise";
 }
 
 is_mob()
 {
-    if (level.script == "zm_prison")
-        return true;
-    return false;
+    return level.script == "zm_prison";
 }
 
 is_buried()
 {
-    if (level.script == "zm_buried")
-        return true;
-    return false;
+    return level.script == "zm_buried";
 }
 
 is_origins()
 {
-    if (level.script == "zm_tomb")
-        return true;
-    return false;
+    return level.script == "zm_tomb";
 }
 
 did_game_just_start()
 {
-    if (!isDefined(level.start_round))
-        return true;
-
-    if (!is_round(level.start_round + 2))
-        return true;
-
-    return false;
+    return !isDefined(level.start_round) || !is_round(level.start_round + 2);
 }
 
 is_round(rnd)
 {
-    if (rnd <= level.round_number)
-        is_rnd = true;
-    else
-        is_rnd = false;
+    return rnd <= level.round_number;
+}
 
-    return is_rnd;
+
+}
+
+{
+
 }
 
 is_plutonium()
 {
-    /* Returns true for Pluto versions r2693 and above */
-    if (getDvar("cg_weaponCycleDelay") == "")
-        return false;
-    return true;
+    return get_plutonium_version() != 0;
+}
+
+is_ancient()
+{
+    return get_plutonium_version() > 0 && get_plutonium_version() <= 353;
+}
+
+is_2k()
+{
+    return get_plutonium_version() > 353 && get_plutonium_version() <= 2905;
+}
+
+is_2905()
+{
+    return get_plutonium_version() > 353 && get_plutonium_version() <= 2905;
+}
+
+is_3k()
+{
+    return get_plutonium_version() >= 2905 && get_plutonium_version() < 4516;
+}
+
+is_4k()
+{
+    return get_plutonium_version() >= 4516;
 }
 
 has_magic()
 {
-    if (is_true(level.enable_magic))
-        return true;
-    return false;
+    return is_true(level.enable_magic);
 }
 
 has_permaperks_system()
@@ -545,27 +543,17 @@ has_permaperks_system()
     debug_print("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
 #endif
     /* Refer to init_persistent_abilities() */
-    if (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame))
-        return true;
-    return false;
+    return isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame);
 }
 
 is_special_round()
 {
-    if (is_true(flag("dog_round")))
-        return true;
-
-    if (is_true(flag("leaper_round")))
-        return true;
-
-    return false;
+    return is_true(flag("dog_round")) || is_true(flag("leaper_round"));
 }
 
 is_tracking_buildables()
 {
-    if (is_buried() || is_die_rise())
-        return true;
-    return false;
+    return is_buried() || is_die_rise();
 }
 
 get_zombies_left()
