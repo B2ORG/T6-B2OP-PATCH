@@ -744,7 +744,7 @@ set_dvars()
 {
     level endon("end_game");
 
-    if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
+    if (!is_4k() && (is_tranzit() || is_die_rise() || is_mob() || is_buried()))
         level.round_start_custom_func = ::trap_fix;
 
     dvars = [];
