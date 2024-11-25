@@ -203,11 +203,14 @@ protect_file()
 {
 #if RAW == 1
     bad_file();
-#elif DEBUG == 0 && REDACTED == 1
+#elif REDACTED == 1
     if (is_plutonium())
         bad_file();
-#elif DEBUG == 0 && PLUTO == 1
-    if (!is_plutonium())
+#elif PLUTO == 1
+    if (get_plutonium_version() <= 353)
+        bad_file();
+#elif ANCIENT == 1
+    if (!is_plutonium() || get_plutonium_version() >= 1824)
         bad_file();
 #endif
 }
@@ -221,7 +224,9 @@ bad_file()
     wait 0.75;
     iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
     wait 0.75;
+#if DEBUG == 0
     level notify("end_game");
+#endif
 }
 
 // Utilities
@@ -229,10 +234,13 @@ bad_file()
 #if DEBUG == 1
 debug_print(text)
 {
-    if (is_plutonium())
+#if PLUTO == 1
+    if (get_plutonium_version() >= 2693) {
         print("DEBUG: " + text);
-    else
-        iprintln("DEBUG: " + text);
+        return;
+    }
+#endif
+    iprintln("DEBUG: " + text);
 }
 #endif
 
@@ -544,24 +552,6 @@ get_plutonium_version()
         if (getDvar(definition) != "")
             return definitions[definition];
     }
-    return 353;
-#else
-    return 0;
-#endif
-}
-
-get_next_plutonium_version()
-{
-#if PLUTO == 1
-    current = get_plutonium_version();
-    foreach(ver in fetch_pluto_definition())
-    {
-        if (current < ver) {
-            return ver;
-        }
-    }
-    return ver;
-#elif ANCIENT == 1
     return 353;
 #else
     return 0;
