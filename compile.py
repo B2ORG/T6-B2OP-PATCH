@@ -6,6 +6,7 @@ import subprocess, sys, os, zipfile, re
 # Config
 CWD = os.path.dirname(os.path.abspath(__file__))
 B2OP = "b2op.gsc"
+B2OP_TOMB = "b2op_tomb.gsc"
 GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
 GAME_COMP = "t6"
 MODE_PARSE = "parse"
@@ -16,6 +17,7 @@ COMPILED_DIR = "compiled/" + GAME_COMP
 ZMUTILITY_DIR = "maps/mp/zombies"
 FORCE_SPACES = True
 BAD_COMPILER_VERSIONS: set["Version"] = set()
+COMPILE_TANK_PATCH = True
 
 
 class Version:
@@ -113,8 +115,9 @@ class Gsc:
         "#define REDACTED 1": "#define REDACTED 0",
         "#define PLUTO 1": "#define PLUTO 0"
     }
-    def __init__(self) -> None:
+    def __init__(self, skip_changes: bool = False) -> None:
         self._code: str
+        self._skip_changes: bool = skip_changes
 
 
     def load_file(self, path: str) -> "Gsc":
@@ -136,8 +139,9 @@ class Gsc:
     def save(self, path: str, local_changes: dict[str, str]) -> "Gsc":
         changes: dict[str, str] = deepcopy(Gsc.REPLACEMENTS) | local_changes
         changed: str = copy(self._code)
-        for old, new in changes.items():
-            changed = changed.replace(old, new)
+        if not self._skip_changes:
+            for old, new in changes.items():
+                changed = changed.replace(old, new)
         with open(path, "w", encoding="utf-8") as gsc_io:
             gsc_io.write(changed)
         return self
@@ -178,13 +182,15 @@ def file_rename(old: str, new: str) -> None:
     if os.path.isfile(new):
         os.remove(new)
     if os.path.isfile(old):
+        if not os.path.isdir(os.path.dirname(new)):
+            os.makedirs(os.path.dirname(new))
         os.rename(old, new)
 
 
-def create_zipfile() -> None:
+def create_zipfile(zip_target: str, file_to_zip: str, file_in_zip: str) -> None:
     try:
-        with zipfile.ZipFile(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
-            zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
+        with zipfile.ZipFile(zip_target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
+            zip.write(file_to_zip, file_in_zip)
     except FileNotFoundError:
         print("WARNING! Failed to create zip file due to missing compiled file")
 
@@ -242,6 +248,24 @@ def main() -> None:
             os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc")
         )
 
+        if COMPILE_TANK_PATCH:
+            gsc_origins: Gsc = Gsc().load_file(os.path.join(CWD, B2OP_TOMB)).check_whitespace()
+
+            gsc_origins.save(
+                os.path.join(CWD, B2OP_TOMB), {}
+            )
+            wrap_subprocess_call(
+                COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", B2OP_TOMB
+            )
+            file_rename(
+                os.path.join(CWD, COMPILED_DIR, B2OP_TOMB), os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc")
+            )
+            create_zipfile(
+                os.path.join(CWD, COMPILED_DIR, "b2op-tomb.zip"), 
+                os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc"),
+                os.path.join("zm_tomb", "b2op-tomb-plutonium.gsc")
+            )
+
     # Redacted
     with Chunk("REDACTED:"):
         gsc.save(
@@ -271,7 +295,11 @@ def main() -> None:
         file_rename(
             os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc")
         )
-        create_zipfile()
+        create_zipfile(
+            os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), 
+            os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"),
+            os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc")
+        )
 
     # Reset file
     gsc.save(os.path.join(CWD, B2OP), {"#define RAW 0": "#define RAW 1"})
