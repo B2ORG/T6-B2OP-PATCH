@@ -775,7 +775,7 @@ set_dvars()
     dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);                                  // Remove Depth of Field
     dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_3k);                   // Fix for devblocks in r3903/3904
     dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);                   // Use native health fix, r4516+
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks dvar"         "0",                    true,   false,      ::is_4k);                   // Defines if Pluto error fixes are applied, r4516+
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks dvar",        "0",                    true,   false,      ::is_4k);                   // Defines if Pluto error fixes are applied, r4516+
 
     protected = [];
     foreach (dvar in dvars)
