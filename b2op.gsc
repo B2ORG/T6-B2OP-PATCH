@@ -65,9 +65,6 @@ init()
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
 
-    // B2OP identifier
-    level.B2OP_CONFIG = 2.9;
-
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
     level.B2_NETWORK_HUD = ::network_frame_hud;
@@ -87,8 +84,6 @@ on_game_start()
 
     level.B2OP_START = int(getTime() / 1000);
     flag_set("game_started");
-
-    b2safety();
 
     level thread b2op_main_loop();
 #ifndef DISABLE_HUD
@@ -199,8 +194,11 @@ b2op_main_loop()
         }
 
         level waittill("end_of_round");
-        if (isDefined(level.B2OP_CHECK))
-            level.B2OP_CHECK = undefined;
+        /* This is less invasive way, less intrusive and threads spin up only at the end of round */
+        if (!is_round(100))
+        {
+            level thread sniff();
+        }
 #ifndef DISABLE_HUD
         level thread show_split();
 #endif
@@ -236,6 +234,14 @@ bad_file()
     wait 0.75;
     iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
     wait 0.75;
+#if DEBUG == 0
+    level notify("end_game");
+#endif
+}
+
+duplicate_file()
+{
+    iPrintLn("ONLY ONE ^1B2 ^7PATCH CAN RUN AT THE SAME TIME!");
 #if DEBUG == 0
     level notify("end_game");
 #endif
@@ -838,26 +844,18 @@ award_points(amount)
     self.score = amount;
 }
 
-b2safety()
+sniff()
 {
-    if (isDefined(level.SONG_TIMING) || isDefined(level.B2SONG_CONFIG))
-    {
-        print_scheduler("^1B2SONG DETECTED!!!");
-        emulate_menu_call("endround");
-    }
+    LEVEL_ENDON
 
-    if (isDefined(level.FRFIX_CONFIG) || isDefined(level.B2FR_CHECK))
+    wait randomFloatRange(0.1, 1.2);
+    if (flag("b2_on")) 
     {
-        print_scheduler("^1B2FR DETECTED!!!");
-        emulate_menu_call("endround");
+        duplicate_file();
     }
-
-    if (isDefined(level.B2OP_CHECK))
-    {
-        print_scheduler("^1ANOTHER B2OP DETECTED!!!");
-        emulate_menu_call("endround");
-    }
-    level.B2OP_CHECK = true;
+    flag_set("b2_on");
+    level waittill("start_of_round");
+    flag_clear("b2_on");
 }
 
 #if DEBUG == 1
