@@ -18,7 +18,7 @@ ZMUTILITY_DIR = "maps/mp/zombies"
 FORCE_SPACES = True
 BAD_COMPILER_VERSIONS: set["Version"] = set()
 COMPILE_TANK_PATCH = True
-
+STRICT_FILE_RM_CHECK = int(os.environ.get("B2_STRICT_CHECK", True))
 
 class Version:
     UNKNOWN = [-1, -1, -1]
@@ -187,6 +187,17 @@ def file_rename(old: str, new: str) -> None:
         os.rename(old, new)
 
 
+def clear_files(dir: str, pattern: str):
+    file_list: list[str] = os.listdir(dir)
+    if STRICT_FILE_RM_CHECK or len(file_list) >= 16:
+        input(f"You're about to remove {len(file_list)} files. Press ENTER to continue, or abord the program\n\t{"\n\t".join([os.path.basename(f) for f in file_list])}")
+
+    for file in file_list:
+        if re.match(pattern, file):
+            path_to_file = os.path.join(dir, file)
+            os.remove(path_to_file) if os.path.isfile(path_to_file) else os.rmdir(path_to_file)
+
+
 def create_zipfile(zip_target: str, file_to_zip: str, file_in_zip: str) -> None:
     try:
         with zipfile.ZipFile(zip_target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
@@ -227,6 +238,10 @@ def main() -> None:
         print(f"'{COMPILER_GSCTOOL}' compiler executable not found in '{CWD}'")
         sys.exit(1)
     print()
+
+    # Clear up all previous files
+    clear_files(os.path.join(CWD, PARSED_DIR), r".*")
+    clear_files(os.path.join(CWD, COMPILED_DIR), r".*")
 
     gsc: Gsc = Gsc().load_file(os.path.join(CWD, B2OP)).check_whitespace()
 
