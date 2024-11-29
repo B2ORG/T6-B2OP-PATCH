@@ -15,6 +15,14 @@
     LEVEL_ENDON \
     self endon("disconnect");
 
+#if PLUTO == 1 && DEBUG == 1
+#define DEBUG_PRINT(__txt) \
+    print("DEBUG: " + __txt + "\n");
+#elif DEBUG == 1
+#define DEBUG_PRINT(__txt) \
+    iprintln("DEBUG: " + __txt);
+#endif
+
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\zombies\_zm_utility;
@@ -164,9 +172,7 @@ b2op_main_loop()
 {
     LEVEL_ENDON
 
-#if DEBUG == 1
-    // debug_print("initialized b2op_main_loop");
-#endif
+    // DEBUG_PRINT("initialized b2op_main_loop");
 
     while (true)
     {
@@ -234,21 +240,6 @@ bad_file()
 }
 
 // Utilities
-
-#if DEBUG == 1 && ANCIENT == 0
-debug_print(text)
-{
-#if PLUTO == 1
-    /* print GSC built-in no longer adds the newline char (like in previous games) */
-    if (is_4k())
-        print("DEBUG: " + text + "\n");
-    else if (get_plutonium_version() >= 2693)
-        print("DEBUG: " + text);
-    else
-#endif
-        iprintln("DEBUG: " + text);
-}
-#endif
 
 generate_watermark_slots()
 {
@@ -365,21 +356,15 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 
 print_scheduler(content, player)
 {
-#if DEBUG == 1
-    // debug_print("print_scheduler(content='" + content + ")");
-#endif
+    // DEBUG_PRINT("print_scheduler(content='" + content + ")");
     if (isDefined(player))
     {
-#if DEBUG == 1
-        // debug_print(player.name + ": print scheduled: " + content);
-#endif
+        // DEBUG_PRINT(player.name + ": print scheduled: " + content);
         player thread player_print_scheduler(content);
     }
     else
     {
-#if DEBUG == 1
-        // debug_print("general: print scheduled: " + content);
-#endif
+        // DEBUG_PRINT("general: print scheduled: " + content);
         foreach (player in level.players)
             player thread player_print_scheduler(content);
     }
@@ -600,9 +585,7 @@ has_magic()
 
 has_permaperks_system()
 {
-#if DEBUG == 1
-    debug_print("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
-#endif
+    DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
     /* Refer to init_persistent_abilities() */
     return isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame);
 }
@@ -680,9 +663,7 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
     if (x_pos == int(x_pos))
         x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
 
-#if DEBUG == 1
-    // debug_print("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
-#endif
+    // DEBUG_PRINT("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
 
     self setpoint(x_align, y_align, x_pos, y_pos);
     self.color = col;
@@ -813,9 +794,7 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
     dvar_data.protected = b2_protect;
     dvar_data.init_only = init_only;
 
-#if DEBUG == 1
-    debug_print("registered dvar " + dvar);
-#endif
+    DEBUG_PRINT("registered dvar " + dvar);
 
     return dvar_data;
 }
@@ -1246,9 +1225,7 @@ resolve_permaperk(perk)
 
 award_permaperk(stat_name, perk_code, stat_value)
 {
-#if DEBUG == 1
-    // debug_print("awarding: " + stat_name + " " + perk_code + " " + stat_value);
-#endif
+    // DEBUG_PRINT("awarding: " + stat_name + " " + perk_code + " " + stat_value);
     flag_set("permaperks_were_set");
     self.stats_this_frame[stat_name] = 1;
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
@@ -1269,9 +1246,7 @@ remove_permaperk_wrapper(perk_code, round)
 
 remove_permaperk(perk_code)
 {
-#if DEBUG == 1
-    // debug_print("removing: " + perk_code);
-#endif
+    // DEBUG_PRINT("removing: " + perk_code);
     self.pers_upgrades_awarded[perk_code] = 0;
     self playsoundtoplayer("evt_player_downgrade", self);
 }
@@ -1283,9 +1258,7 @@ fridge_handler()
     if (!has_permaperks_system())
         return;
 
-#if DEBUG == 1
-    // debug_print("currently in fridge='" + level.players[0] get_locker_stat() + "'");
-#endif
+    // DEBUG_PRINT("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 
     if (isDefined(level.B2_FRIDGE))
     {
@@ -1379,9 +1352,7 @@ fridge_watch_state()
 
 rig_fridge(key, player)
 {
-#if DEBUG == 1
-    // debug_print("rig_fridge(): key=" + key + "'");
-#endif
+    // DEBUG_PRINT("rig_fridge(): key=" + key + "'");
 
     if (isSubStr(key, "+"))
         weapon = get_weapon_key(getSubStr(key, 1), ::fridge_pap_weapon_verification);
@@ -1441,9 +1412,7 @@ get_locker_stat(stat)
         stat = "name";
 
     value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
-#if DEBUG == 1
-    // debug_print("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
-#endif
+    // DEBUG_PRINT("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
     return value;
 }
 
@@ -1543,9 +1512,7 @@ scan_in_box()
                 in_box++;
         }
 
-#if DEBUG == 1
-        // debug_print("in_box: " + in_box + " should: " + should_be_in_box);
-#endif
+        // DEBUG_PRINT("in_box: " + in_box + " should: " + should_be_in_box);
 
         if (in_box == should_be_in_box)
             continue;
@@ -1648,9 +1615,7 @@ rig_box(guns, player)
     removed_guns = [];
 
     flag_set("box_rigged");
-#if DEBUG == 1
-    // debug_print("FIRST BOX: flag('box_rigged'): " + flag("box_rigged"));
-#endif
+    // DEBUG_PRINT("FIRST BOX: flag('box_rigged'): " + flag("box_rigged"));
 
     level.special_weapon_magicbox_check = undefined;
     foreach(weapon in getarraykeys(level.zombie_weapons))
@@ -1659,9 +1624,7 @@ rig_box(guns, player)
         {
             removed_guns[removed_guns.size] = weapon;
             level.zombie_weapons[weapon].is_in_box = 0;
-#if DEBUG == 1
-            // debug_print("FIRST BOX: setting " + weapon + ".is_in_box to 0");
-#endif
+            // DEBUG_PRINT("FIRST BOX: setting " + weapon + ".is_in_box to 0");
         }
     }
 
@@ -1679,9 +1642,7 @@ rig_box(guns, player)
     {
         if (is_round(11))
         {
-#if DEBUG == 1
-            // debug_print("FIRST BOX: breaking out of First Box above round 10");
-#endif
+            // DEBUG_PRINT("FIRST BOX: breaking out of First Box above round 10");
             break;
         }
         wait 0.05;
@@ -1691,17 +1652,13 @@ rig_box(guns, player)
 
     level.special_weapon_magicbox_check = saved_check;
 
-#if DEBUG == 1
-    // debug_print("FIRST BOX: removed_guns.size " + removed_guns.size);
-#endif
+    // DEBUG_PRINT("FIRST BOX: removed_guns.size " + removed_guns.size);
     if (removed_guns.size > 0)
     {
         foreach(rweapon in removed_guns)
         {
             level.zombie_weapons[rweapon].is_in_box = 1;
-#if DEBUG == 1
-            // debug_print("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
-#endif
+            // DEBUG_PRINT("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
         }
     }
 
@@ -1730,9 +1687,7 @@ watch_for_finish_firstbox()
         print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
 
     level notify("break_firstbox");
-#if DEBUG == 1
-    // debug_print("FIRST BOX: notifying module to break");
-#endif
+    // DEBUG_PRINT("FIRST BOX: notifying module to break");
     level.rigged_hits = undefined;
     level.total_box_hits = undefined;
 }
@@ -1892,9 +1847,7 @@ force_next_location()
 
 process_box_location(input_msg)
 {
-#if DEBUG == 1
-    // debug_print("Input for 'lb': " + input_msg);
-#endif
+    // DEBUG_PRINT("Input for 'lb': " + input_msg);
     switch (tolower(input_msg))
     {
         case "dt":
@@ -2116,9 +2069,7 @@ get_weapon_key(weapon_str, verifier)
 
     key = [[verifier]](key);
 
-#if DEBUG == 1
-    // debug_print("get_weapon_key(): weapon_key: " + key);
-#endif
+    // DEBUG_PRINT("get_weapon_key(): weapon_key: " + key);
     return key;
 }
 
@@ -2170,9 +2121,7 @@ server_box_weapon_verification(weapon_key)
 fridge_weapon_verification(weapon_key)
 {
     wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
-#if DEBUG == 1
-    // debug_print("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
-#endif
+    // DEBUG_PRINT("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
     if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
         return "";
@@ -2186,9 +2135,7 @@ fridge_weapon_verification(weapon_key)
 fridge_pap_weapon_verification(weapon_key)
 {
     weapon_key = fridge_weapon_verification(weapon_key);
-#if DEBUG == 1
-    // debug_print("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
-#endif
+    // DEBUG_PRINT("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
 
     /* Give set attachment if weapon supports it */
     att = fridge_pap_weapon_attachment_rules(weapon_key);
