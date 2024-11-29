@@ -587,13 +587,14 @@ get_plutonium_version()
         return version;
 
     definitions = fetch_pluto_definition();
-    foreach (definition in getArrayKeys(definitions))
+    detected_version = VER_ANCIENT;
+    foreach (definition, version in definitions)
     {
-
+        // DEBUG_PRINT("definition: " + definition + " version: " + version);
         if (getDvar(definition) != "")
-            return definitions[definition];
+            detected_version = version;
     }
-    return VER_ANCIENT;
+    return detected_version;
 #else
     return 0;
 #endif
