@@ -94,7 +94,6 @@ on_game_start()
 
     flag_wait("initial_blackscreen_passed");
 
-    level.B2OP_START = int(getTime() / 1000);
     flag_set("game_started");
 
     level thread b2op_main_loop();
@@ -182,6 +181,7 @@ b2op_main_loop()
     LEVEL_ENDON
 
     // DEBUG_PRINT("initialized b2op_main_loop");
+    game_start = getTime();
 
     while (true)
     {
@@ -212,7 +212,7 @@ b2op_main_loop()
             level thread sniff();
         }
 #if FEATURE_HUD == 1
-        level thread show_split();
+        level thread show_split(game_start);
 #endif
 #if FEATURE_PERMAPERKS == 1
         if (has_permaperks_system())
@@ -1012,7 +1012,7 @@ keep_displaying_old_time(time)
     }
 }
 
-show_split()
+show_split(start_time)
 {
     LEVEL_ENDON
 
@@ -1028,7 +1028,7 @@ show_split()
 
     wait 8.25;
 
-    timestamp = convert_time(int(getTime() / 1000) - level.B2OP_START);
+    timestamp = convert_time(int((getTime() - start_time) / 1000));
     if (is_true(flag("FIRST BOX")))
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
     else
