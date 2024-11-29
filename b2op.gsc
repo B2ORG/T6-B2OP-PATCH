@@ -22,7 +22,7 @@
 #define FEATURE_FRIDGE 1
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
-#define FEATURE_LIVE_PROTECTION 0
+#define FEATURE_LIVE_PROTECTION 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
