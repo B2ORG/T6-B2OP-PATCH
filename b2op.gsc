@@ -13,6 +13,7 @@
 #define VER_4K 4516
 #define NET_FRAME_SOLO 100
 #define NET_FRAME_COOP 50
+#define MAX_VALID_HEALTH 1044606905
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -941,17 +942,15 @@ evaluate_network_frame()
 
 trap_fix()
 {
-    rnd_155 = 1044606905;
-
-    if (level.zombie_health <= rnd_155)
+    if (level.zombie_health <= MAX_VALID_HEALTH)
         return;
 
-    level.zombie_health = rnd_155;
+    level.zombie_health = MAX_VALID_HEALTH;
 
     foreach (zombie in get_round_enemy_array())
     {
-        if (zombie.health > rnd_155)
-            zombie.heath = rnd_155;
+        if (zombie.health > MAX_VALID_HEALTH)
+            zombie.heath = MAX_VALID_HEALTH;
     }
 }
 
