@@ -1,3 +1,4 @@
+/* Global code configuration */
 #define RAW 1
 #define ANCIENT 0
 #define REDACTED 0
@@ -5,18 +6,26 @@
 #define DEBUG 1
 #define BETA 0
 
+/* Const macros */
 #define B2OP_VER 3
 
-#define DISABLE_HORDES
-#define DISABLE_SPH
-#define DISABLE_LIVE_PROTECTION
+/* Feature flags */
+#define FEATURE_HUD 1
+#define FEATURE_PERMAPERKS 1
+#define FEATURE_FIRSTBOX 1
+#define FEATURE_FRIDGE 1
+#define FEATURE_HORDES 0
+#define FEATURE_SPH 0
+#define FEATURE_LIVE_PROTECTION 0
 
+/* Snippet macros */
 #define LEVEL_ENDON \
     level endon("end_game");
 #define PLAYER_ENDON \
     LEVEL_ENDON \
     self endon("disconnect");
 
+/* Function macros */
 #if PLUTO == 1 && DEBUG == 1
 #define DEBUG_PRINT(__txt) \
     print("DEBUG: " + __txt + "\n");
@@ -86,7 +95,7 @@ on_game_start()
     flag_set("game_started");
 
     level thread b2op_main_loop();
-#ifndef DISABLE_HUD
+#if FEATURE_HUD == 1
     level thread timers();
     level thread hud_alpha_component();
     level thread buildable_component();
@@ -95,10 +104,10 @@ on_game_start()
         level thread [[level.B2_NETWORK_HUD]]();
 #endif
     level thread first_box_handler();
-#ifndef DISABLE_PERMAPERKS
+#if FEATURE_PERMAPERKS == 1
     level thread perma_perks_setup();
 #endif
-#ifndef DISABLE_FRIDGE
+#if FEATURE_FRIDGE == 1
     level thread fridge_handler();
 #endif
 
@@ -137,7 +146,7 @@ on_player_spawned()
 
     self thread welcome_prints();
     self thread evaluate_network_frame();
-#ifndef DISABLE_HUD
+#if FEATURE_HUD == 1
     if (isDefined(level.B2_ZONES))
         self thread [[level.B2_ZONES]]();
 #endif
@@ -174,7 +183,7 @@ b2op_main_loop()
     while (true)
     {
         level waittill("start_of_round");
-#ifndef DISABLE_HORDES
+#if FEATURE_HORDES == 1
         level thread show_hordes();
 #endif
 
@@ -199,10 +208,10 @@ b2op_main_loop()
         {
             level thread sniff();
         }
-#ifndef DISABLE_HUD
+#if FEATURE_HUD == 1
         level thread show_split();
 #endif
-#ifndef DISABLE_PERMAPERKS
+#if FEATURE_PERMAPERKS == 1
         if (has_permaperks_system())
             setDvar("award_perks", 1);
 #endif
@@ -608,6 +617,7 @@ is_tracking_buildables()
     return is_buried() || is_die_rise();
 }
 
+#if FEATURE_HORDES == 1
 get_zombies_left()
 {
     return get_round_enemy_array().size + level.zombie_total;
@@ -617,6 +627,7 @@ get_hordes_left()
 {
     return int((get_zombies_left() / 24) * 100) / 100;
 }
+#endif
 
 wait_for_message_end()
 {
@@ -744,7 +755,7 @@ set_dvars()
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
     dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
-#ifndef DISABLE_HORDES
+#if FEATURE_HORDES == 1
     dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
 #endif
     dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
@@ -809,7 +820,7 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
 
 dvar_watcher(dvars)
 {
-#ifndef DISABLE_LIVE_PROTECTION
+#if FEATURE_LIVE_PROTECTION == 1
     LEVEL_ENDON
 
     flag_wait("initial_blackscreen_passed");
@@ -911,7 +922,7 @@ trap_fix()
     }
 }
 
-#ifndef DISABLE_HUD
+#if FEATURE_HUD == 1
 hud_alpha_component()
 {
     LEVEL_ENDON
@@ -975,7 +986,7 @@ timers()
     while (isDefined(level.round_hud))
     {
         round_start = int(getTime() / 1000);
-#ifndef DISABLE_SPH
+#if FEATURE_SPH == 1
         hordes_count = get_hordes_left();
 #endif
         level.round_hud setTimerUp(0);
@@ -983,7 +994,7 @@ timers()
         level waittill("end_of_round");
         round_end = int(getTime() / 1000) - round_start;
 
-#ifndef DISABLE_SPH
+#if FEATURE_SPH == 1
         if (is_round(57) && hordes_count > 2)
             print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
 #endif
@@ -1027,7 +1038,7 @@ show_split()
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
 }
 
-#ifndef DISABLE_HORDES
+#if FEATURE_HORDES == 1
 show_hordes()
 {
     LEVEL_ENDON
@@ -1429,7 +1440,7 @@ first_box_handler()
     thread init_boxhits_watcher();
     // Scan weapons in the box
     thread scan_in_box();
-#ifndef DISABLE_FIRSTBOX
+#if FEATURE_FIRSTBOX == 1
     // First Box main loop
     thread first_box();
     // First Box location main loop
@@ -2397,7 +2408,7 @@ set_characters()
         self.voice = prop["voice"];
 }
 
-#ifndef DISABLE_HUD
+#if FEATURE_HUD == 1
 buildable_component()
 {
     LEVEL_ENDON
