@@ -1,6 +1,6 @@
 from traceback import print_exc
 from copy import copy, deepcopy
-import subprocess, sys, os, zipfile, re
+import subprocess, sys, os, zipfile, re, binascii
 
 
 # Config
@@ -187,7 +187,7 @@ def file_rename(old: str, new: str) -> None:
         os.rename(old, new)
 
 
-def clear_files(dir: str, pattern: str):
+def clear_files(dir: str, pattern: str) -> None:
     file_list: list[str] = os.listdir(dir)
     if STRICT_FILE_RM_CHECK or len(file_list) >= 16:
         input(f"You're about to remove {len(file_list)} files. Press ENTER to continue, or abord the program\n\t{"\n\t".join([os.path.basename(f) for f in file_list])}")
@@ -196,6 +196,14 @@ def clear_files(dir: str, pattern: str):
         if re.match(pattern, file):
             path_to_file = os.path.join(dir, file)
             os.remove(path_to_file) if os.path.isfile(path_to_file) else os.rmdir(path_to_file)
+
+
+def flash_hash(file_path: str) -> str:
+    with open(file_path, "rb") as file_io:
+        # Convert to uINT and represent as uppercase hex
+        hash: str = format(binascii.crc32(file_io.read()) & 0xFFFFFFFF, "08X")
+    print(f"Hash of {os.path.basename(file_path)}: '{hash}'")
+    return hash
 
 
 def create_zipfile(zip_target: str, file_to_zip: str, file_in_zip: str) -> None:
@@ -263,6 +271,8 @@ def main() -> None:
             os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc")
         )
 
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
+
         if COMPILE_TANK_PATCH:
             gsc_origins: Gsc = Gsc().load_file(os.path.join(CWD, B2OP_TOMB)).check_whitespace()
 
@@ -281,6 +291,8 @@ def main() -> None:
                 os.path.join("zm_tomb", "b2op-tomb-plutonium.gsc")
             )
 
+            flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc"))
+
     # Redacted
     with Chunk("REDACTED:"):
         gsc.save(
@@ -292,6 +304,8 @@ def main() -> None:
         file_rename(
             os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc")
         )
+
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
 
     # Ancient
     with Chunk("ANCIENT:"):
@@ -315,6 +329,8 @@ def main() -> None:
             os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"),
             os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc")
         )
+
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
 
     # Reset file
     gsc.save(os.path.join(CWD, B2OP), {"#define RAW 0": "#define RAW 1"})
