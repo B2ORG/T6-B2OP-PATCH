@@ -321,13 +321,17 @@ List of permaperks awarded by B2OP
 
 Players are always recommended to restart the game after being given perma perks, restart is done automatically when situation allows for it, otherwise players have to `map_restart` manually (the game will end automatically).
 
+# Tank fix
+
+On Plutonium R4516+, the tank has been changed to match how it works on Steam and Console. [This file](https://github.com/B2ORG/T6-B2OP-PATCH/blob/main/b2op_tomb.gsc) is a fix to that, if the community agrees that it should be prepatches, there's gonna be a separate release in [release section](https://github.com/B2ORG/T6-B2OP-PATCH/releases) for that fix specifically, as it has to be a separate file. You can hear about this topic in [this video](https://youtu.be/p8s-4b4D1J8)
+
 # Contributions
 
 If you'd like to contribute to the code, please fork this repository, apply changes / fixes and open a pull request. If the change is in line with rules and the purpose of this patch, it'll be merged and a new version of the patch will be released.
 
 Since version 2.0, it's become a bit harder to work on the patch (natural progression i suppose), following things are required:
 
-- [Python](https://www.python.org/downloads/windows/) 3.10 or newer (recommended 3.12)
+- [Python](https://www.python.org/downloads/windows/) 3.12 or newer
 - [gsc-tool](https://github.com/xensik/gsc-tool/releases) 1.4.0 or newer
 
 Install Python (and make sure to check adding it to the system PATH while doing so). Download gsc-tool, do not change the name of the program. Put everything in the patch main directory.

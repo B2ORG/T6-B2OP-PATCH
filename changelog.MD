@@ -1,3 +1,18 @@
+# Version 3.0
+
+- Preprocessor directives refactor (not affecting the gameplay directly)
+- Improvements to compilation script (not affecting the gameplay directly)
+- Patch now shows currently detected Plutonium version on load (may be inaccurate in older Plutonium versions)
+- On Plutonium R4516+, the patch no longer applies the trap fix, instead enabling Plutonium fix. For older versions (R2905) the fix is still enabled.
+- Added tank prepatch GSC file to the repository `b2op_tomb.gsc`
+- Added some optimizations to variable and thread allocations
+- Enabled live DVAR protection (similar to B2FR)
+- Added handling for new Plutonium DVARs
+    * `g_zm_fix_damage_overflow` - Plutonium trap fix (enabled)
+    * `g_fix_entity_leaks` - Plutonium error fixes (disabled)
+    * `cg_flashScriptHashes` - Plutonim display hashes of GSC (enabled)
+    * `cg_debugInfoCornerOffset` - Plutonium error trackers offset changed to not interfere with timers
+
 # Version 2.9
 
 - Fixed death machine shortcode `dm`
