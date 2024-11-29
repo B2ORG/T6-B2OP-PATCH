@@ -30,12 +30,11 @@
 
 /* Function macros */
 #if PLUTO == 1 && DEBUG == 1
-#define DEBUG_PRINT(__txt) \
-    print("DEBUG: " + __txt + "\n");
+#define DEBUG_PRINT(__txt) print("DEBUG: " + __txt + "\n");
 #elif DEBUG == 1
-#define DEBUG_PRINT(__txt) \
-    iprintln("DEBUG: " + __txt);
+#define DEBUG_PRINT(__txt) iprintln("DEBUG: " + __txt);
 #endif
+#define CLEAR(__var) __var = undefined;
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -356,6 +355,10 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     twatermark.hidewheninmenu = 0;
 
     flag_set(text);
+
+    CLEAR(text)
+    CLEAR(color)
+    CLEAR(alpha_override)
 
     while (level.round_number < kill_on)
         level waittill("end_of_round");
@@ -782,10 +785,10 @@ set_dvars()
     {
         set_dvar_internal(dvar);
         if (is_true(dvar.protected))
-            protected[protected.size] = dvar;
+            protected[dvar.name] = dvar.value;
     }
 
-    dvars = undefined;
+    CLEAR(dvars)
 
     level thread dvar_watcher(protected);
 }
@@ -823,18 +826,18 @@ dvar_watcher(dvars)
     flag_wait("initial_blackscreen_passed");
 
     /* We're setting them once again, to ensure lack of accidental detections */
-    foreach (dvar in dvars )
-        setdvar(dvar.name, dvar.value);
+    foreach (name, value in dvars)
+        setdvar(name, value);
 
     while (true)
     {
-        foreach (dvar in dvars)
+        foreach (name, value in dvars)
         {
-            if (getDvar(dvar.name) != dvar.value)
+            if (getDvar(name) != value)
             {
                 /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
-                generate_watermark("DVAR " + ToUpper(dvar.name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
-                ArrayRemoveIndex(dvars, dvar, true);
+                generate_watermark("DVAR " + ToUpper(name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
+                ArrayRemoveIndex(dvars, name, true);
             }
         }
 
@@ -1147,7 +1150,7 @@ watch_permaperk_award()
     foreach (player in level.players)
     {
         if (isDefined(player.awarding_permaperks_now))
-            player.awarding_permaperks_now = undefined;
+            CLEAR(player.awarding_permaperks_now)
     }
 }
 
@@ -1201,8 +1204,7 @@ award_permaperks_safe()
     }
 
     wait 0.5;
-    perks_to_process = undefined;
-    self.awarding_permaperks_now = undefined;
+    CLEAR(self.awarding_permaperks_now)
     self maps\mp\zombies\_zm_stats::uploadstatssoon();
 }
 
@@ -1290,7 +1292,7 @@ fridge_handler()
     foreach (player in level.players)
     {
         if (isDefined(player.fridge_state))
-            player.fridge_state = undefined;
+            CLEAR(player.fridge_state)
     }
 }
 
@@ -1325,8 +1327,6 @@ fridge_watch_chat()
             rig_fridge(getSubStr(message, 11));
         else if (isSubStr(message, "fridge"))
             rig_fridge(getSubStr(message, 7), player);
-
-        message = undefined;
     }
 }
 #endif
@@ -1575,8 +1575,6 @@ box_watch_chat()
 
     while (true)
     {
-        message = undefined;
-
         level waittill("say", message, player);
 
         if (isSubStr(message, "fb"))
@@ -1586,8 +1584,6 @@ box_watch_chat()
 
         thread rig_box(strtok(wpn_key, "|"), player);
         wait_network_frame();
-
-        wpn_key = undefined;
 
         while (flag("box_rigged"))
             wait 0.05;
@@ -1696,8 +1692,8 @@ watch_for_finish_firstbox()
 
     level notify("break_firstbox");
     // DEBUG_PRINT("FIRST BOX: notifying module to break");
-    level.rigged_hits = undefined;
-    level.total_box_hits = undefined;
+    CLEAR(level.rigged_hits)
+    CLEAR(level.total_box_hits)
 }
 
 first_box_location()
@@ -1840,7 +1836,7 @@ move_chest(box)
     if (isDefined(kept_move_logic))
         level._zombiemode_custom_box_move_logic = kept_move_logic;
 
-    level.chest_name = undefined;
+    CLEAR(level.chest_name)
     level.chest_min_move_usage = 4;
 }
 
@@ -2443,6 +2439,7 @@ watch_stat(stat, map_array)
         return;
 
     PLAYER_ENDON
+    CLEAR(map_array)
 
     if (!isDefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
