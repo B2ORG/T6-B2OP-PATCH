@@ -11,6 +11,8 @@
 #define VER_ANCIENT 353
 #define VER_2905 2905
 #define VER_4K 4516
+#define NET_FRAME_SOLO 100
+#define NET_FRAME_COOP 50
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -926,7 +928,7 @@ evaluate_network_frame()
     wait_network_frame();
     network_frame_len = getTime() - start_time;
 
-    if ((level.players.size == 1 && network_frame_len == 100) || (level.players.size > 1 && network_frame_len == 50))
+    if ((level.players.size == 1 && network_frame_len == NET_FRAME_SOLO) || (level.players.size > 1 && network_frame_len == NET_FRAME_COOP))
     {
         print_scheduler("Network Frame: ^2GOOD", self);
         return;
