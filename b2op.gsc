@@ -35,6 +35,7 @@
 #define DEBUG_PRINT(__txt) iprintln("DEBUG: " + __txt);
 #endif
 #define CLEAR(__var) __var = undefined;
+#define MS_TO_SECONDS(__ms) int(__ms / 1000)
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -97,7 +98,7 @@ on_game_start()
 
     level thread b2op_main_loop();
 #if FEATURE_HUD == 1
-    level thread timers();
+    create_timers();
     level thread hud_alpha_component();
     level thread buildable_component();
 
@@ -185,6 +186,18 @@ b2op_main_loop()
     while (true)
     {
         level waittill("start_of_round");
+#if FEATURE_HUD == 1 || FEATURE_SPH == 1
+        round_start = getTime();
+#endif
+#if FEATURE_HUD == 1
+        if (isDefined(level.round_hud))
+        {
+            level.round_hud setTimerUp(0);
+        }
+#endif
+#if FEATURE_SPH == 1
+        hordes_count = get_hordes_left();
+#endif
 #if FEATURE_HORDES == 1
         level thread show_hordes();
 #endif
@@ -205,17 +218,35 @@ b2op_main_loop()
         }
 
         level waittill("end_of_round");
+#if FEATURE_HUD == 1 || FEATURE_SPH == 1
+        round_duration = getTime() - round_start;
+#endif
+#if FEATURE_HUD == 1
+        if (isDefined(level.round_hud))
+        {
+            level.round_hud thread keep_displaying_old_time(round_duration);
+        }
+        level thread show_split(game_start);
+#endif
+#if FEATURE_SPH == 1
+        if (is_round(57) && hordes_count > 2)
+        {
+            print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((MS_TO_SECONDS(round_duration) / hordes_count) * 1000) / 1000));
+        }
+#endif
+#if FEATURE_PERMAPERKS == 1
+        if (has_permaperks_system())
+        {
+            setDvar("award_perks", 1);
+        }
+#endif
         /* This is less invasive way, less intrusive and threads spin up only at the end of round */
         if (!is_round(100))
         {
             level thread sniff();
         }
-#if FEATURE_HUD == 1
-        level thread show_split(game_start);
-#endif
-#if FEATURE_PERMAPERKS == 1
-        if (has_permaperks_system())
-            setDvar("award_perks", 1);
+#if FEATURE_HUD == 1 || FEATURE_SPH == 1
+        CLEAR(round_end)
 #endif
     }
 }
@@ -968,10 +999,8 @@ hud_alpha_component()
     }
 }
 
-timers()
+create_timers()
 {
-    LEVEL_ENDON
-
     level.timer_hud = createserverfontstring("big" , 1.6);
     level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
     level.timer_hud.alpha = 1;
@@ -981,26 +1010,6 @@ timers()
     level.round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
     level.round_hud.alpha = 1;
     level.round_hud setText("0:00");
-
-    level waittill("start_of_round");
-    while (isDefined(level.round_hud))
-    {
-        round_start = int(getTime() / 1000);
-#if FEATURE_SPH == 1
-        hordes_count = get_hordes_left();
-#endif
-        level.round_hud setTimerUp(0);
-
-        level waittill("end_of_round");
-        round_end = int(getTime() / 1000) - round_start;
-
-#if FEATURE_SPH == 1
-        if (is_round(57) && hordes_count > 2)
-            print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((round_end / hordes_count) * 1000) / 1000));
-#endif
-
-        level.round_hud keep_displaying_old_time(round_end);
-    }
 }
 
 keep_displaying_old_time(time)
@@ -1010,7 +1019,7 @@ keep_displaying_old_time(time)
 
     while (true)
     {
-        self setTimer(time - 0.1);
+        self setTimer(MS_TO_SECONDS(time) - 0.1);
         wait 0.25;
     }
 }
@@ -1031,7 +1040,7 @@ show_split(start_time)
 
     wait 8.25;
 
-    timestamp = convert_time(int((getTime() - start_time) / 1000));
+    timestamp = convert_time(MS_TO_SECONDS((getTime() - start_time)));
     if (is_true(flag("FIRST BOX")))
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
     else
@@ -2487,9 +2496,9 @@ network_frame_hud()
     netframe_hud.alpha = 1;
     while (true)
     {
-        start_time = int(getTime());
+        start_time = getTime();
         wait_network_frame();
-        end_time = int(getTime());
+        end_time = getTime();
         netframe_hud setValue(end_time - start_time);
     }
 }
