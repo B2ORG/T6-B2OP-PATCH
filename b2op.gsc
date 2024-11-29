@@ -762,6 +762,8 @@ emulate_menu_call(content, ent)
 
 welcome_prints()
 {
+    PLAYER_ENDON
+
     wait 0.75;
 #if PLUTO == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
@@ -775,6 +777,14 @@ welcome_prints()
 #endif
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
+    if (self ishost() && is_4k() && getDvar("cg_drawChecksums") != "1")
+    {
+        wait 1.5;
+        self iPrintLn("Displaying game checksums for 4 seconds");
+        setDvar("cg_drawChecksums", 1);
+        wait 4;
+        setDvar("cg_drawChecksums", 0);
+    }
 }
 
 set_dvars()
