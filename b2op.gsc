@@ -599,6 +599,11 @@ get_plutonium_version()
 #endif
 }
 
+should_set_draw_offset()
+{
+    return (getDvar("cg_debugInfoCornerOffset") == "40 0" && is_4k());
+}
+
 is_plutonium()
 {
     return get_plutonium_version() != 0;
@@ -824,6 +829,7 @@ set_dvars()
     dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);                   // Use native health fix, r4516+
     dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);                   // Defines if Pluto error fixes are applied, r4516+
     dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);                   // Enables flashing hashes of individual scripts
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);  // Enables flashing hashes of individual scripts
 
     protected = [];
     foreach (dvar in dvars)
