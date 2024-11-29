@@ -36,6 +36,8 @@
 #define DEBUG_PRINT(__txt) print("DEBUG: " + __txt + "\n");
 #elif DEBUG == 1
 #define DEBUG_PRINT(__txt) iprintln("DEBUG: " + __txt);
+#else
+#define DEBUG_PRINT(__txt)
 #endif
 #define CLEAR(__var) __var = undefined;
 #define MS_TO_SECONDS(__ms) int(__ms / 1000)
@@ -797,8 +799,14 @@ set_dvars()
 {
     LEVEL_ENDON
 
-    if (!is_4k() && (is_tranzit() || is_die_rise() || is_mob() || is_buried()))
-        level.round_start_custom_func = ::trap_fix;
+    /* 2 layers for Irony */
+    if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
+    {
+        if (!is_4k())
+        {
+            level.round_start_custom_func = ::trap_fix;
+        }
+    }
 
     dvars = [];
     dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
@@ -830,7 +838,7 @@ set_dvars()
     dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);                   // Use native health fix, r4516+
     dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);                   // Defines if Pluto error fixes are applied, r4516+
     dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);                   // Enables flashing hashes of individual scripts
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);  // Enables flashing hashes of individual scripts
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);  // Offsets for pluto draws compatibile with b2 timers
 
     protected = [];
     foreach (dvar in dvars)
@@ -878,13 +886,14 @@ dvar_watcher(dvars)
     flag_wait("initial_blackscreen_passed");
 
     /* We're setting them once again, to ensure lack of accidental detections */
-    foreach (name, value in dvars)
-        setdvar(name, value);
+    foreach (name in getArrayKeys(dvars))
+        setdvar(name, dvars[name]);
 
     while (true)
     {
-        foreach (name, value in dvars)
+        foreach (name in getArrayKeys(dvars))
         {
+            value = dvars[name];
             if (getDvar(name) != value)
             {
                 /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
