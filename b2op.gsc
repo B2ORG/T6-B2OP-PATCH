@@ -5,6 +5,8 @@
 #define DEBUG 1
 #define BETA 0
 
+#define B2OP_VER 3
+
 #define DISABLE_HORDES
 #define DISABLE_SPH
 #define DISABLE_LIVE_PROTECTION
@@ -711,14 +713,14 @@ welcome_prints()
 {
     wait 0.75;
 #if PLUTO == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[PLUTONIUM]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
     self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
 #elif REDACTED == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[REDACTED]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
 #elif ANCIENT == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG + " ^7[ANCIENT]");
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
 #else
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + level.B2OP_CONFIG);
+    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER);
 #endif
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
