@@ -9,6 +9,12 @@
 #define DISABLE_SPH
 #define DISABLE_LIVE_PROTECTION
 
+#define LEVEL_ENDON \
+    level endon("end_game");
+#define PLAYER_ENDON \
+    LEVEL_ENDON \
+    self endon("disconnect");
+
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\zombies\_zm_utility;
@@ -62,7 +68,7 @@ init()
 
 on_game_start()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     thread set_dvars();
     level thread on_player_joined();
@@ -104,7 +110,7 @@ on_game_start()
 
 on_player_joined()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     while(true)
     {
@@ -116,8 +122,7 @@ on_player_joined()
 
 on_player_spawned()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     self waittill("spawned_player");
 
@@ -145,8 +150,7 @@ on_player_spawned()
 
 on_player_spawned_permaperk()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     /* We want to remove the perks before players spawn to prevent health bonus 
     The wait is essential, it allows the game to process permaperks internally before we override them */
@@ -158,7 +162,7 @@ on_player_spawned_permaperk()
 
 b2op_main_loop()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
 #if DEBUG == 1
     // debug_print("initialized b2op_main_loop");
@@ -315,7 +319,7 @@ generate_watermark(text, color, alpha_override)
 
 generate_temp_watermark(kill_on, text, color, alpha_override)
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (is_true(flag(text)))
         return;
@@ -383,8 +387,7 @@ print_scheduler(content, player)
 
 player_print_scheduler(content)
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     while (isDefined(self.scheduled_prints) && getDvarInt("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
         wait 0.05;
@@ -444,7 +447,7 @@ convert_time(seconds)
 
 player_wait_for_initial_blackscreen()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     while (!flag("game_started"))
         wait 0.05;
@@ -742,7 +745,7 @@ welcome_prints()
 
 set_dvars()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (!is_4k() && (is_tranzit() || is_die_rise() || is_mob() || is_buried()))
         level.round_start_custom_func = ::trap_fix;
@@ -820,7 +823,7 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
 dvar_watcher(dvars)
 {
 #ifndef DISABLE_LIVE_PROTECTION
-    level endon("end_game");
+    LEVEL_ENDON
 
     flag_wait("initial_blackscreen_passed");
 
@@ -847,8 +850,7 @@ dvar_watcher(dvars)
 
 award_points(amount)
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     if (is_mob())
         flag_wait("afterlife_start_over");
@@ -895,8 +897,7 @@ beta_mode()
 
 evaluate_network_frame()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     flag_wait("initial_blackscreen_passed");
 
@@ -934,7 +935,7 @@ trap_fix()
 #ifndef DISABLE_HUD
 hud_alpha_component()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     while (true)
     {
@@ -979,7 +980,7 @@ hud_alpha_component()
 
 timers()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     level.timer_hud = createserverfontstring("big" , 1.6);
     level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
@@ -1014,7 +1015,7 @@ timers()
 
 keep_displaying_old_time(time)
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("start_of_round");
 
     while (true)
@@ -1026,7 +1027,7 @@ keep_displaying_old_time(time)
 
 show_split()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (getDvar("splits") == "0")
         return;
@@ -1050,7 +1051,7 @@ show_split()
 #ifndef DISABLE_HORDES
 show_hordes()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (getDvar("hordes") == "0")
         return;
@@ -1098,8 +1099,7 @@ buildable_hud()
 
 fill_up_bank()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     flag_wait("initial_blackscreen_passed");
 
@@ -1126,7 +1126,7 @@ perma_perks_setup()
 
 watch_permaperk_award()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     present_players = level.players.size;
 
@@ -1184,8 +1184,7 @@ permaperk_array(code, maps_award, maps_take, to_round)
 
 award_permaperks_safe()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     while (!isalive(self))
         wait 0.05;
@@ -1279,7 +1278,7 @@ remove_permaperk(perk_code)
 
 fridge_handler()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (!has_permaperks_system())
         return;
@@ -1316,7 +1315,7 @@ fridge_handler()
 
 fridge_watch_dvar()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("terminate_fridge_process");
 
     setDvar("fridge", "");
@@ -1334,7 +1333,7 @@ fridge_watch_dvar()
 #if PLUTO == 1
 fridge_watch_chat()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("terminate_fridge_process");
 
     while (true)
@@ -1353,7 +1352,7 @@ fridge_watch_chat()
 
 fridge_watch_state()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     fridge_claimed = false;
 
@@ -1450,7 +1449,7 @@ get_locker_stat(stat)
 
 first_box_handler()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (!has_magic())
         return;
@@ -1471,7 +1470,7 @@ first_box_handler()
 
 init_boxhits_watcher()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
 
     while (!isDefined(level.chests))
@@ -1495,7 +1494,7 @@ init_boxhits_watcher()
 
 watch_box_state()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
 
     while (!isDefined(self.zbarrier))
@@ -1513,7 +1512,7 @@ watch_box_state()
 
 scan_in_box()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (is_town() || is_farm() || is_depot() || is_tranzit())
         should_be_in_box = 25;
@@ -1572,7 +1571,7 @@ first_box()
 
 box_watch_dvar()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
 
     setDvar("fb", "");
@@ -1596,7 +1595,7 @@ box_watch_dvar()
 #if PLUTO == 1
 box_watch_chat()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
 
     while (true)
@@ -1623,7 +1622,7 @@ box_watch_chat()
 
 rig_box(guns, player)
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
     if (level.players.size == 1)
@@ -1721,7 +1720,7 @@ rig_box(guns, player)
 
 watch_for_finish_firstbox()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     while (!is_round(11))
         wait 0.1;
@@ -1740,7 +1739,7 @@ watch_for_finish_firstbox()
 
 first_box_location()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
 
     if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
@@ -1756,7 +1755,7 @@ first_box_location()
 
 location_watch_dvar()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
     level endon("break_box_location");
 
@@ -1800,7 +1799,7 @@ location_watch_dvar()
 #if PLUTO == 1
 location_watch_chat()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     level endon("break_firstbox");
     level endon("break_box_location");
 
@@ -1842,7 +1841,7 @@ location_watch_chat()
 
 move_chest(box)
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (isDefined(level._zombiemode_custom_box_move_logic))
         kept_move_logic = level._zombiemode_custom_box_move_logic;
@@ -2401,8 +2400,7 @@ pull_character_preset(character_name)
 
 set_characters()
 {
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     /* We don't call clientid cause of Ancient */
     if (!isDefined(level.players))
@@ -2455,7 +2453,7 @@ set_characters()
 #ifndef DISABLE_HUD
 buildable_component()
 {
-    level endon("end_game");
+    LEVEL_ENDON
 
     if (!is_tracking_buildables())
         return;
@@ -2489,8 +2487,7 @@ watch_stat(stat, map_array)
     if (!IsInArray(map_array, level.script))
         return;
 
-    level endon("end_game");
-    self endon("disconnect");
+    PLAYER_ENDON
 
     if (!isDefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
@@ -2531,7 +2528,7 @@ fixed_wait_network_frame()
 
 network_frame_hud()
 {
-    level endon("end_game");
+    LEVEL_ENDON
     netframe_hud = createserverfontstring("default", 1.3);
     netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
     netframe_hud.label = &"NETFRAME: ";
