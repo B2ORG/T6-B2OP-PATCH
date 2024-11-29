@@ -128,7 +128,7 @@ on_player_joined()
 {
     LEVEL_ENDON
 
-    while(true)
+    while (true)
     {
         level waittill("connected", player);
         player thread on_player_spawned();
@@ -198,7 +198,7 @@ b2op_main_loop()
 #endif
 
             wait 2;
-            foreach(player in level.players)
+            foreach (player in level.players)
             {
                 player remove_permaperk_wrapper("jugg", 15);
                 player remove_permaperk_wrapper("nube", 10);
@@ -267,7 +267,7 @@ generate_watermark_slots()
 
     positions = array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630);
 
-    foreach(pos in positions)
+    foreach (pos in positions)
     {
         i = slots.size;
         slots[i] = [];
@@ -869,7 +869,7 @@ sniff()
 #if DEBUG == 1
 debug_mode()
 {
-    foreach(player in level.players)
+    foreach (player in level.players)
         player thread award_points(333333);
     generate_watermark("DEBUGGER", (0.8, 0.8, 0));
 }
@@ -1287,7 +1287,7 @@ fridge_handler()
     }
 
     // Cleanup
-    foreach(player in level.players)
+    foreach (player in level.players)
     {
         if (isDefined(player.fridge_state))
             player.fridge_state = undefined;
@@ -1339,7 +1339,7 @@ fridge_watch_state()
 
     while (!fridge_claimed)
     {
-        foreach(player in level.players)
+        foreach (player in level.players)
         {
             locker = player get_locker_stat();
             /* Save state of the locker, if it's any weapon */
@@ -1378,7 +1378,7 @@ rig_fridge(key, player)
     else
     {
         print_scheduler(level.players[0].name + "^7 set your fridge weapon to: ^3" + weapon_display_wrapper(weapon));
-        foreach(player in level.players)
+        foreach (player in level.players)
             player player_rig_fridge(weapon);
     }
 }
@@ -1459,7 +1459,7 @@ init_boxhits_watcher()
     }
 
     level.total_box_hits = 0;
-    foreach(chest in level.chests)
+    foreach (chest in level.chests)
         chest thread watch_box_state();
 
     /* Extra code for the purpose of location manager */
@@ -1626,7 +1626,7 @@ rig_box(guns, player)
     // DEBUG_PRINT("FIRST BOX: flag('box_rigged'): " + flag("box_rigged"));
 
     level.special_weapon_magicbox_check = undefined;
-    foreach(weapon in getarraykeys(level.zombie_weapons))
+    foreach (weapon in getarraykeys(level.zombie_weapons))
     {
         if ((weapon != weapon_key) && is_true(level.zombie_weapons[weapon].is_in_box))
         {
@@ -1663,7 +1663,7 @@ rig_box(guns, player)
     // DEBUG_PRINT("FIRST BOX: removed_guns.size " + removed_guns.size);
     if (removed_guns.size > 0)
     {
-        foreach(rweapon in removed_guns)
+        foreach (rweapon in removed_guns)
         {
             level.zombie_weapons[rweapon].is_in_box = 1;
             // DEBUG_PRINT("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
@@ -1748,7 +1748,7 @@ location_watch_dvar()
         }
 
         chests_script = [];
-        foreach(chest in level.chests)
+        foreach (chest in level.chests)
             chests_script[chests_script.size] = chest.script_noteworthy;
 
         if (!isinarray(chests_script, process_selection))
@@ -1790,7 +1790,7 @@ location_watch_chat()
         }
 
         chests_script = [];
-        foreach(chest in level.chests)
+        foreach (chest in level.chests)
             chests_script[chests_script.size] = chest.script_noteworthy;
 
         if (!isinarray(chests_script, process_selection))
@@ -1810,7 +1810,7 @@ move_chest(box)
         kept_move_logic = level._zombiemode_custom_box_move_logic;
 
     level._zombiemode_custom_box_move_logic = ::force_next_location;
-    foreach(chest in level.chests)
+    foreach (chest in level.chests)
     {
         if (!chest.hidden && chest.script_noteworthy == box)
         {
