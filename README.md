@@ -97,6 +97,10 @@ Another thing to note, if you ever tried to inject a patch into Ancient, you kno
 steam_backspeed 1
 ```
 
+8) Network Frame Fix file is missing from this repository
+
+- As it's not something i naturally expect players to use (B2OP includes that fix), i moved this file from this repository to [this gist](https://gist.github.com/Zi0MIX/2b9fb6c049111c72d3f9945a45b4c2b1), so you can still use it if you for example develop your own BO2 script
+
 # Steps for basic troubleshooting
 
 - Make sure you're using correct and up to date version downloaded from releases section on this page. Versions
