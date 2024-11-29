@@ -8,6 +8,9 @@
 
 /* Const macros */
 #define B2OP_VER 3
+#define VER_ANCIENT 353
+#define VER_2905 2905
+#define VER_4K 4516
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -226,7 +229,7 @@ protect_file()
     if (is_plutonium())
         bad_file();
 #elif PLUTO == 1
-    if (get_plutonium_version() <= 353)
+    if (get_plutonium_version() <= VER_ANCIENT)
         bad_file();
 #elif ANCIENT == 1
     if (!is_plutonium() || get_plutonium_version() >= 1824)
@@ -512,12 +515,6 @@ is_round(rnd)
 
 fetch_pluto_definition()
 {
-    /*
-    Noteworthy versions:
-    353 - Ancient
-    2905 - Best modern offline version
-    4516 - Refactor
-    */
     dvar_defs = [];
     dvar_defs["zombies_minplayers"] = 920;
     dvar_defs["sv_allowDof"] = 1137;
@@ -526,12 +523,12 @@ fetch_pluto_definition()
     dvar_defs["sv_allowAimAssist"] = 2107;
     dvar_defs["gpad_stick_deadzone_min"] = 2190;
     dvar_defs["cg_weaponCycleDelay"] = 2693;
-    dvar_defs["cl_enableStreamerMode"] = 2905;
+    dvar_defs["cl_enableStreamerMode"] = VER_2905;
     dvar_defs["scr_max_loop_time"] = 3755;
     dvar_defs["rcon_timeout"] = 3855;
     dvar_defs["snd_debug"] = 3963;
     dvar_defs["con_displayRconOutput"] = 4035;
-    dvar_defs["scr_allowFileIo"] = 4516;
+    dvar_defs["scr_allowFileIo"] = VER_4K;
     return dvar_defs;
 }
 
@@ -559,7 +556,7 @@ get_plutonium_version()
         if (getDvar(definition) != "")
             return definitions[definition];
     }
-    return 353;
+    return VER_ANCIENT;
 #else
     return 0;
 #endif
@@ -572,27 +569,27 @@ is_plutonium()
 
 is_ancient()
 {
-    return get_plutonium_version() > 0 && get_plutonium_version() <= 353;
+    return get_plutonium_version() > 0 && get_plutonium_version() <= VER_ANCIENT;
 }
 
 is_2k()
 {
-    return get_plutonium_version() > 353 && get_plutonium_version() <= 2905;
+    return get_plutonium_version() > VER_ANCIENT && get_plutonium_version() <= VER_2905;
 }
 
 is_2905()
 {
-    return get_plutonium_version() > 353 && get_plutonium_version() <= 2905;
+    return get_plutonium_version() == VER_2905;
 }
 
 is_3k()
 {
-    return get_plutonium_version() >= 2905 && get_plutonium_version() < 4516;
+    return get_plutonium_version() > VER_2905 && get_plutonium_version() < VER_4K;
 }
 
 is_4k()
 {
-    return get_plutonium_version() >= 4516;
+    return get_plutonium_version() >= VER_4K;
 }
 
 has_magic()
