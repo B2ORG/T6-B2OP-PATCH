@@ -81,6 +81,7 @@ init()
     flag_init("game_started");
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
+    flag_init("b2_on");
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
