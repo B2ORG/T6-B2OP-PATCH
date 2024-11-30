@@ -77,7 +77,7 @@ init_utility()
 init()
 #endif
 {
-    protect_file();
+    level thread protect_file();
     flag_init("game_started");
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
@@ -259,6 +259,7 @@ b2op_main_loop()
 
 protect_file()
 {
+    wait 0.05;
 #if RAW == 1
     bad_file();
 #elif REDACTED == 1
@@ -268,7 +269,8 @@ protect_file()
     if (get_plutonium_version() <= VER_ANCIENT)
         bad_file();
 #elif ANCIENT == 1
-    if (!is_plutonium() || get_plutonium_version() >= 1824)
+    flag_wait("initial_blackscreen_passed");
+    if (get_plutonium_version() >= 1824)
         bad_file();
 #endif
 }
@@ -561,7 +563,6 @@ fetch_pluto_definition()
     dvar_defs["g_randomSeed"] = 1205;
     dvar_defs["g_playerCollision"] = 2016;
     dvar_defs["sv_allowAimAssist"] = 2107;
-    dvar_defs["gpad_stick_deadzone_min"] = 2190;
     dvar_defs["cg_weaponCycleDelay"] = 2693;
     dvar_defs["cl_enableStreamerMode"] = VER_2905;
     dvar_defs["scr_max_loop_time"] = 3755;
@@ -584,23 +585,21 @@ try_parse_pluto_version()
 
 get_plutonium_version()
 {
-#if PLUTO == 1
-    version = try_parse_pluto_version();
-    if (version > 0)
-        return version;
+    parsed = try_parse_pluto_version();
+    if (parsed > 0)
+        return parsed;
 
+    /* TODO Figure out how to detect Ancient */
     definitions = fetch_pluto_definition();
-    detected_version = VER_ANCIENT;
-    foreach (definition, version in definitions)
+    detected_version = 0;
+    foreach (definition in getArrayKeys(definitions))
     {
+        version = definitions[definition];
         // DEBUG_PRINT("definition: " + definition + " version: " + version);
         if (getDvar(definition) != "")
             detected_version = version;
     }
     return detected_version;
-#else
-    return 0;
-#endif
 }
 
 should_set_draw_offset()
