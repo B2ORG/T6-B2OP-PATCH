@@ -558,6 +558,7 @@ is_round(rnd)
 fetch_pluto_definition()
 {
     dvar_defs = [];
+    dvar_defs["zm_gungame"] = VER_ANCIENT;
     dvar_defs["zombies_minplayers"] = 920;
     dvar_defs["sv_allowDof"] = 1137;
     dvar_defs["g_randomSeed"] = 1205;
@@ -589,7 +590,6 @@ get_plutonium_version()
     if (parsed > 0)
         return parsed;
 
-    /* TODO Figure out how to detect Ancient */
     definitions = fetch_pluto_definition();
     detected_version = 0;
     foreach (definition in getArrayKeys(definitions))
@@ -607,9 +607,14 @@ should_set_draw_offset()
     return (getDvar("cg_debugInfoCornerOffset") == "40 0" && is_4k());
 }
 
+is_redacted()
+{
+    return isSubStr(getDvar("sv_referencedFFNames"), "patch_redacted");
+}
+
 is_plutonium()
 {
-    return get_plutonium_version() != 0;
+    return !is_redacted();
 }
 
 is_ancient()
@@ -780,6 +785,7 @@ welcome_prints()
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
 #elif ANCIENT == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
+    // self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
 #else
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER);
 #endif
