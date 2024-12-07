@@ -251,6 +251,13 @@ b2op_main_loop()
         {
             level thread sniff();
         }
+
+#if PLUTO == 1
+        if (get_plutonium_version() >= 4522 && !did_game_just_start() && level.round_number % 2 == 1)
+        {
+            level thread print_checksums();
+        }
+#endif
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_end)
 #endif
@@ -592,7 +599,7 @@ get_plutonium_version()
 
     definitions = fetch_pluto_definition();
     detected_version = 0;
-    foreach (definition in getArrayKeys(definitions))
+    foreach (definition in array_reverse(getArrayKeys(definitions)))
     {
         version = definitions[definition];
         // DEBUG_PRINT("definition: " + definition + " version: " + version);
@@ -791,15 +798,30 @@ welcome_prints()
 #endif
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
-    if (self ishost() && is_4k() && getDvar("cg_drawChecksums") != "1")
+}
+
+#if PLUTO == 1
+print_checksums()
+{
+    LEVEL_ENDON
+
+    print_scheduler("Showing patch checksums", maps\mp\_utility::gethostplayer());
+    cmdexec("flashScriptHashes");
+
+    if (getDvar("cg_drawChecksums") != "1")
     {
-        wait 1.5;
-        self iPrintLn("Displaying game checksums for 4 seconds");
         setDvar("cg_drawChecksums", 1);
-        wait 4;
+        wait 3;
         setDvar("cg_drawChecksums", 0);
     }
 }
+
+/* Stub */
+cmdexec(arg)
+{
+
+}
+#endif
 
 set_dvars()
 {
