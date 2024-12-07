@@ -815,6 +815,7 @@ set_dvars()
     }
 
     dvars = [];
+    /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                    */
     dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
