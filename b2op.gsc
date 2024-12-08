@@ -423,28 +423,37 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     for appending first box info to splits */
 }
 
-print_scheduler(content, player)
+print_scheduler(content, player, delay)
 {
+    if (!isDefined(delay))
+    {
+        delay = 0;
+    }
+
     // DEBUG_PRINT("print_scheduler(content='" + content + ")");
     if (isDefined(player))
     {
         // DEBUG_PRINT(player.name + ": print scheduled: " + content);
-        player thread player_print_scheduler(content);
+        player thread player_print_scheduler(content, delay);
     }
     else
     {
         // DEBUG_PRINT("general: print scheduled: " + content);
         foreach (player in level.players)
-            player thread player_print_scheduler(content);
+            player thread player_print_scheduler(content, delay);
     }
 }
 
-player_print_scheduler(content)
+player_print_scheduler(content, delay)
 {
     PLAYER_ENDON
 
-    while (isDefined(self.scheduled_prints) && getDvarInt("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
+    while (delay > 0 && isDefined(self.scheduled_prints) && getDvarInt("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
+    {
+        if (delay > 0)
+            delay -= 0.05;
         wait 0.05;
+    }
 
     if (isDefined(self.scheduled_prints))
         self.scheduled_prints++;
