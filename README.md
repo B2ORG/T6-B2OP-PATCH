@@ -27,6 +27,8 @@ This patch is meant to be used during games of Highrounds, No Powers & Round Spe
 | EE Speedrun | Easter Egg GSC Timer | HuthTV | [GitHub](https://github.com/HuthTV/BO2-Easter-Egg-GSC-timer) |
 | Song Speedruns | B2SONG | Zi0 | [GitHub](https://github.com/B2ORG/T6-B2SONG-PATCH) |
 
+For Black Ops III you can check [oJumpy's community patches](https://steamcommunity.com/profiles/76561199211441639/myworkshopfiles/?appid=311210)
+
 # Installation
 
 Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
