@@ -33,7 +33,7 @@
 
 /* Function macros */
 #if PLUTO == 1 && DEBUG == 1
-#define DEBUG_PRINT(__txt) print("DEBUG: " + __txt + "\n");
+#define DEBUG_PRINT(__txt) println("DEBUG: " + __txt);
 #elif DEBUG == 1
 #define DEBUG_PRINT(__txt) iprintln("DEBUG: " + __txt);
 #else
