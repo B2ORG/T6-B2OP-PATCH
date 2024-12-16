@@ -87,6 +87,10 @@ init()
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
     flag_init("b2_on");
+    flag_init("char_taken_1");
+    flag_init("char_taken_2");
+    flag_init("char_taken_3");
+    flag_init("char_taken_4");
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
@@ -2307,9 +2311,13 @@ set_character_settings()
 
     /* Wait is essential, GSC won't be able to read stats immidiately after connecting signal */
     wait 0.25;
+    /* Give host a priority */
+    if (!self ishost())
+        wait 0.05;
 
     preset = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
-    DEBUG_PRINT("character setting: " + preset);
+
+    DEBUG_PRINT("Player " + self.clientid + " with preset " + preset + "-1 at " + getTime());
 
     switch (preset)
     {
@@ -2317,15 +2325,14 @@ set_character_settings()
         case 2:
         case 3:
         case 4:
-            foreach (player in level.players)
+            if (!flag("char_taken_" + (preset - 1)))
             {
-                if (player != self && isDefined(player.characterindex) && player.characterindex == (preset - 1))
-                {
-                    DEBUG_PRINT("duplicate character setting: " + player.characterindex);
-                    return;
-                }
+                flag_set("char_taken_" + (preset - 1));
+                self.characterindex = preset - 1;
+                DEBUG_PRINT("set charindex " + self.characterindex + " for " + self.clientid + " at " + getTime());
             }
-            self.characterindex = preset - 1;
+            }
+            break;
         default:
             return;
     }
