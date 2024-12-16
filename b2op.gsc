@@ -280,7 +280,7 @@ b2op_main_loop()
         }
 #endif
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
-        CLEAR(round_end)
+        CLEAR(round_duration)
 #endif
     }
 }
