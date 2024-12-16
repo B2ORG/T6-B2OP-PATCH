@@ -69,6 +69,10 @@ main()
 {
     replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
     replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+
+#if DEBUG == 1
+    replaceFunc(maps\mp\gametypes_zm\_globallogic_spawn::giveloadoutlevelspecific, ::replace_giveloadoutlevelspecific);
+#endif
 }
 #endif
 
@@ -2439,10 +2443,20 @@ terminate_character_wrapper()
     level notify("kill_character_wrapper");
 }
 
+#if DEBUG == 1
+replace_giveloadoutlevelspecific( team, class )
+{
+    pixbeginevent( "giveLoadoutLevelSpecific" );
+    DEBUG_PRINT("reading custom character");
+    if ( isdefined( level.givecustomcharacters ) )
+        self [[ level.givecustomcharacters ]]();
 
+    if ( isdefined( level.givecustomloadout ) )
+        self [[ level.givecustomloadout ]]();
 
+    pixendevent();
 }
-
+#endif
 #endif
 #endif
 
