@@ -121,6 +121,7 @@ steam_backspeed 1
 - Toogleable prints with time splits for key rounds
 - Optional box override (First Box patch)
 - Optional fridge override
+- Optional character setting
 - Disabled DOF (Depth of Field)
 
 # HUD
@@ -330,6 +331,146 @@ Players are always recommended to restart the game after being given perma perks
 # Tank fix
 
 On Plutonium R4516+, the tank has been changed to match how it works on Steam and Console. [This file](https://github.com/B2ORG/T6-B2OP-PATCH/blob/main/b2op_tomb.gsc) is a fix to that, if the community agrees that it should be prepatches, there's gonna be a separate release in [release section](https://github.com/B2ORG/T6-B2OP-PATCH/releases) for that fix specifically, as it has to be a separate file. You can hear about this topic in [this video](https://youtu.be/p8s-4b4D1J8)
+
+# Characters
+
+Up until version 3.0, it was possible to set characters via Plugins system, but it's not particulary easy nor user friendly, so a new version of this system has been created.
+
+## Character commands
+
+In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). If you do it in game, changes will apply after a restart. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
+
+- CIA
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker lh_clip 2;uploadstats
+```
+
+- CDC
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker lh_clip 1;uploadstats
+```
+
+- Misty
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 3;uploadstats
+```
+
+- Russman
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 1;uploadstats
+```
+
+- Stuhlinger
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 4;uploadstats
+```
+
+- Marlton
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 2;uploadstats
+```
+
+- Weasel
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker stock 4;uploadstats
+```
+
+- Billy
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker stock 3;uploadstats
+```
+
+- Sal
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker stock 2;uploadstats
+```
+
+- Finn
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker stock 1;uploadstats
+```
+
+- Dempsey
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 1;uploadstats
+```
+
+- Nikolai
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 2;uploadstats
+```
+
+- Takeo
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 4;uploadstats
+```
+
+- Richtofen
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 3;uploadstats
+```
+
+## Reset character presets
+
+In order to disable presets (to restore randomized characters) use following commands
+
+- Survival maps
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker lh_clip 0;uploadstats
+```
+
+- Tranzit / Die Rise / Buried
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 0;uploadstats
+```
+
+- Mob of the Dead
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker stock 0;uploadstats
+```
+
+- Origins
+
+```
+statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 0;uploadstats
+```
+
+## Chat commands on Plutonium
+
+On Plutonium 2905 and Live, you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect. The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
+
+```
+char name
+```
+
+Where name is the name of the character. Following values are accepted:
+
+```
+misty russman stuhlinger marlton weasel billy sal finn dempsey nikolai takeo richtofen cia cdc
+```
+
+You can also reset character presets by typing in
+
+```
+char reset
+```
 
 # Contributions
 

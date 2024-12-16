@@ -23,6 +23,7 @@
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
+#define FEATURE_CHARACTERS 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -96,7 +97,11 @@ on_game_start()
     LEVEL_ENDON
 
     thread set_dvars();
-    level thread on_player_joined();
+    level thread on_player_connecting();
+#if FEATURE_CHARACTERS == 1
+    level thread character_wrapper();
+    set_team_settings();
+#endif
 
     flag_wait("initial_blackscreen_passed");
 
@@ -130,7 +135,20 @@ on_game_start()
 #endif
 }
 
-on_player_joined()
+on_player_connecting()
+{
+    LEVEL_ENDON
+
+    while (true)
+    {
+        level waittill("connecting", player);
+#if FEATURE_CHARACTERS == 1
+        player thread set_character_settings();
+#endif
+    }
+}
+
+on_player_connected()
 {
     LEVEL_ENDON
 
@@ -158,7 +176,6 @@ on_player_spawned()
     if (isDefined(level.B2_ZONES))
         self thread [[level.B2_ZONES]]();
 #endif
-    self thread set_characters();
     self thread fill_up_bank();
 
     if (is_tracking_buildables())
@@ -2251,231 +2268,183 @@ weapon_display_wrapper(weapon_key)
     return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
 }
 
-pull_character_preset(character_name)
+#if FEATURE_CHARACTERS == 1
+set_team_settings()
 {
-    preset = [];
-    preset["model"] = undefined;
-    preset["viewmodel"] = undefined;
-    preset["favourite_wall_weapons"] = undefined;
-    preset["whos_who_shader"] = undefined;
-    preset["talks_in_danger"] = undefined;
-    preset["rich_sq_player"] = undefined;
-    preset["character_name"] = undefined;
-    preset["has_weasel"] = undefined;
-    preset["voice"] = undefined;
-    preset["is_female"] = 0;
+    if (is_town() || is_farm() || is_depot() || is_nuketown())
+        stat = "lh_clip";
+    else
+        return;
 
-    if (is_tranzit() || is_die_rise() || is_buried())
+    preset = maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+    DEBUG_PRINT("team setting: " + preset);
+    switch (preset)
     {
-        switch(toLower(character_name))
-        {
-            case "russman":
-                preset["index"] = 0;
-                preset["model"] = "c_zom_player_oldman_fb";
-                preset["viewmodel"] = "c_zom_oldman_viewhands";
-                preset["favourite_wall_weapons"] = array("frag_grenade_zm", "claymore_zm");
-                preset["whos_who_shader"] = "c_zom_player_oldman_dlc1_fb";
-                preset["character_name"] = "Russman";
-
-                if (is_die_rise())
-                    preset["model"] = "c_zom_player_oldman_dlc1_fb";
-
-                break;
-
-            case "stuhlinger":
-                preset["index"] = 1;
-                preset["model"] = "c_zom_player_reporter_fb";
-                preset["viewmodel"] = "c_zom_reporter_viewhands";
-                preset["favourite_wall_weapons"] = array("beretta93r_zm");
-                preset["whos_who_shader"] = "c_zom_player_reporter_dlc1_fb";
-                preset["talks_in_danger"] = 1;
-                preset["rich_sq_player"] = 1;
-                preset["character_name"] = "Stuhlinger";
-
-                if (is_die_rise())
-                    preset["model"] = "c_zom_player_reporter_dlc1_fb";
-
-                break;
-
-            case "misty":
-                preset["index"] = 2;
-                preset["model"] = "c_zom_player_farmgirl_fb";
-                preset["viewmodel"] = "c_zom_farmgirl_viewhands";
-                preset["is_female"] = 1;
-                preset["favourite_wall_weapons"] = array("rottweil72_zm", "870mcs_zm");
-                preset["whos_who_shader"] = "c_zom_player_farmgirl_dlc1_fb";
-                preset["character_name"] = "Misty";
-
-                if (is_die_rise())
-                    preset["model"] = "c_zom_player_farmgirl_dlc1_fb";
-
-                break;
-
-            case "marlton":
-                preset["index"] = 3;
-                preset["model"] = "c_zom_player_engineer_fb";
-                preset["viewmodel"] = "c_zom_engineer_viewhands";
-                preset["favourite_wall_weapons"] = array("m14_zm", "m16_zm");
-                preset["whos_who_shader"] = "c_zom_player_engineer_dlc1_fb";
-                preset["character_name"] = "Marlton";
-
-                if (is_die_rise())
-                    preset["model"] = "c_zom_player_engineer_dlc1_fb";
-            
-                break;
-        }
+        case 1:
+        case 2:
+            level.should_use_cia = preset - 1;
+            break;
     }
-
-    else if (is_town() || is_farm() || is_depot() || is_nuketown())
-    {
-        switch(toLower(character_name))
-        {
-            case "cia":
-                preset["index"] = 0;
-                preset["model"] = "c_zom_player_cia_fb";
-                preset["viewmodel"] = "c_zom_suit_viewhands";
-                break;
-            case "cdc":
-                preset["index"] = 1;
-                preset["model"] = "c_zom_player_cdc_fb";
-                preset["viewmodel"] = "c_zom_hazmat_viewhands";
-
-                if (is_nuketown())
-                    preset["viewmodel"] = "c_zom_hazmat_viewhands_light";
-
-                break;
-        }
-    }
-
-    else if (is_mob())
-    {
-        switch(toLower(character_name))
-        {
-            case "finn":
-                preset["index"] = 0;
-                preset["model"] = "c_zom_player_oleary_fb";
-                preset["viewmodel"] = "c_zom_oleary_shortsleeve_viewhands";
-                preset["favourite_wall_weapons"] = array("judge_zm");
-                preset["character_name"] = "Finn";
-                break;
-
-            case "sal":
-                preset["index"] = 1;
-                preset["model"] = "c_zom_player_deluca_fb";
-                preset["viewmodel"] = "c_zom_deluca_longsleeve_viewhands";
-                preset["favourite_wall_weapons"] = array("thompson_zm");
-                preset["character_name"] = "Sal";
-                break;
-
-            case "billy":
-                preset["index"] = 2;
-                preset["model"] = "c_zom_player_handsome_fb";
-                preset["viewmodel"] = "c_zom_handsome_sleeveless_viewhands";
-                preset["favourite_wall_weapons"] = array("blundergat_zm");
-                preset["character_name"] = "Billy";
-                break;
-
-            case "arlington":
-            case "weasel":
-                preset["index"] = 3;
-                preset["model"] = "c_zom_player_arlington_fb";
-                preset["viewmodel"] = "c_zom_arlington_coat_viewhands";
-                preset["favourite_wall_weapons"] = array("ray_gun_zm");
-                preset["character_name"] = "Arlington";
-                preset["has_weasel"] = 1;
-                break;
-        }
-    }
-
-    else if (is_origins())
-    {
-        switch(toLower(character_name))
-        {
-            case "dempsey":
-                preset["index"] = 0;
-                preset["model"] = "c_zom_tomb_dempsey_fb";
-                preset["viewmodel"] = "c_zom_dempsey_viewhands";
-                preset["character_name"] = "Dempsey";
-                break;
-
-            case "nikolai":
-                preset["index"] = 1;
-                preset["model"] = "c_zom_tomb_nikolai_fb";
-                preset["viewmodel"] = "c_zom_nikolai_viewhands";
-                preset["character_name"] = "Nikolai";
-                preset["voice"] = "russian";
-                break;
-
-            case "richtofen":
-                preset["index"] = 2;
-                preset["model"] = "c_zom_tomb_richtofen_fb";
-                preset["viewmodel"] = "c_zom_richtofen_viewhands";
-                preset["character_name"] = "Richtofen";
-                break;
-
-            case "takeo":
-                preset["index"] = 3;
-                preset["model"] = "c_zom_tomb_takeo_fb";
-                preset["viewmodel"] = "c_zom_takeo_viewhands";
-                preset["character_name"] = "Takeo";
-                break;
-        }
-    }
-
-    return preset;
 }
 
-set_characters()
+set_character_settings()
 {
+    LEVEL_ENDON
     PLAYER_ENDON
 
-    /* We don't call clientid cause of Ancient */
-    if (!isDefined(level.players))
-        player_id = 0;
-    else
-        player_id = level.players.size - 1;
-
-    while (player_id > 3)
-        player_id -= 4;
-
-    translation_layer = array("white", "blue", "yellow", "green");
-
     if (is_tranzit() || is_die_rise() || is_buried())
-        map = "tranzit";
-    else if (is_town() || is_farm() || is_depot() || is_nuketown())
-        map = "town";
+        stat = "clip";
     else if (is_mob())
-        map = "mob";
+        stat = "stock";
     else if (is_origins())
-        map = "origins";
-
-    translation_index = translation_layer[player_id];
-    if (!isDefined(level.B2_CHARACTERS[map][translation_index]))
+        stat = "alt_clip";
+    else
         return;
-    character = level.B2_CHARACTERS[map][translation_index];
 
-    prop = pull_character_preset(character);
+    /* Wait is essential, GSC won't be able to read stats immidiately after connecting signal */
+    wait 0.25;
 
-    self setmodel(prop["model"]);
-    self setviewmodel(prop["viewmodel"]);
-    self set_player_is_female(prop["is_female"]);
-    self.characterindex = prop["index"];
+    preset = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+    DEBUG_PRINT("character setting: " + preset);
 
-    if (isDefined(prop["favourite_wall_weapons"]))
-        self.favorite_wall_weapons_list = prop["favourite_wall_weapons"];
-    if (isDefined(prop["whos_who_shader"]))
-        self.whos_who_shader = prop["whos_who_shader"];
-    if (isDefined(prop["talks_in_danger"]))
-        self.talks_in_danger = prop["talks_in_danger"];
-    if (isDefined(prop["rich_sq_player"]))
-        level.rich_sq_player = self;
-    if (isDefined(prop["character_name"]))
-        self.character_name = prop["character_name"];
-    if (isDefined(prop["has_weasel"]))
-        level.has_weasel = prop["has_weasel"];
-    if (isDefined(prop["voice"]))
-        self.voice = prop["voice"];
+    switch (preset)
+    {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            foreach (player in level.players)
+            {
+                if (player != self && isDefined(player.characterindex) && player.characterindex == (preset - 1))
+                {
+                    DEBUG_PRINT("duplicate character setting: " + player.characterindex);
+                    return;
+                }
+            }
+            self.characterindex = preset - 1;
+        default:
+            return;
+    }
 }
+
+#if PLUTO == 1
+character_wrapper()
+{
+    LEVEL_ENDON
+    level endon("kill_character_wrapper");
+
+    flag_wait("initial_blackscreen_passed");
+
+    level thread terminate_character_wrapper();
+    while (true)
+    {
+        level waittill("say", message, player);
+        if (isSubStr(message, "char"))
+        {
+            DEBUG_PRINT("char message detected: " + getSubStr(message, 5));
+            switch (getSubStr(message, 5))
+            {
+                case "misty":
+                case "farmgirl":
+                    stat = "clip";
+                    number = 2;
+                    break;
+                case "russman":
+                case "oldman":
+                    stat = "clip";
+                    number = 0;
+                    break;
+                case "stuhlinger":
+                case "engineer":
+                    stat = "clip";
+                    number = 3;
+                    break;
+                case "marlton":
+                case "reporter":
+                    stat = "clip";
+                    number = 1;
+                    break;
+                case "weasel":
+                case "arlington":
+                    stat = "stock";
+                    number = 3;
+                    break;
+                case "billy":
+                case "handsome":
+                case "sleeveless":
+                    stat = "stock";
+                    number = 2;
+                    break;
+                case "sal":
+                case "deluca":
+                case "longsleeve":
+                    stat = "stock";
+                    number = 1;
+                    break;
+                case "finn":
+                case "oleary":
+                case "shortsleeve":
+                    stat = "stock";
+                    number = 0;
+                    break;
+                case "dempsey":
+                    stat = "alt_clip";
+                    number = 0;
+                    break;
+                case "nikolai":
+                    stat = "alt_clip";
+                    number = 1;
+                    break;
+                case "takeo":
+                    stat = "alt_clip";
+                    number = 3;
+                    break;
+                case "richtofen":
+                    stat = "alt_clip";
+                    number = 2;
+                    break;
+                case "cia":
+                    stat = "lh_clip";
+                    number = 1;
+                    break;
+                case "cdc":
+                    stat = "lh_clip";
+                    number = 0;
+                    break;
+                case "reset":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_highrise");
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 0, "zm_highrise");
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 0, "zm_highrise");
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 0, "zm_highrise");
+                    print_scheduler("Character settings have been reset", player);
+                    break;
+            }
+
+            if (isDefined(stat))
+            {
+                player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(stat, number + 1, "zm_highrise");
+                print_scheduler("Successfully updated character settings to: " + getSubStr(message, 5), player);
+                stat = undefined;
+                number = undefined;
+            }
+        }
+    }
+}
+
+terminate_character_wrapper()
+{
+    LEVEL_ENDON;
+    while (did_game_just_start())
+        wait 0.05;
+    level notify("kill_character_wrapper");
+}
+
+
+
+}
+
+#endif
+#endif
 
 #if FEATURE_HUD == 1
 buildable_component()
