@@ -143,6 +143,8 @@ on_game_start()
 #endif
 }
 
+/* For now it only deals with character system */
+#if FEATURE_CHARACTERS == 1
 on_player_connecting()
 {
     LEVEL_ENDON
@@ -150,11 +152,11 @@ on_player_connecting()
     while (true)
     {
         level waittill("connecting", player);
-#if FEATURE_CHARACTERS == 1
+        player thread on_player_disconnect();
         player thread set_character_settings();
-#endif
     }
 }
+#endif
 
 on_player_connected()
 {
@@ -205,6 +207,17 @@ on_player_spawned_permaperk()
 
     if (has_permaperks_system() && is_round(15))
         self remove_permaperk_wrapper("jugg");
+}
+
+on_player_disconnect()
+{
+    LEVEL_ENDON
+    self endon("stop_watching_disconnect");
+
+    self waittill("disconnect");
+    flag = "char_taken_" + self.characterindex;
+    flag_clear(flag);
+    DEBUG_PRINT("clearing flag: " + flag);
 }
 
 b2op_main_loop()
@@ -2301,13 +2314,22 @@ set_character_settings()
     PLAYER_ENDON
 
     if (is_tranzit() || is_die_rise() || is_buried())
+    {
         stat = "clip";
+    }
     else if (is_mob())
+    {
         stat = "stock";
+    }
     else if (is_origins())
+    {
         stat = "alt_clip";
+    }
     else
+    {
+        self notify("stop_watching_disconnect");
         return;
+    }
 
     /* Wait is essential, GSC won't be able to read stats immidiately after connecting signal */
     wait 0.25;
@@ -2331,10 +2353,13 @@ set_character_settings()
                 self.characterindex = preset - 1;
                 DEBUG_PRINT("set charindex " + self.characterindex + " for " + self.clientid + " at " + getTime());
             }
+            else
+            {
+                self notify("stop_watching_disconnect");
             }
             break;
         default:
-            return;
+            self notify("stop_watching_disconnect");
     }
 }
 
