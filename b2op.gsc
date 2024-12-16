@@ -274,7 +274,7 @@ b2op_main_loop()
         }
 
 #if PLUTO == 1
-        if (get_plutonium_version() >= 4522 && !did_game_just_start() && level.round_number % 2 == 1)
+        if (get_plutonium_version() >= 4522 && !did_game_just_start() && level.round_number % 2 == 1 && level.round_number > 20)
         {
             level thread print_checksums();
         }
