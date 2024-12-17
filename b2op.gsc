@@ -98,7 +98,27 @@ init()
 #endif
 
     level thread on_game_start();
+#if DEBUG == 1
+    level thread _dvar_reader();
+#endif
 }
+
+#if DEBUG == 1
+_dvar_reader()
+{
+    LEVEL_ENDON
+    setDvar("getDvarValue", "");
+    while (true)
+    {
+        wait 0.05;
+        val = getDvar("getDvarValue");
+        if (val == "")
+            continue;
+        DEBUG_PRINT("DVAR " + val + " => " + getDvar(val));
+        setDvar("getDvarValue", "");
+    }
+}
+#endif
 
 on_game_start()
 {
