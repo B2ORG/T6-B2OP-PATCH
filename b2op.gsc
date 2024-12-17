@@ -156,20 +156,19 @@ on_player_connecting()
     {
         level waittill("connecting", player);
         player thread set_character_settings();
+        player thread on_player_connected();
     }
 }
 #endif
 
 on_player_connected()
 {
-    LEVEL_ENDON
+    PLAYER_ENDON
 
-    while (true)
-    {
-        level waittill("connected", player);
-        player thread on_player_spawned();
-        player thread on_player_spawned_permaperk();
-    }
+    self waittill("begin");
+    waittillframeend;
+    self thread on_player_spawned();
+    self thread on_player_spawned_permaperk();
 }
 
 on_player_spawned()
