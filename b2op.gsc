@@ -108,7 +108,9 @@ on_game_start()
     level thread on_player_connecting();
     level thread on_player_connected();
 #if FEATURE_CHARACTERS == 1
+#if PLUTO == 1
     level thread character_wrapper();
+#endif
     set_team_settings();
 #endif
 
@@ -704,7 +706,9 @@ has_magic()
 
 has_permaperks_system()
 {
+#if PLUTO == 1
     DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
+#endif
     /* Refer to init_persistent_abilities() */
     return isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame);
 }
