@@ -106,6 +106,7 @@ on_game_start()
 
     thread set_dvars();
     level thread on_player_connecting();
+    level thread on_player_connected();
 #if FEATURE_CHARACTERS == 1
     level thread character_wrapper();
     set_team_settings();
