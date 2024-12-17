@@ -155,7 +155,6 @@ on_player_connecting()
     while (true)
     {
         level waittill("connecting", player);
-        player thread on_player_disconnect();
         player thread set_character_settings();
     }
 }
@@ -210,17 +209,6 @@ on_player_spawned_permaperk()
 
     if (has_permaperks_system() && is_round(15))
         self remove_permaperk_wrapper("jugg");
-}
-
-on_player_disconnect()
-{
-    LEVEL_ENDON
-    self endon("stop_watching_disconnect");
-
-    self waittill("disconnect");
-    flag = "char_taken_" + self.characterindex;
-    flag_clear(flag);
-    DEBUG_PRINT("clearing flag: " + flag);
 }
 
 b2op_main_loop()
@@ -887,6 +875,10 @@ set_dvars()
             level.round_start_custom_func = ::trap_fix;
         }
     }
+
+#if FEATURE_CHARACTERS == 1
+    level.callbackplayerdisconnect = ::character_flag_cleanup;
+#endif
 
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                    */
@@ -2332,7 +2324,6 @@ set_character_settings()
     }
     else
     {
-        self notify("stop_watching_disconnect");
         return;
     }
 
@@ -2358,14 +2349,18 @@ set_character_settings()
                 self.characterindex = preset - 1;
                 DEBUG_PRINT("set charindex " + self.characterindex + " for " + self.clientid + " at " + getTime());
             }
-            else
-            {
-                self notify("stop_watching_disconnect");
-            }
             break;
-        default:
-            self notify("stop_watching_disconnect");
     }
+}
+
+character_flag_cleanup()
+{
+    flag = "char_taken_" + self.characterindex;
+    flag_clear(flag);
+    DEBUG_PRINT("clearing flag: " + flag);
+
+    /* Need to invoke original callback afterwards */
+    self maps\mp\gametypes_zm\_globallogic_player::callback_playerdisconnect();
 }
 
 #if PLUTO == 1
