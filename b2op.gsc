@@ -826,9 +826,13 @@ welcome_prints()
     wait 0.75;
 #if PLUTO == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
-    self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
+    self iPrintLn(" Detected Plutonium version: ^1" + get_plutonium_version());
 #elif REDACTED == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
+    if (is_true(level.onlinegame))
+        self iPrintLn(" ^2ONLINE ^7MODE");
+    else
+        self iPrintLn(" ^3OFFLINE ^7MODE");
 #elif ANCIENT == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
     // self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
