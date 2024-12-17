@@ -893,6 +893,9 @@ set_dvars()
     dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
 #endif
     dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+#if FEATURE_CHARACTERS == 1 && REDACTED == 1
+    dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
+#endif
     if (getDvar("steam_backspeed") == "1")
     {
         dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
@@ -2313,6 +2316,15 @@ set_character_settings()
     LEVEL_ENDON
     PLAYER_ENDON
 
+#if REDACTED == 1
+    /* Stats system is down in offline game, fallback to a dvar */
+    if (!is_true(level.onlinegame))
+    {
+        self set_character_settings_from_dvar();
+        return;
+    }
+#endif
+
     if (is_tranzit() || is_die_rise() || is_buried())
     {
         stat = "clip";
@@ -2352,6 +2364,22 @@ set_character_settings()
                 self.characterindex = preset - 1;
                 DEBUG_PRINT("set charindex " + self.characterindex + " for " + self.clientid + " at " + getTime());
             }
+            break;
+    }
+}
+
+set_character_settings_from_dvar()
+{
+    wait 0.1;
+    preset = getDvarInt("set_character");
+    switch (preset)
+    {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            flag_set("char_taken_" + (preset - 1));
+            self.characterindex = preset - 1;
             break;
     }
 }

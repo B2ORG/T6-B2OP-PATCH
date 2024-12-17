@@ -472,6 +472,42 @@ You can also reset character presets by typing in
 char reset
 ```
 
+## Redacted offline mode
+
+Because this system is based on player stats that are not available, when in Redacted offline mode, characters are operated differently. You need to enter the match, set the character via a DVAR and use `map_restart` command. As oppose to using stats system, this will not persist across game launches.
+
+For characters use following DVARs
+
+- CDC, Russman, Finn, Dempset
+
+```
+set_character 1
+```
+
+- CIA, Marlton, Sal, Nikolai
+
+```
+set_character 2
+```
+
+- Misty, Billy, Richtofen
+
+```
+set_character 3
+```
+
+- Stuhlinger, Weasel, Takeo
+
+```
+set_character 4
+```
+
+- Random character
+
+```
+set_character 0
+```
+
 # Contributions
 
 If you'd like to contribute to the code, please fork this repository, apply changes / fixes and open a pull request. If the change is in line with rules and the purpose of this patch, it'll be merged and a new version of the patch will be released.
