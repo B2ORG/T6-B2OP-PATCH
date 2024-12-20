@@ -166,8 +166,6 @@ on_game_start()
 #endif
 }
 
-/* For now it only deals with character system */
-#if FEATURE_CHARACTERS == 1
 on_player_connecting()
 {
     LEVEL_ENDON
@@ -175,11 +173,12 @@ on_player_connecting()
     while (true)
     {
         level waittill("connecting", player);
+#if FEATURE_CHARACTERS == 1
         player thread set_character_settings();
+#endif
         player thread on_player_connected();
     }
 }
-#endif
 
 on_player_connected()
 {
