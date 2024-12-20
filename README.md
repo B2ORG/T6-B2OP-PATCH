@@ -478,7 +478,7 @@ Because this system is based on player stats that are not available, when in Red
 
 For characters use following DVARs
 
-- CDC, Russman, Finn, Dempset
+- CDC, Russman, Finn, Dempsey
 
 ```
 set_character 1
