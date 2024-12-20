@@ -338,7 +338,7 @@ Up until version 3.0, it was possible to set characters via Plugins system, but 
 
 ## Character commands
 
-In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). If you do it in game, changes will apply after a restart. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
+In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). You may have to leave the map and enter again for it to take effect if you do it in game. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
 
 - CIA
 
@@ -454,7 +454,7 @@ statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 0;uploadstats
 
 ## Chat commands on Plutonium
 
-On Plutonium 2905 and Live, you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect. The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
+On Plutonium 2905 and Live, you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect (that's the recommended way to change characters in game, as stat command may not always work). The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
 
 ```
 char name
