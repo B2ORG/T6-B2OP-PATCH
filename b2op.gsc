@@ -2333,7 +2333,6 @@ set_team_settings()
 
 set_character_settings()
 {
-    LEVEL_ENDON
     PLAYER_ENDON
 
 #if REDACTED == 1
