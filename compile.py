@@ -1,6 +1,6 @@
 from traceback import print_exc
 from copy import copy, deepcopy
-import subprocess, sys, os, zipfile, re, binascii
+import subprocess, sys, os, zipfile, re, binascii, shutil
 
 
 # Config
@@ -195,7 +195,7 @@ def clear_files(dir: str, pattern: str) -> None:
     for file in file_list:
         if re.match(pattern, file):
             path_to_file = os.path.join(dir, file)
-            os.remove(path_to_file) if os.path.isfile(path_to_file) else os.rmdir(path_to_file)
+            os.remove(path_to_file) if os.path.isfile(path_to_file) else shutil.rmtree(path_to_file)
 
 
 def flash_hash(file_path: str) -> str:
