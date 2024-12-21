@@ -1,11 +1,12 @@
 from traceback import print_exc
 from copy import copy, deepcopy
-import subprocess, sys, os, zipfile, re
+import subprocess, sys, os, zipfile, re, binascii, shutil
 
 
 # Config
 CWD = os.path.dirname(os.path.abspath(__file__))
 B2OP = "b2op.gsc"
+B2OP_TOMB = "b2op_tomb.gsc"
 GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
 GAME_COMP = "t6"
 MODE_PARSE = "parse"
@@ -16,7 +17,8 @@ COMPILED_DIR = "compiled/" + GAME_COMP
 ZMUTILITY_DIR = "maps/mp/zombies"
 FORCE_SPACES = True
 BAD_COMPILER_VERSIONS: set["Version"] = set()
-
+COMPILE_TANK_PATCH = True
+STRICT_FILE_RM_CHECK = int(os.environ.get("B2_STRICT_CHECK", True))
 
 class Version:
     UNKNOWN = [-1, -1, -1]
@@ -113,8 +115,9 @@ class Gsc:
         "#define REDACTED 1": "#define REDACTED 0",
         "#define PLUTO 1": "#define PLUTO 0"
     }
-    def __init__(self) -> None:
+    def __init__(self, skip_changes: bool = False) -> None:
         self._code: str
+        self._skip_changes: bool = skip_changes
 
 
     def load_file(self, path: str) -> "Gsc":
@@ -136,8 +139,9 @@ class Gsc:
     def save(self, path: str, local_changes: dict[str, str]) -> "Gsc":
         changes: dict[str, str] = deepcopy(Gsc.REPLACEMENTS) | local_changes
         changed: str = copy(self._code)
-        for old, new in changes.items():
-            changed = changed.replace(old, new)
+        if not self._skip_changes:
+            for old, new in changes.items():
+                changed = changed.replace(old, new)
         with open(path, "w", encoding="utf-8") as gsc_io:
             gsc_io.write(changed)
         return self
@@ -160,7 +164,7 @@ def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True,
     call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
-        process: subprocess.CompletedProcess = subprocess.run(call, capture_output=True, universal_newlines=True, timeout=timeout, **sbp_args)
+        process: subprocess.CompletedProcess = subprocess.run(call, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, timeout=timeout, **sbp_args)
     except Exception:
         print_exc()
         sys.exit(1)
@@ -178,13 +182,34 @@ def file_rename(old: str, new: str) -> None:
     if os.path.isfile(new):
         os.remove(new)
     if os.path.isfile(old):
+        if not os.path.isdir(os.path.dirname(new)):
+            os.makedirs(os.path.dirname(new))
         os.rename(old, new)
 
 
-def create_zipfile() -> None:
+def clear_files(dir: str, pattern: str) -> None:
+    file_list: list[str] = os.listdir(dir)
+    if STRICT_FILE_RM_CHECK or len(file_list) >= 16:
+        input(f"You're about to remove {len(file_list)} files. Press ENTER to continue, or abord the program\n\t{"\n\t".join([os.path.basename(f) for f in file_list])}")
+
+    for file in file_list:
+        if re.match(pattern, file):
+            path_to_file = os.path.join(dir, file)
+            os.remove(path_to_file) if os.path.isfile(path_to_file) else shutil.rmtree(path_to_file)
+
+
+def flash_hash(file_path: str) -> str:
+    with open(file_path, "rb") as file_io:
+        # Convert to uINT and represent as uppercase hex
+        hash: str = format(binascii.crc32(file_io.read()) & 0xFFFFFFFF, "08X")
+    print(f"Hash of {os.path.basename(file_path)}: '{hash}'")
+    return hash
+
+
+def create_zipfile(zip_target: str, file_to_zip: str, file_in_zip: str) -> None:
     try:
-        with zipfile.ZipFile(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
-            zip.write(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"), os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc"))
+        with zipfile.ZipFile(zip_target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip:
+            zip.write(file_to_zip, file_in_zip)
     except FileNotFoundError:
         print("WARNING! Failed to create zip file due to missing compiled file")
 
@@ -222,6 +247,10 @@ def main() -> None:
         sys.exit(1)
     print()
 
+    # Clear up all previous files
+    clear_files(os.path.join(CWD, PARSED_DIR), r".*")
+    clear_files(os.path.join(CWD, COMPILED_DIR), r".*")
+
     gsc: Gsc = Gsc().load_file(os.path.join(CWD, B2OP)).check_whitespace()
 
     # New pluto
@@ -242,6 +271,28 @@ def main() -> None:
             os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc")
         )
 
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-plutonium.gsc"))
+
+        if COMPILE_TANK_PATCH:
+            gsc_origins: Gsc = Gsc().load_file(os.path.join(CWD, B2OP_TOMB)).check_whitespace()
+
+            gsc_origins.save(
+                os.path.join(CWD, B2OP_TOMB), {}
+            )
+            wrap_subprocess_call(
+                COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", B2OP_TOMB
+            )
+            file_rename(
+                os.path.join(CWD, COMPILED_DIR, B2OP_TOMB), os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc")
+            )
+            create_zipfile(
+                os.path.join(CWD, COMPILED_DIR, "b2op-tomb.zip"), 
+                os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc"),
+                os.path.join("zm_tomb", "b2op-tomb-plutonium.gsc")
+            )
+
+            flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc"))
+
     # Redacted
     with Chunk("REDACTED:"):
         gsc.save(
@@ -253,6 +304,8 @@ def main() -> None:
         file_rename(
             os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc")
         )
+
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc"))
 
     # Ancient
     with Chunk("ANCIENT:"):
@@ -271,7 +324,13 @@ def main() -> None:
         file_rename(
             os.path.join(CWD, COMPILED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc")
         )
-        create_zipfile()
+        create_zipfile(
+            os.path.join(CWD, COMPILED_DIR, "b2op-ancient.zip"), 
+            os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"),
+            os.path.join(ZMUTILITY_DIR, "_zm_utility.gsc")
+        )
+
+        flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
 
     # Reset file
     gsc.save(os.path.join(CWD, B2OP), {"#define RAW 0": "#define RAW 1"})
