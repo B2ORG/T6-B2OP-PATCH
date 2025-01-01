@@ -126,14 +126,15 @@ on_game_start()
     LEVEL_ENDON
 
     thread set_dvars();
-    level thread on_player_connecting();
-    level thread on_player_connected();
 #if FEATURE_CHARACTERS == 1
+    level thread on_player_connecting();
+    set_team_settings();
 #if PLUTO == 1
     level thread character_wrapper();
 #endif
-    set_team_settings();
 #endif
+    /* This needs to be a separate thread, as the only notify that could help chain it (begin) is not fired on fast_restart */
+    level thread on_player_connected();
 
     flag_wait("initial_blackscreen_passed");
 
@@ -167,6 +168,7 @@ on_game_start()
 #endif
 }
 
+#if FEATURE_CHARACTERS == 1
 on_player_connecting()
 {
     LEVEL_ENDON
@@ -174,21 +176,21 @@ on_player_connecting()
     while (true)
     {
         level waittill("connecting", player);
-#if FEATURE_CHARACTERS == 1
         player thread set_character_settings();
-#endif
-        player thread on_player_connected();
     }
 }
+#endif
 
 on_player_connected()
 {
-    PLAYER_ENDON
+    LEVEL_ENDON
 
-    self waittill("begin");
-    waittillframeend;
-    self thread on_player_spawned();
-    self thread on_player_spawned_permaperk();
+    while (true)
+    {
+        level waittill("connecting", player);
+        player thread on_player_spawned();
+        player thread on_player_spawned_permaperk();
+    }
 }
 
 on_player_spawned()
