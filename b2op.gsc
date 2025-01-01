@@ -1450,23 +1450,15 @@ fridge_handler()
 
     // DEBUG_PRINT("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 
-    if (isDefined(level.B2_FRIDGE))
-    {
-        thread [[level.B2_FRIDGE]](::player_rig_fridge);
-        print_scheduler("Fridge module: ^3LOADED PLUGIN");
-    }
-    else
-    {
-        print_scheduler("Fridge module: ^2AVAILABLE");
+    print_scheduler("Fridge module: ^2AVAILABLE");
 #if PLUTO == 1
-        thread fridge_watch_chat();
+    thread fridge_watch_chat();
 #endif
-        thread fridge_watch_dvar();
-        thread fridge_watch_state();
+    thread fridge_watch_dvar();
+    thread fridge_watch_state();
 
-        level waittill("terminate_fridge_process");
-        print_scheduler("Fridge module: ^1DISABLED");
-    }
+    level waittill("terminate_fridge_process");
+    print_scheduler("Fridge module: ^1DISABLED");
 
     // Cleanup
     foreach (player in level.players)
