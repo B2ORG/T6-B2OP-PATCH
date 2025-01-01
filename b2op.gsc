@@ -555,6 +555,21 @@ convert_time(seconds)
     return combined;
 }
 
+array_create(values, keys)
+{
+    new_array = [];
+    for (i = 0; i < values.size; i++)
+    {
+        key = i;
+        if (isDefined(keys[i]))
+            key = keys[i];
+
+        new_array[key] = values[i];
+    }
+
+    return new_array;
+}
+
 player_wait_for_initial_blackscreen()
 {
     LEVEL_ENDON
