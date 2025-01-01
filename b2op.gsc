@@ -300,7 +300,7 @@ b2op_main_loop()
         }
 
 #if PLUTO == 1
-        if (get_plutonium_version() >= 4522 && !did_game_just_start() && level.round_number % 2 == 1 && level.round_number > 20)
+        if (get_plutonium_version() >= 4522 && !did_game_just_start() && should_print_checksum())
         {
             level thread print_checksums();
         }
@@ -876,6 +876,50 @@ print_checksums()
         wait 3;
         setDvar("cg_drawChecksums", 0);
     }
+}
+
+should_print_checksum()
+{
+    if (is_town() || is_farm() || is_depot() || is_nuketown())
+    {
+        switch (level.players.size)
+        {
+            case 1:
+                faster = 70;
+                break;
+            case 2:
+                faster = 60;
+                break;
+            default:
+                faster = 50;
+        }
+    }
+    else
+    {
+        switch (level.players.size)
+        {
+            case 1:
+                faster = 100;
+                break;
+            case 2:
+                faster = 90;
+                break;
+            case 3:
+                faster = 80;
+                break;
+            default:
+                faster = 70;
+        }
+    }
+
+    /*
+    early = (is_round(20) && !is_round(faster) && level.round_number % 5 == 2);
+    late = (is_round(faster) && level.round_number % 2 == 1);
+    DEBUG_PRINT("early = " + early + " late = " + late);
+    */
+
+    return ((is_round(20) && !is_round(faster) && level.round_number % 5 == 2) 
+        || (is_round(faster) && level.round_number % 2 == 1));
 }
 
 /* Stub */
