@@ -24,6 +24,7 @@
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
 #define FEATURE_CHARACTERS 1
+#define FEATURE_PERS_CLEANUP 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -225,8 +226,17 @@ on_player_spawned_permaperk()
     The wait is essential, it allows the game to process permaperks internally before we override them */
     wait 2;
 
-    if (has_permaperks_system() && is_round(15))
-        self remove_permaperk_wrapper("jugg");
+    if (has_permaperks_system())
+    {
+#if FEATURE_PERS_CLEANUP == 1
+        level.force_clean_permaperks = true;
+#endif
+        if (is_round(15))
+        {
+            self remove_permaperk_wrapper("jugg");
+        }
+    }
+    
 }
 
 b2op_main_loop()
@@ -255,20 +265,16 @@ b2op_main_loop()
         level thread show_hordes();
 #endif
 
+#if FEATURE_PERS_CLEANUP == 1
         /* Verify based on map, cause someone could sneak a patch that'd give those in offline game */
         if (is_tranzit() || is_die_rise() || is_buried())
         {
-#if DEBUG == 1
-            level.players[0] remove_permaperk_wrapper("insta_kill", 2);
-#endif
-
-            wait 2;
-            foreach (player in level.players)
+            if (is_true(level.force_clean_permaperks))
             {
-                player remove_permaperk_wrapper("jugg", 15);
-                player remove_permaperk_wrapper("nube", 10);
+                level thread permaperk_guard();
             }
         }
+#endif
 
         level waittill("end_of_round");
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
@@ -1436,6 +1442,37 @@ award_permaperk(stat_name, perk_code, stat_value)
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
     self playsoundtoplayer("evt_player_upgrade", self);
 }
+
+#if FEATURE_PERS_CLEANUP == 1
+permaperk_guard()
+{
+    LEVEL_ENDON
+
+    if (is_round(10))
+    {
+        foreach (player in level.players)
+        {
+            player remove_permaperk_wrapper("nube", 10);
+        }
+    }
+
+    if (!is_round(15))
+        return;
+
+    wait 5;
+
+    DEBUG_PRINT("permaperk_guard_run");
+
+    foreach (player in level.players)
+    {
+        player maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg( "jugg_upgrade", 1, 1 );
+        player maps\mp\zombies\_zm_stats::zero_client_stat( "pers_jugg", 0 );
+        player maps\mp\zombies\_zm_stats::zero_client_stat( "pers_jugg_downgrade_count", 0 );
+    }
+
+    CLEAR(level.force_clean_permaperks)
+}
+#endif
 
 /* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
 remove_permaperk_wrapper(perk_code, round)
