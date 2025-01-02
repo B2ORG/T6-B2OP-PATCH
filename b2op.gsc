@@ -7,7 +7,7 @@
 #define BETA 0
 
 /* Const macros */
-#define B2OP_VER 3
+#define B2OP_VER 3.1
 #define VER_ANCIENT 353
 #define VER_2905 2905
 #define VER_4K 4516
