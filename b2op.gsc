@@ -631,6 +631,11 @@ is_origins()
     return level.script == "zm_tomb";
 }
 
+is_survival_map()
+{
+    return (is_town() || is_farm() || is_depot() || is_nuketown());
+}
+
 did_game_just_start()
 {
     return !isDefined(level.start_round) || !is_round(level.start_round + 2);
@@ -903,7 +908,7 @@ print_checksums()
 
 should_print_checksum()
 {
-    if (is_town() || is_farm() || is_depot() || is_nuketown())
+    if (is_survival_map())
     {
         switch (level.players.size)
         {
