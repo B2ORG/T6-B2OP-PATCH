@@ -35,9 +35,9 @@
 
 /* Function macros */
 #if PLUTO == 1 && DEBUG == 1
-#define DEBUG_PRINT(__txt) printf("DEBUG: " + __txt);
+#define DEBUG_PRINT(__txt) printf("DEBUG: ^5" + __txt);
 #elif DEBUG == 1
-#define DEBUG_PRINT(__txt) iprintln("DEBUG: " + __txt);
+#define DEBUG_PRINT(__txt) iprintln("DEBUG: ^5" + __txt);
 #else
 #define DEBUG_PRINT(__txt)
 #endif
