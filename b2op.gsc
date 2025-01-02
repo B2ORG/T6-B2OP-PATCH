@@ -2521,75 +2521,74 @@ character_wrapper()
         level waittill("say", message, player);
         if (isSubStr(message, "char"))
         {
-            DEBUG_PRINT("char message detected: " + getSubStr(message, 5));
             switch (getSubStr(message, 5))
             {
-                case "misty":
-                case "farmgirl":
-                    stat = "clip";
-                    number = 2;
-                    break;
                 case "russman":
                 case "oldman":
-                    stat = "clip";
-                    number = 0;
-                    break;
-                case "stuhlinger":
-                case "engineer":
-                    stat = "clip";
-                    number = 3;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Russman", player);
                     break;
                 case "marlton":
                 case "reporter":
-                    stat = "clip";
-                    number = 1;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Marlton", player);
                     break;
-                case "weasel":
-                case "arlington":
-                    stat = "stock";
-                    number = 3;
+                case "misty":
+                case "farmgirl":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 3, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Misty", player);
                     break;
-                case "billy":
-                case "handsome":
-                case "sleeveless":
-                    stat = "stock";
-                    number = 2;
-                    break;
-                case "sal":
-                case "deluca":
-                case "longsleeve":
-                    stat = "stock";
-                    number = 1;
+                case "stuhlinger":
+                case "engineer":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 4, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Stuhlinger", player);
                     break;
                 case "finn":
                 case "oleary":
                 case "shortsleeve":
-                    stat = "stock";
-                    number = 0;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 1, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Finn", player);
+                    break;
+                case "sal":
+                case "deluca":
+                case "longsleeve":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 2, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Sal", player);
+                    break;
+                case "billy":
+                case "handsome":
+                case "sleeveless":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 3, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Billy", player);
+                    break;
+                case "weasel":
+                case "arlington":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 4, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Weasel", player);
                     break;
                 case "dempsey":
-                    stat = "alt_clip";
-                    number = 0;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 1, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Dempsey", player);
                     break;
                 case "nikolai":
-                    stat = "alt_clip";
-                    number = 1;
-                    break;
-                case "takeo":
-                    stat = "alt_clip";
-                    number = 3;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 2, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Nikolai", player);
                     break;
                 case "richtofen":
-                    stat = "alt_clip";
-                    number = 2;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 3, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Richtofen", player);
                     break;
-                case "cia":
-                    stat = "lh_clip";
-                    number = 1;
+                case "takeo":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 4, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Takeo", player);
                     break;
                 case "cdc":
-                    stat = "lh_clip";
-                    number = 0;
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 1, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3CDC", player);
+                    break;
+                case "cia":
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 2, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3CIA", player);
                     break;
                 case "reset":
                     player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_highrise");
@@ -2599,13 +2598,53 @@ character_wrapper()
                     print_scheduler("Character settings have been reset", player);
                     break;
             }
-
-            if (isDefined(stat))
+        }
+        else if (message == "whoami")
+        {
+            switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_stat_for_map(), "zm_highrise"))
             {
-                player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(stat, number + 1, "zm_highrise");
-                print_scheduler("Successfully updated character settings to: " + getSubStr(message, 5), player);
-                stat = undefined;
-                number = undefined;
+                case 1:
+                    if (is_tranzit() || is_die_rise() || is_buried())
+                        print_scheduler("Your preset is: ^3Russman", player);
+                    else if (is_mob())
+                        print_scheduler("Your preset is: ^3Finn", player);
+                    else if (is_origins())
+                        print_scheduler("Your preset is: ^3Dempsey", player);
+                    else
+                        print_scheduler("Your preset is: ^3CDC", player);
+                    break;
+                case 2:
+                    if (is_tranzit() || is_die_rise() || is_buried())
+                        print_scheduler("Your preset is: ^3Marlton", player);
+                    else if (is_mob())
+                        print_scheduler("Your preset is: ^3Sal", player);
+                    else if (is_origins())
+                        print_scheduler("Your preset is: ^3Nikolai", player);
+                    else
+                        print_scheduler("Your preset is: ^3CIA", player);
+                    break;
+                case 3:
+                    if (is_tranzit() || is_die_rise() || is_buried())
+                        print_scheduler("Your preset is: ^3Misty", player);
+                    else if (is_mob())
+                        print_scheduler("Your preset is: ^3Billy", player);
+                    else if (is_origins())
+                        print_scheduler("Your preset is: ^3Richtofen", player);
+                    else
+                        print_scheduler("You don't currently have any character preset", player);
+                    break;
+                case 4:
+                    if (is_tranzit() || is_die_rise() || is_buried())
+                        print_scheduler("Your preset is: ^3Stuhlinger", player);
+                    else if (is_mob())
+                        print_scheduler("Your preset is: ^3Weasel", player);
+                    else if (is_origins())
+                        print_scheduler("Your preset is: ^3Takeo", player);
+                    else
+                        print_scheduler("You don't currently have any character preset", player);
+                    break;
+                default:
+                    print_scheduler("You don't currently have any character preset", player);
             }
         }
     }
