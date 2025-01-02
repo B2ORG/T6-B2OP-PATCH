@@ -202,7 +202,7 @@ def flash_hash(file_path: str) -> str:
     with open(file_path, "rb") as file_io:
         # Convert to uINT and represent as uppercase hex
         hash: str = format(binascii.crc32(file_io.read()) & 0xFFFFFFFF, "08X")
-    print(f"Hash of {os.path.basename(file_path)}: '{hash}'")
+    print(f"Hash of {os.path.basename(file_path)}: '0x{hash}'")
     return hash
 
 
