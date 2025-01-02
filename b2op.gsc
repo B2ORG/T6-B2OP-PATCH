@@ -187,7 +187,7 @@ on_player_connected()
 
     while (true)
     {
-        level waittill("connecting", player);
+        level waittill("connected", player);
         player thread on_player_spawned();
         player thread on_player_spawned_permaperk();
     }
