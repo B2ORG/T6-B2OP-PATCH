@@ -1,9 +1,13 @@
 # Version 3.1
 
+- Fixed various issues related to new character system
 - Fixed patch misbehaving after a fast restart (player related functionalities failed to initialize)
 - Fixed fridge thread not terminating properly
+- Fixed crash on Ancient that happened in coop after permaperks were awarded
 - Decreased rate of displaying GSC checksums during early rounds
 - Removed the hook for Fridge plugin (it has become the standard for players to just use binds for the `fridge` command)
+- Changed fridge logic in DVAR method, it now supports both `fridge` and `fridge all` commands and works same way as chat method
+- Added `whoami` chat message listener to show player current preset
 
 # Version 3.0
 

@@ -1,13 +1,16 @@
 # T6-B2OP-PATCH
 
-Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box or fridge overrides are fully optional and invoked in-game by the players.
+Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box, fridge overrides or characters are fully optional and invoked in-game by the players.
 
 Patch has already proved itself in multiple top games, including, but not limited to:
-- Town [99](https://www.twitch.tv/videos/1923623612) No Jug WR by Slewya
-- Origins [164](https://www.twitch.tv/videos/2007798756) WR by Dxruma
-- Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
+- Town [100](https://x.com/Slewya/status/1837385114940022888) No Jug WR by Slewya
+- Die Rise [117](https://www.twitch.tv/videos/2185581866) coop WR by Issuez & NoMoleMan
 - Mob of the Dead [31:09](https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
+- Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
+- Buried [210](https://www.twitch.tv/videos/2241796423) coop WR by Blasteress & notway
 - Buried [150](https://www.twitch.tv/videos/1866405878) No Power coop WR by Astrox & Nessquik
+- Origins [164](https://www.twitch.tv/videos/2007798756) WR by Dxruma
+- Origins [131](https://youtu.be/w2_WvEB6KSs) coop WR by DestroyeR and NoMoleMan
 
 # Informations
 
@@ -52,6 +55,9 @@ Download script `b2op-redacted.gsc` from releases section, and put it in script 
 ```
 .\data\scripts
 ```
+
+> [!Note]
+> Please do not use `fast_restart` on Redacted, as the patch will not load afterwards. It can also cause the game to just crash outright.
 
 ## Plutonium - Ancient (r353 and similar)
 
@@ -129,7 +135,7 @@ steam_backspeed 1
 
 # Steps for basic troubleshooting
 
-- Make sure you're using correct and up to date version downloaded from releases section on this page. Versions
+- Make sure you're using correct and up to date version downloaded from releases section on this page.
 - Remove other patches. B2 Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
 - Check if the directory the patch is in is correct. Perhaps you have multiple instances of Plutonium or Redacted and you put it in the directory belonging to another instance.
 
@@ -150,7 +156,10 @@ steam_backspeed 1
 
 # HUD
 
-All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar. Do note, disabling hud elements reduces the overhead the patch has over the game, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console
+All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar.
+
+> [!Note]
+> Disabling hud elements reduces variable allocations of the patch, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console.
 
 ```
 timers 0;splits 0;buildables 0
@@ -170,7 +179,33 @@ This patch has the following capabilites regarding box and fridge:
 - Overriding starting box location
 - Overriding weapon in the fridge (Fridge Patch)
 
-None of the modules specified above will do anything to your game, unless specific actions are taken.
+> [!Note]
+> None of the modules specified above will do anything to your game, unless specific actions described in following sections are taken.
+
+> [!New Plutonium]
+> All 3 modules normally work by host inserting the correct DVAR in the console. However specifically in Plutonium (2905 and live versions) you can also do it via a chat message. Chat command is exactly the same as the console one, unless otherwise specified in the specific section below, this functionality allows offhost players to perform these actions as well.
+
+## Managing modules via binds
+
+On Plutonium you can invoke these commands without typing/copying them in every time by using binds. Binds need to be set in the bind config file.
+
+Bind config default location
+
+```
+%localappdata%\Plutonium\storage\t6\players\bindings_zm.bdg
+```
+
+For example following bind will input the command `fb mk2|galil` after you press `p`
+
+```
+bind P "fb mk2|galil"
+```
+
+You can also add `say` in front of the command to make it output chat command for you
+
+```
+bind P "say fb mk2|galil"
+```
 
 ## Overriding box location
 
@@ -187,14 +222,6 @@ To change box location, a DVAR `lb` has to be set to the right value. Below is t
 | Mob of the Dead | `warden` | Warden's Office |
 | Origins | `2` | Generator 2 |
 | Origins | `3` | Generator 3 |
-
-For example:
-
-```
-lb dt
-```
-
-Exclusively to new Plutonium, players can send a message in the game chat to make the box move, message would be the same as the DVAR change, so for example. To open in-game chat, players have to press `t`.
 
 For example:
 
@@ -272,14 +299,6 @@ For example:
 fb mk2
 ```
 
-Similar to box location, there is an exclusive feature for New Plutonium, where players can set weapons in the box via chat messages.
-
-For example:
-
-```
-fb mk2
-```
-
 Additionally, players can chain multiple weapons via a single message with both methods, following example will yield the first box module triggering 3 times
 
 ```
@@ -288,7 +307,7 @@ fb mk2|monk|galil
 
 ## Overriding fridge weapon
 
-Player is allowed to override weapons for himself and his time in the fridge until either round 11 or first use of the fridge. It is not possible to put in a weapon that'd not be possible to put during the normal game.
+Player is allowed to override weapons for himself and his team in the fridge until either round 11 or first use of the fridge. This functionality does not allow for inserting weapons that are not normally allowed to be put in the fridge by the game.
 To override fridge weapon, a DVAR `fridge` has to be set to the right value. 
 
 Values from this DVAR can be seen above (in the [Overriding box weapon](#overriding-box-weapon) section), but in order to put upgraded weapon in the fridge, a `+` has to be added in front of the weapon key.
@@ -300,20 +319,6 @@ fridge m16
 ```
 
 Example for upgraded weapon:
-
-```
-fridge +m16
-```
-
-Exclusively to New Plutonium, fridge can be set using chat commands, and using this feature players can set weapons individially.
-
-Example of player setting weapon for himself:
-
-```
-fridge m16
-```
-
-Example of player setting upgraded weapon for himself:
 
 ```
 fridge +m16
@@ -350,7 +355,8 @@ List of permaperks awarded by B2OP
 | Pistol Points | - |
 | Double Points | - |
 
-Players are always recommended to restart the game after being given perma perks, restart is done automatically when situation allows for it, otherwise players have to `map_restart` manually (the game will end automatically).
+> [!Note]
+> The game will restart automatically after awarding players with permaperks, when the sitution allows for it (all launchers solo and Plutonium coop). Otherwise it'll just end, as restarting would cause the crash. In unsupported configurations, all players are recommended to get into a solo game to get their permaperks before starting the coop.
 
 # Tank fix
 
@@ -363,6 +369,9 @@ Up until version 3.0, it was possible to set characters via Plugins system, but 
 ## Character commands
 
 In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). You may have to leave the map and enter again for it to take effect if you do it in game. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
+
+> [!Note]
+> You don't need to have the patch in to enter this command. But host of your game needs to have it, so it's properly interpreted.
 
 - CIA
 
@@ -391,13 +400,13 @@ statwriteddl playerstatsbymap zm_highrise weaponlocker clip 1;uploadstats
 - Stuhlinger
 
 ```
-statwriteddl playerstatsbymap zm_highrise weaponlocker clip 4;uploadstats
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 2;uploadstats
 ```
 
 - Marlton
 
 ```
-statwriteddl playerstatsbymap zm_highrise weaponlocker clip 2;uploadstats
+statwriteddl playerstatsbymap zm_highrise weaponlocker clip 4;uploadstats
 ```
 
 - Weasel
@@ -496,6 +505,9 @@ You can also reset character presets by typing in
 char reset
 ```
 
+> [!Note]
+> You can check which preset you currently have set by entering `whoami` in the chat
+
 ## Redacted offline mode
 
 Because this system is based on player stats that are not available, when in Redacted offline mode, characters are operated differently. You need to enter the match, set the character via a DVAR and use `map_restart` command. As oppose to using stats system, this will not persist across game launches.
@@ -508,7 +520,7 @@ For characters use following DVARs
 set_character 1
 ```
 
-- CIA, Marlton, Sal, Nikolai
+- CIA, Stuhlinger, Sal, Nikolai
 
 ```
 set_character 2
@@ -520,7 +532,7 @@ set_character 2
 set_character 3
 ```
 
-- Stuhlinger, Weasel, Takeo
+- Marlton, Weasel, Takeo
 
 ```
 set_character 4
