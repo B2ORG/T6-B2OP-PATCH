@@ -570,6 +570,23 @@ array_create(values, keys)
     return new_array;
 }
 
+array_implode(separator, arr)
+{
+    str = "";
+    len = arr.size;
+    if (len == 0)
+        return "";
+
+    for (i = 0; i < len; i++)
+    {
+        if (i == 0)
+            str += arr[i];
+        else
+            str += separator + arr[i];
+    }
+    return str;
+}
+
 player_wait_for_initial_blackscreen()
 {
     LEVEL_ENDON
