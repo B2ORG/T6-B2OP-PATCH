@@ -2421,35 +2421,44 @@ reevaluate_character_settings()
 {
     LEVEL_ENDON
 
+    flag_wait("start_zombie_round_logic");
+
 #if REDACTED == 1
     /* Stats system is down in offline game, fallback to a dvar */
     if (!is_true(level.onlinegame))
     {
         wait 0.1;
-        preset = getDvarInt("set_character");
+        preset = getDvarInt("set_character") - 1;
         if (is_survival_map())
             return set_team_settings(preset);
         else
-            return maps\mp\_utility::gethostplayer() set_character_index_internal(preset - 1);
+            return maps\mp\_utility::gethostplayer() set_character_index_internal(preset);
     }
 #endif
 
     stat = get_stat_for_map();
     if (stat == "lh_clip")
     {
-        preset = maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+        preset = int(maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise")) - 1;
+        DEBUG_PRINT("survival preset " + preset);
         return set_team_settings(preset);
     }
 
-    flag_wait("start_zombie_round_logic");
     DEBUG_PRINT("reevaluate_character_settings start");
 
     wait 0.2;
 
     free_presets = array(0, 1, 2, 3);
     allocated = [];
-    /* Set characters from presets */
+    /* Force host at the beginning to give conflict resolution priority */
+    players = array(maps\mp\_utility::gethostplayer());
     foreach (player in level.players)
+    {
+        players = add_to_array(players, player, false);
+    }
+
+    /* Set characters from presets */
+    foreach (player in players)
     {
         preset = int(player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise"));
         p = preset - 1;
@@ -2460,7 +2469,7 @@ reevaluate_character_settings()
             player set_character_index_internal(p);
             allocated[p] = player;
             /* If there are more than 4 players, we leave characters in the poll */
-            if (level.players.size <= 4)
+            if (players.size <= 4)
             {
                 arrayremovevalue(free_presets, p);
             }
@@ -2472,8 +2481,22 @@ reevaluate_character_settings()
     {
         if (!isinarray(allocated, player))
         {
-            free_presets = array_randomize(free_presets);
-            p = free_presets[0];
+            /* Weasel always is on mob coop */
+            if (level.players.size > 1 && is_mob() && isinarray(free_presets, 3))
+            {
+                p = 3;
+            }
+            /* Richtofen always is on origins coop */
+            else if (level.players.size > 1 && is_origins() && isinarray(free_presets, 2))
+            {
+                p = 2;
+            }
+            else
+            {
+                free_presets = array_randomize(free_presets);
+                p = free_presets[0];
+            }
+            // DEBUG_PRINT("randomized: " + array_implode(", ", free_presets));
             DEBUG_PRINT("bind remaining " + p + " to " + player.name);
             player set_character_index_internal(p);
             if (level.players.size <= 4)
@@ -2509,12 +2532,17 @@ set_joining_player_character()
 
 set_team_settings(preset)
 {
-    DEBUG_PRINT("team setting: " + preset);
+    DEBUG_PRINT("set_team_settings(" + preset + ")");
     switch (preset)
     {
+        case 0:
         case 1:
-        case 2:
-            level.should_use_cia = preset - 1;
+            level.should_use_cia = preset;
+            DEBUG_PRINT("should_use_cia: " + level.should_use_cia);
+            foreach (player in level.players)
+            {
+                player set_character_index_internal(level.should_use_cia);
+            }
             break;
     }
 }
