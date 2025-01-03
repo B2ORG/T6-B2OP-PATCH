@@ -133,7 +133,6 @@ on_game_start()
     level thread character_wrapper();
 #endif
 #endif
-    /* This needs to be a separate thread, as the only notify that could help chain it (begin) is not fired on fast_restart */
     level thread on_player_connected();
 
     flag_wait("initial_blackscreen_passed");
@@ -190,7 +189,7 @@ on_player_spawned()
 
     self waittill("spawned_player");
 
-    // Perhaps a redundand safety check, but doesn't hurt
+    /* Perhaps a redundand safety check, but doesn't hurt */
     while (!flag("initial_players_connected"))
         wait 0.05;
 
@@ -352,7 +351,7 @@ duplicate_file()
 #endif
 }
 
-// Utilities
+/* Utilities */
 
 generate_watermark_slots()
 {
@@ -874,7 +873,7 @@ emulate_menu_call(content, ent)
     ent notify ("menuresponse", "", content);
 }
 
-// Functions
+/* Functions */
 
 welcome_prints()
 {
@@ -1012,14 +1011,22 @@ set_dvars()
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
     dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    true,   false);
-    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);                                 // Prevent host migration
-    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,  false);                                 // Force post dlc1 patch on recoil
-    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);                                  // Remove Depth of Field
-    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_3k);                   // Fix for devblocks in r3903/3904
-    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);                   // Use native health fix, r4516+
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);                   // Defines if Pluto error fixes are applied, r4516+
-    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);                   // Enables flashing hashes of individual scripts
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);  // Offsets for pluto draws compatibile with b2 timers
+    /* Prevent host migration (redundant nowadays) */
+    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
+    /* Force post dlc1 patch on recoil */
+    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,  false);
+    /* Remove Depth of Field */
+    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);
+    /* Fix for devblocks in r3903/3904 */
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_3k);
+    /* Use native health fix, r4516+ */
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);
+    /* Defines if Pluto error fixes are applied, r4516+ */
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);
+    /* Enables flashing hashes of individual scripts */
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);
+    /* Offsets for pluto draws compatibile with b2 timers */
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
 
     protected = [];
     foreach (dvar in dvars)
@@ -1529,7 +1536,7 @@ fridge_handler()
     level waittill("terminate_fridge_process");
     print_scheduler("Fridge module: ^1DISABLED");
 
-    // Cleanup
+    /* Cleanup */
     foreach (player in level.players)
     {
         if (isDefined(player.fridge_state))
@@ -1674,14 +1681,14 @@ first_box_handler()
 
     flag_wait("initial_blackscreen_passed");
 
-    // Init thread counting box hits
+    /*  Init thread counting box hits */
     thread init_boxhits_watcher();
-    // Scan weapons in the box
+    /* Scan weapons in the box */
     thread scan_in_box();
 #if FEATURE_FIRSTBOX == 1
-    // First Box main loop
+    /* First Box main loop */
     thread first_box();
-    // First Box location main loop
+    /* First Box location main loop */
     thread first_box_location();
 #endif
 }
@@ -2565,7 +2572,6 @@ set_character_index_internal(index)
         case 2:
         case 3:
             flag_set("char_taken_" + index);
-            // self setcharacterindex(index);
             self.characterindex = index;
             self [[level.givecustomcharacters]]();
             DEBUG_PRINT(self.name + " set character " + index);
@@ -2847,6 +2853,10 @@ fixed_wait_network_frame()
         wait 0.1;
 }
 #endif
+
+/*************************************************************************************
+***********************              ANCIENT                   ***********************
+*************************************************************************************/
 
 #if ANCIENT == 1
 
