@@ -643,7 +643,7 @@ is_origins()
 
 is_survival_map()
 {
-    return (is_town() || is_farm() || is_depot() || is_nuketown());
+    return level.scr_zm_ui_gametype_group == "zsurvival";
 }
 
 did_game_just_start()
