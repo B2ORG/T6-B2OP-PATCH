@@ -9,6 +9,7 @@
 /* Const macros */
 #define B2OP_VER 3.1
 #define VER_ANCIENT 353
+#define VER_MODERN 1824
 #define VER_2905 2905
 #define VER_4K 4516
 #define NET_FRAME_SOLO 100
@@ -324,7 +325,7 @@ protect_file()
         bad_file();
 #elif ANCIENT == 1
     flag_wait("initial_blackscreen_passed");
-    if (get_plutonium_version() >= 1824)
+    if (get_plutonium_version() >= VER_MODERN)
         bad_file();
 #endif
 }
@@ -1351,7 +1352,7 @@ watch_permaperk_award()
             print_scheduler("Permaperks Awarded - ^1RESTARTING");
             wait 1;
 
-            if (is_plutonium() || present_players == 1)
+            if (get_plutonium_version() > VER_MODERN || present_players == 1)
                 emulate_menu_call("restart_level_zm");
             else
                 emulate_menu_call("endround");
