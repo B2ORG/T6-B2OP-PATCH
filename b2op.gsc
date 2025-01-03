@@ -1556,7 +1556,13 @@ fridge_watch_dvar()
         if (getDvar("fridge") == "")
             continue;
 
-        rig_fridge(getDvar("fridge"));
+        message = getDvar("fridge");
+        if (isSubStr(message, "fridge all"))
+            rig_fridge(getSubStr(message, 11));
+        else if (isSubStr(message, "fridge"))
+            rig_fridge(getSubStr(message, 7), maps\mp\_utility::gethostplayer());
+        CLEAR(message)
+
         setDvar("fridge", "");
     }
 }
