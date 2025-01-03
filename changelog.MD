@@ -1,3 +1,10 @@
+# Version 3.1
+
+- Fixed patch misbehaving after a fast restart (player related functionalities failed to initialize)
+- Fixed fridge thread not terminating properly
+- Decreased rate of displaying GSC checksums during early rounds
+- Removed the hook for Fridge plugin (it has become the standard for players to just use binds for the `fridge` command)
+
 # Version 3.0
 
 - Preprocessor directives refactor (not affecting the gameplay directly)

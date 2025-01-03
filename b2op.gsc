@@ -88,10 +88,10 @@ init()
     flag_init("box_rigged");
     flag_init("permaperks_were_set");
     flag_init("b2_on");
+    flag_init("char_taken_0");
     flag_init("char_taken_1");
     flag_init("char_taken_2");
     flag_init("char_taken_3");
-    flag_init("char_taken_4");
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
@@ -127,8 +127,7 @@ on_game_start()
 
     thread set_dvars();
 #if FEATURE_CHARACTERS == 1
-    level thread on_player_connecting();
-    set_team_settings();
+    level thread reevaluate_character_settings();
 #if PLUTO == 1
     level thread character_wrapper();
 #endif
@@ -168,19 +167,6 @@ on_game_start()
 #endif
 }
 
-#if FEATURE_CHARACTERS == 1
-on_player_connecting()
-{
-    LEVEL_ENDON
-
-    while (true)
-    {
-        level waittill("connecting", player);
-        player thread set_character_settings();
-    }
-}
-#endif
-
 on_player_connected()
 {
     LEVEL_ENDON
@@ -190,6 +176,10 @@ on_player_connected()
         level waittill("connected", player);
         player thread on_player_spawned();
         player thread on_player_spawned_permaperk();
+#if FEATURE_CHARACTERS == 1
+        if (flag("initial_players_connected"))
+            player thread set_joining_player_character();
+#endif
     }
 }
 
@@ -316,6 +306,8 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_duration)
 #endif
+        level waittill("between_round_over");
+        DEBUG_PRINT("between_round_over of " + (level.round_number - 1) + " at " + MS_TO_SECONDS(getTime()));
     }
 }
 
@@ -2407,14 +2399,98 @@ weapon_display_wrapper(weapon_key)
 }
 
 #if FEATURE_CHARACTERS == 1
-set_team_settings()
+reevaluate_character_settings()
 {
-    if (is_town() || is_farm() || is_depot() || is_nuketown())
-        stat = "lh_clip";
-    else
-        return;
+    LEVEL_ENDON
 
-    preset = maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+#if REDACTED == 1
+    /* Stats system is down in offline game, fallback to a dvar */
+    if (!is_true(level.onlinegame))
+    {
+        wait 0.1;
+        preset = getDvarInt("set_character");
+        if (is_survival_map())
+            return set_team_settings(preset);
+        else
+            return maps\mp\_utility::gethostplayer() set_character_index_internal(preset - 1);
+    }
+#endif
+
+    stat = get_stat_for_map();
+    if (stat == "lh_clip")
+    {
+        preset = maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+        return set_team_settings(preset);
+    }
+
+    flag_wait("start_zombie_round_logic");
+    DEBUG_PRINT("reevaluate_character_settings start");
+
+    wait 0.2;
+
+    free_presets = array(0, 1, 2, 3);
+    allocated = [];
+    /* Set characters from presets */
+    foreach (player in level.players)
+    {
+        preset = int(player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise"));
+        p = preset - 1;
+        DEBUG_PRINT("preset for " + player.name + ": " + preset);
+        if (preset > 0 && !isDefined(allocated[p]))
+        {
+            DEBUG_PRINT("bind preset " + p + " to " + player.name);
+            player set_character_index_internal(p);
+            allocated[p] = player;
+            /* If there are more than 4 players, we leave characters in the poll */
+            if (level.players.size <= 4)
+            {
+                arrayremovevalue(free_presets, p);
+            }
+        }
+    }
+
+    /* Assign remaining characters to other players */
+    foreach (player in level.players)
+    {
+        if (!isinarray(allocated, player))
+        {
+            free_presets = array_randomize(free_presets);
+            p = free_presets[0];
+            DEBUG_PRINT("bind remaining " + p + " to " + player.name);
+            player set_character_index_internal(p);
+            if (level.players.size <= 4)
+            {
+                arrayremovevalue(free_presets, p);
+            }
+        }
+    }
+}
+
+set_joining_player_character()
+{
+    PLAYER_ENDON
+    DEBUG_PRINT("set_joining_player_character()");
+    stat = get_stat_for_map();
+    /* Skip for survival maps */
+    if (stat == "lh_clip")
+        return;
+    wait 0.2;
+
+    preset = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
+    if (preset > 0)
+    {
+        index = preset - 1;
+        if (flag("char_taken_" + index))
+        {
+            DEBUG_PRINT("preset " + preset + " already taken");
+            return;
+        }
+        self set_character_index_internal(index);
+    }
+}
+
+set_team_settings(preset)
+{
     DEBUG_PRINT("team setting: " + preset);
     switch (preset)
     {
@@ -2425,76 +2501,47 @@ set_team_settings()
     }
 }
 
-set_character_settings()
+set_character_index_internal(index)
 {
-    PLAYER_ENDON
+    DEBUG_PRINT("set_character_index_internal(" + index + ")");
 
-#if REDACTED == 1
-    /* Stats system is down in offline game, fallback to a dvar */
-    if (!is_true(level.onlinegame))
+    /* Need to suppress hotjoin callback for the duration of index players */
+    if (isDefined(level.hotjoin_player_setup))
     {
-        self set_character_settings_from_dvar();
-        return;
-    }
-#endif
-
-    if (is_tranzit() || is_die_rise() || is_buried())
-    {
-        stat = "clip";
-    }
-    else if (is_mob())
-    {
-        stat = "stock";
-    }
-    else if (is_origins())
-    {
-        stat = "alt_clip";
-    }
-    else
-    {
-        return;
+        saved_hotjoin_player_setup = level.hotjoin_player_setup;
+        level.hotjoin_player_setup = undefined;
     }
 
-    /* Wait is essential, GSC won't be able to read stats immidiately after connecting signal */
-    wait 0.25;
-    /* Give host a priority */
-    if (!self ishost())
-        wait 0.05;
-
-    preset = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
-
-    DEBUG_PRINT("Player " + self.clientid + " with preset " + preset + "-1 at " + getTime());
-
-    switch (preset)
+    switch (index)
     {
+        case 0:
         case 1:
         case 2:
         case 3:
-        case 4:
-            if (!flag("char_taken_" + (preset - 1)))
-            {
-                flag_set("char_taken_" + (preset - 1));
-                self.characterindex = preset - 1;
-                DEBUG_PRINT("set charindex " + self.characterindex + " for " + self.clientid + " at " + getTime());
-            }
+            flag_set("char_taken_" + index);
+            // self setcharacterindex(index);
+            self.characterindex = index;
+            self [[level.givecustomcharacters]]();
+            DEBUG_PRINT(self.name + " set character " + index);
             break;
+    }
+
+    /* Now need to restore the callback, as recalculated players should have the normal flow */
+    if (isDefined(saved_hotjoin_player_setup))
+    {
+        level.hotjoin_player_setup = saved_hotjoin_player_setup;
     }
 }
 
-set_character_settings_from_dvar()
+get_stat_for_map()
 {
-    wait 0.1;
-    preset = getDvarInt("set_character");
-    switch (preset)
-    {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            flag_set("char_taken_" + (preset - 1));
-            self.characterindex = preset - 1;
-            break;
-    }
+    if (is_tranzit() || is_die_rise() || is_buried())
+        return "clip";
+    else if (is_mob())
+        return "stock";
+    else if (is_origins())
+        return "alt_clip";
+    return "lh_clip";
 }
 
 character_flag_cleanup()
@@ -2530,8 +2577,8 @@ character_wrapper()
                     break;
                 case "marlton":
                 case "reporter":
-                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_highrise");
-                    print_scheduler("Successfully updated character settings to: ^3Marlton", player);
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 4, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Stuhlinger", player);
                     break;
                 case "misty":
                 case "farmgirl":
@@ -2540,8 +2587,8 @@ character_wrapper()
                     break;
                 case "stuhlinger":
                 case "engineer":
-                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 4, "zm_highrise");
-                    print_scheduler("Successfully updated character settings to: ^3Stuhlinger", player);
+                    player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_highrise");
+                    print_scheduler("Successfully updated character settings to: ^3Marlton", player);
                     break;
                 case "finn":
                 case "oleary":
@@ -2615,7 +2662,7 @@ character_wrapper()
                     break;
                 case 2:
                     if (is_tranzit() || is_die_rise() || is_buried())
-                        print_scheduler("Your preset is: ^3Marlton", player);
+                        print_scheduler("Your preset is: ^3Stuhlinger", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Sal", player);
                     else if (is_origins())
@@ -2635,7 +2682,7 @@ character_wrapper()
                     break;
                 case 4:
                     if (is_tranzit() || is_die_rise() || is_buried())
-                        print_scheduler("Your preset is: ^3Stuhlinger", player);
+                        print_scheduler("Your preset is: ^3Marlton", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Weasel", player);
                     else if (is_origins())
@@ -2646,6 +2693,11 @@ character_wrapper()
                 default:
                     print_scheduler("You don't currently have any character preset", player);
             }
+
+#if DEBUG == 1
+            print_scheduler("Characterindex: ^1" + player.characterindex, player);
+            // print_scheduler("Shader: ^1" + player.whos_who_shader, player);
+#endif
         }
     }
 }
