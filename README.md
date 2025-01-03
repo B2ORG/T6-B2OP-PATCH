@@ -56,20 +56,18 @@ Download script `b2op-redacted.gsc` from releases section, and put it in script 
 .\data\scripts
 ```
 
-> [!Note]
+> [!WARNING]
 > Please do not use `fast_restart` on Redacted, as the patch will not load afterwards. It can also cause the game to just crash outright.
 
 ## Plutonium - Ancient (r353 and similar)
 
-**DISCLAIMER**
-
-I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i need to ship B2OP for that launcher alongside existing 3arc code, which we obtained by decompiling game scripts. Because of it, they many not 100% reflect the proper game logic, we believe it's accurate but it's only as good as the decompiler. Because of that fact, **I CAN NOT** guarantee the game integrity to the extent i can do that with other versions of this patch, use at your own risk!
-
-**INSTALLATION**
-
 To install, download `b2op-ancient.zip` from releases section, and inject it the same way as other patches for Ancient. Do note, zip contains a directory structure and filename that you're suppose to inject without changing it, so far people always injected files called `_clientids.gsc`, but in this case it would not work.
 
-Another thing to note, if you ever tried to inject a patch into Ancient, you know it tends to fail at times. With this patch it fails more, it sometimes can take few minutes of attempts to successfully inject.
+> [!CAUTION]
+> I have found a way of "fixing" the problem with network frame on Ancient Plutonium. In order to do that i need to ship B2OP for that launcher alongside existing 3arc code, which we obtained by decompiling game scripts. Because of it, they many not 100% reflect the proper game logic, we believe it's accurate but it's only as good as the decompiler. Because of that fact, **I CAN NOT** guarantee the game integrity to the extent i can do that with other versions of this patch, use at your own risk!
+
+> [!TIP]
+> Ancient Plutonium injection oftentimes fail, it can sometimes take multiple attempts to successfully inject. A good indicator is, after an injection try to open the console, if it opens the patch has been injected.
 
 # Patch checksum
 
@@ -158,7 +156,7 @@ steam_backspeed 1
 
 All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar.
 
-> [!Note]
+> [!TIP]
 > Disabling hud elements reduces variable allocations of the patch, so if you're a fan of optimizations, toggle all of these off by pasting following line into your console.
 
 ```
@@ -179,10 +177,10 @@ This patch has the following capabilites regarding box and fridge:
 - Overriding starting box location
 - Overriding weapon in the fridge (Fridge Patch)
 
-> [!Note]
+> [!NOTE]
 > None of the modules specified above will do anything to your game, unless specific actions described in following sections are taken.
 
-> [!New Plutonium]
+> [!TIP]
 > All 3 modules normally work by host inserting the correct DVAR in the console. However specifically in Plutonium (2905 and live versions) you can also do it via a chat message. Chat command is exactly the same as the console one, unless otherwise specified in the specific section below, this functionality allows offhost players to perform these actions as well.
 
 ## Managing modules via binds
@@ -355,7 +353,7 @@ List of permaperks awarded by B2OP
 | Pistol Points | - |
 | Double Points | - |
 
-> [!Note]
+> [!NOTE]
 > The game will restart automatically after awarding players with permaperks, when the sitution allows for it (all launchers solo and Plutonium coop). Otherwise it'll just end, as restarting would cause the crash. In unsupported configurations, all players are recommended to get into a solo game to get their permaperks before starting the coop.
 
 # Tank fix
@@ -370,7 +368,7 @@ Up until version 3.0, it was possible to set characters via Plugins system, but 
 
 In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). You may have to leave the map and enter again for it to take effect if you do it in game. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
 
-> [!Note]
+> [!NOTE]
 > You don't need to have the patch in to enter this command. But host of your game needs to have it, so it's properly interpreted.
 
 - CIA
@@ -505,7 +503,7 @@ You can also reset character presets by typing in
 char reset
 ```
 
-> [!Note]
+> [!TIP]
 > You can check which preset you currently have set by entering `whoami` in the chat
 
 ## Redacted offline mode
@@ -557,7 +555,8 @@ Install Python (and make sure to check adding it to the system PATH while doing 
 
 After applying desired changes, run script `compile.py` while in the patch main directory (press on address bar in the folder view, put `cmd` and press enter. A command line will open with that folder already set). Run script by putting in `python compile.py`. If you did everything right, script should compile everything for you and put stuff in right folders.
 
-Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
+> [!NOTE]
+> Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
 
 # B2 Extensions
 
