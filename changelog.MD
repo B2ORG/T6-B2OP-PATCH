@@ -1,3 +1,7 @@
+# Version 3.2
+
+- Fixed perma jug protection taking the health away alongside the permaperk itself
+
 # Version 3.1
 
 - Fixed various issues related to new character system
