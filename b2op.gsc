@@ -25,7 +25,6 @@
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
 #define FEATURE_CHARACTERS 1
-#define FEATURE_PERS_CLEANUP 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -133,6 +132,9 @@ on_game_start()
     level thread character_wrapper();
 #endif
 #endif
+#if FEATURE_PERMAPERKS == 1
+    level thread perma_perks_setup();
+#endif
     level thread on_player_connected();
 
     flag_wait("initial_blackscreen_passed");
@@ -149,9 +151,6 @@ on_game_start()
         level thread [[level.B2_NETWORK_HUD]]();
 #endif
     level thread first_box_handler();
-#if FEATURE_PERMAPERKS == 1
-    level thread perma_perks_setup();
-#endif
 #if FEATURE_FRIDGE == 1
     level thread fridge_handler();
 #endif
@@ -175,7 +174,6 @@ on_player_connected()
     {
         level waittill("connected", player);
         player thread on_player_spawned();
-        player thread on_player_spawned_permaperk();
 #if FEATURE_CHARACTERS == 1
         if (flag("initial_players_connected"))
             player thread set_joining_player_character();
@@ -210,27 +208,6 @@ on_player_spawned()
     }
 }
 
-on_player_spawned_permaperk()
-{
-    PLAYER_ENDON
-
-    /* We want to remove the perks before players spawn to prevent health bonus 
-    The wait is essential, it allows the game to process permaperks internally before we override them */
-    wait 2;
-
-    if (has_permaperks_system())
-    {
-#if FEATURE_PERS_CLEANUP == 1
-        level.force_clean_permaperks = true;
-#endif
-        if (is_round(15))
-        {
-            self remove_permaperk_wrapper("jugg");
-        }
-    }
-    
-}
-
 b2op_main_loop()
 {
     LEVEL_ENDON
@@ -256,16 +233,8 @@ b2op_main_loop()
 #if FEATURE_HORDES == 1
         level thread show_hordes();
 #endif
-
-#if FEATURE_PERS_CLEANUP == 1
-        /* Verify based on map, cause someone could sneak a patch that'd give those in offline game */
-        if (is_tranzit() || is_die_rise() || is_buried())
-        {
-            if (is_true(level.force_clean_permaperks))
-            {
-                level thread permaperk_guard();
-            }
-        }
+#if FEATURE_PERMAPERKS == 1
+        emergency_permaperks_cleanup();
 #endif
 
         level waittill("end_of_round");
@@ -1327,10 +1296,15 @@ fill_up_bank()
     }
 }
 
+#if FEATURE_PERMAPERKS == 1
 perma_perks_setup()
 {
     if (!has_permaperks_system())
         return;
+
+    thread fix_persistent_jug();
+
+    flag_wait("initial_blackscreen_passed");
 
     if (getDvar("award_perks") != "1")
         return;
@@ -1340,6 +1314,35 @@ perma_perks_setup()
 
     foreach (player in level.players)
         player thread award_permaperks_safe();
+}
+
+emergency_permaperks_cleanup()
+{
+    if (!flag("pers_jug_cleared"))
+        return;
+
+    /* This shouldn't be necessary, serves as last resort defence. Will not reset health but will prevent the perk to be active after a down */
+    foreach (player in level.players)
+    {
+        player remove_permaperk_wrapper("pers_jugg");
+        player remove_permaperk_wrapper("pers_jugg_downgrade_count");
+    }
+}
+
+fix_persistent_jug()
+{
+    LEVEL_ENDON
+
+    while (!isDefined(level.pers_upgrades["jugg"]))
+        wait 0.05;
+
+    level.pers_upgrades["jugg"].upgrade_active_func = ::fixed_upgrade_jugg_active;
+    flag_wait("pers_jug_cleared");
+    wait 0.5;
+
+    arrayremoveindex(level.pers_upgrades, "jugg");
+    arrayremovevalue(level.pers_upgrades_keys, "jugg");
+    DEBUG_PRINT("upgrade_keys => " + array_implode(", ", level.pers_upgrades_keys));
 }
 
 watch_permaperk_award()
@@ -1470,36 +1473,38 @@ award_permaperk(stat_name, perk_code, stat_value)
     self playsoundtoplayer("evt_player_upgrade", self);
 }
 
-#if FEATURE_PERS_CLEANUP == 1
-permaperk_guard()
+fixed_upgrade_jugg_active()
 {
-    LEVEL_ENDON
+    PLAYER_ENDON
 
-    if (is_round(10))
+    wait 1;
+    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 0);
+    DEBUG_PRINT("fixed_upgrade_jugg_active() init " + self.name);
+
+    while (true)
     {
-        foreach (player in level.players)
+        level waittill("start_of_round");
+
+        if (maps\mp\zombies\_zm_pers_upgrades::is_pers_system_active())
         {
-            player remove_permaperk_wrapper("nube", 10);
+            if (is_round(level.pers_jugg_round_lose_target))
+            {
+                self maps\mp\zombies\_zm_stats::increment_client_stat("pers_jugg_downgrade_count", 0);
+                wait 0.5;
+
+                if (self.pers["pers_jugg_downgrade_count"] >= level.pers_jugg_round_reached_max)
+                    break;
+            }
         }
     }
 
-    if (!is_round(15))
-        return;
+    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 1);
+    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg", 0);
+    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg_downgrade_count", 0);
+    flag_set("pers_jug_cleared");
 
-    wait 5;
-
-    DEBUG_PRINT("permaperk_guard_run");
-
-    foreach (player in level.players)
-    {
-        player maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg( "jugg_upgrade", 1, 1 );
-        player maps\mp\zombies\_zm_stats::zero_client_stat( "pers_jugg", 0 );
-        player maps\mp\zombies\_zm_stats::zero_client_stat( "pers_jugg_downgrade_count", 0 );
-    }
-
-    CLEAR(level.force_clean_permaperks)
+    DEBUG_PRINT("fixed_upgrade_jugg_active() deinit " + self.name);
 }
-#endif
 
 /* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
 remove_permaperk_wrapper(perk_code, round)
@@ -1519,6 +1524,7 @@ remove_permaperk(perk_code)
     self.pers_upgrades_awarded[perk_code] = 0;
     self playsoundtoplayer("evt_player_downgrade", self);
 }
+#endif
 
 #if FEATURE_FRIDGE == 1
 fridge_handler()
