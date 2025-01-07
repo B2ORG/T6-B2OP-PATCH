@@ -512,7 +512,7 @@ player_print_scheduler(content, delay)
     self.scheduled_prints--;
 
     if (self.scheduled_prints <= 0)
-        self.scheduled_prints = undefined;
+        CLEAR(self.scheduled_prints)
 }
 
 convert_time(seconds)
@@ -645,6 +645,11 @@ is_survival_map()
     return level.scr_zm_ui_gametype_group == "zsurvival";
 }
 
+is_victis_map()
+{
+    return is_tranzit() || is_die_rise() || is_buried();
+}
+
 did_game_just_start()
 {
     return !isDefined(level.start_round) || !is_round(level.start_round + 2);
@@ -749,9 +754,7 @@ has_magic()
 
 has_permaperks_system()
 {
-#if PLUTO == 1
-    DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
-#endif
+    // DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
     /* Refer to init_persistent_abilities() */
     return isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame);
 }
@@ -915,6 +918,12 @@ print_checksums()
     }
 }
 
+/* Stub */
+cmdexec(arg)
+{
+
+}
+
 should_print_checksum()
 {
     if (is_survival_map())
@@ -957,12 +966,6 @@ should_print_checksum()
 
     return ((is_round(20) && !is_round(faster) && level.round_number % 5 == 2) 
         || (is_round(faster) && level.round_number % 2 == 1));
-}
-
-/* Stub */
-cmdexec(arg)
-{
-
 }
 #endif
 
@@ -2597,7 +2600,7 @@ set_character_index_internal(index)
 
 get_stat_for_map()
 {
-    if (is_tranzit() || is_die_rise() || is_buried())
+    if (is_victis_map())
         return "clip";
     else if (is_mob())
         return "stock";
@@ -2713,7 +2716,7 @@ character_wrapper()
             switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_stat_for_map(), "zm_highrise"))
             {
                 case 1:
-                    if (is_tranzit() || is_die_rise() || is_buried())
+                    if (is_victis_map())
                         print_scheduler("Your preset is: ^3Russman", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Finn", player);
@@ -2723,7 +2726,7 @@ character_wrapper()
                         print_scheduler("Your preset is: ^3CDC", player);
                     break;
                 case 2:
-                    if (is_tranzit() || is_die_rise() || is_buried())
+                    if (is_victis_map())
                         print_scheduler("Your preset is: ^3Stuhlinger", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Sal", player);
@@ -2733,7 +2736,7 @@ character_wrapper()
                         print_scheduler("Your preset is: ^3CIA", player);
                     break;
                 case 3:
-                    if (is_tranzit() || is_die_rise() || is_buried())
+                    if (is_victis_map())
                         print_scheduler("Your preset is: ^3Misty", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Billy", player);
@@ -2743,7 +2746,7 @@ character_wrapper()
                         print_scheduler("You don't currently have any character preset", player);
                     break;
                 case 4:
-                    if (is_tranzit() || is_die_rise() || is_buried())
+                    if (is_victis_map())
                         print_scheduler("Your preset is: ^3Marlton", player);
                     else if (is_mob())
                         print_scheduler("Your preset is: ^3Weasel", player);
