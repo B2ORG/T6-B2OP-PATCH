@@ -1517,6 +1517,7 @@ remove_permaperk(perk_code)
     self playsoundtoplayer("evt_player_downgrade", self);
 }
 
+#if FEATURE_FRIDGE == 1
 fridge_handler()
 {
     LEVEL_ENDON
@@ -1667,6 +1668,7 @@ player_rig_fridge(weapon)
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
     }
 }
+#endif
 
 get_locker_stat(stat)
 {
@@ -1787,6 +1789,7 @@ scan_in_box()
     }
 }
 
+#if FEATURE_FIRSTBOX == 1
 first_box()
 {   
     level.rigged_hits = 0;
@@ -2330,6 +2333,7 @@ get_weapon_key(weapon_str, verifier)
     // DEBUG_PRINT("get_weapon_key(): weapon_key: " + key);
     return key;
 }
+#endif
 
 default_weapon_verification()
 {
