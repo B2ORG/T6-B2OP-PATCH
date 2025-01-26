@@ -155,6 +155,7 @@ steam_backspeed 1
 # B2OP Features
 
 - Basic anticheat capabilities (DVARs, Box etc.)
+- Fixed network frame (you may know it as a Tickrate issue)
 - Automatic permaperks assignment (consistent with in-game logic)
 - Full bank
 - Fixed strafe & backwards speed (but can be reverted by setting `steam_backspeed` to 1 and restarting)
