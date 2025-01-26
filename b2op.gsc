@@ -24,7 +24,7 @@
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
-#define FEATURE_CHARACTERS 1
+#define FEATURE_CHARACTERS 0
 
 /* Snippet macros */
 #define LEVEL_ENDON \
