@@ -267,7 +267,7 @@ b2op_main_loop()
         }
 
 #if PLUTO == 1
-        if (get_plutonium_version() >= 4522 && !did_game_just_start() && should_print_checksum())
+        if (should_print_checksum())
         {
             level thread print_checksums();
         }
@@ -895,46 +895,24 @@ cmdexec(arg)
 
 should_print_checksum()
 {
+    if (get_plutonium_version() < 4522 || did_game_just_start())
+        return false;
+
+    /* 150, 100, 60, 60 */
+    faster = 200 - (50 * level.players.size);
+    /* 80, 70, 60, 60 */
     if (is_survival_map())
-    {
-        switch (level.players.size)
-        {
-            case 1:
-                faster = 70;
-                break;
-            case 2:
-                faster = 60;
-                break;
-            default:
-                faster = 50;
-        }
-    }
-    else
-    {
-        switch (level.players.size)
-        {
-            case 1:
-                faster = 100;
-                break;
-            case 2:
-                faster = 90;
-                break;
-            case 3:
-                faster = 80;
-                break;
-            default:
-                faster = 70;
-        }
-    }
+        faster = 90 - (10 * level.players.size);
+    if (faster < 60)
+        faster = 60;
 
-    /*
-    early = (is_round(20) && !is_round(faster) && level.round_number % 5 == 2);
-    late = (is_round(faster) && level.round_number % 2 == 1);
-    DEBUG_PRINT("early = " + early + " late = " + late);
-    */
-
-    return ((is_round(20) && !is_round(faster) && level.round_number % 5 == 2) 
-        || (is_round(faster) && level.round_number % 2 == 1));
+    /* 19, 29, 39 and so on */
+    if (level.round_number > 10 && level.round_number % 10 == 9)
+        return true;
+    /* Add .4 rounds past faster round */
+    if (is_survival_map() && level.round_number > faster && level.round_number % 10 == 4)
+        return true;
+    return false;
 }
 #endif
 

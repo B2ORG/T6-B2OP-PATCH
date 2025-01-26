@@ -93,6 +93,21 @@ Checksum of each new B2 patch version will be attached to the release, which wil
 
 Yes, I'm currently deep into the process of the development of a tool that'll make managing this whole new concept simpler for both players and patch creators. It should be out in Q1 of 2025 (really depends how much time i have to work on it) and I'll be notifying people on B2 Discord so make sure to join (you'll find the invitation above), so this notice will be replaces with links to access the tools at that time.
 
+## For game verificators
+
+You should expect checksums to be displayed at the end of following rounds (for version 3.3 onwards)
+
+End of 18, 28, 38 onwards up to the end, and additionally
+
+| Type of game | Start of additional displays |
+| :--- | :--- |
+| Survival Maps Solo | End of .3 rounds from 83 onwards |
+| Survival Maps Coop | End of .3 rounds from 73 onwards |
+| Survival Maps 3p/4p | End of .3 rounds from 63 onwards |
+| Normal Maps Solo | End of .3 rounds from 153 onwards |
+| Normal Maps Coop | End of .3 rounds from 103 onwards |
+| Normal Maps 3p/4p | End of .3 rounds from 63 onwards |
+
 # FAQ
 
 1) My game is restarting automatically, how do i fix it?
