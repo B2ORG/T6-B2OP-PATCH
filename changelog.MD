@@ -1,3 +1,9 @@
+# Version 3.3
+
+- Reduced frequency and simplified logic for flashing patch checksums
+- Temporarily disabled character system
+- Fixed potential logic error when players input incorrect box location for `lb`
+
 # Version 3.2
 
 - Fixed perma jug protection taking the health away alongside the permaperk itself

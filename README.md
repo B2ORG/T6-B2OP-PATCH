@@ -165,7 +165,7 @@ steam_backspeed 1
 - Toogleable prints with time splits for key rounds
 - Optional box override (First Box patch)
 - Optional fridge override
-- Optional character setting
+- ~~Optional character setting~~
 - Disabled DOF (Depth of Field)
 
 # HUD
@@ -377,6 +377,9 @@ List of permaperks awarded by B2OP
 On Plutonium R4516+, the tank has been changed to match how it works on Steam and Console. [This file](https://github.com/B2ORG/T6-B2OP-PATCH/blob/main/b2op_tomb.gsc) is a fix to that, if the community agrees that it should be prepatches, there's gonna be a separate release in [release section](https://github.com/B2ORG/T6-B2OP-PATCH/releases) for that fix specifically, as it has to be a separate file. You can hear about this topic in [this video](https://youtu.be/p8s-4b4D1J8)
 
 # Characters
+
+> [!IMPORTANT]
+> In version 3.3 character system is disabled due to some issues that need to be sorted out.
 
 Up until version 3.0, it was possible to set characters via Plugins system, but it's not particulary easy nor user friendly, so a new version of this system has been created.
 
