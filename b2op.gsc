@@ -233,9 +233,10 @@ b2op_main_loop()
 #if FEATURE_HORDES == 1
         level thread show_hordes();
 #endif
-#if FEATURE_PERMAPERKS == 1
-        emergency_permaperks_cleanup();
-#endif
+        if (has_permaperks_system())
+        {
+            emergency_permaperks_cleanup();
+        }
 
         level waittill("end_of_round");
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
@@ -1274,7 +1275,6 @@ fill_up_bank()
     }
 }
 
-#if FEATURE_PERMAPERKS == 1
 perma_perks_setup()
 {
     if (!has_permaperks_system())
@@ -1282,6 +1282,7 @@ perma_perks_setup()
 
     thread fix_persistent_jug();
 
+#if FEATURE_PERMAPERKS == 1
     flag_wait("initial_blackscreen_passed");
 
     if (getDvar("award_perks") != "1")
@@ -1292,6 +1293,26 @@ perma_perks_setup()
 
     foreach (player in level.players)
         player thread award_permaperks_safe();
+#endif
+}
+
+/* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
+remove_permaperk_wrapper(perk_code, round)
+{
+    if (!isDefined(round))
+        round = 1;
+
+    if (is_round(round) && isSubStr(perk_code, "pers_"))
+        self maps\mp\zombies\_zm_stats::zero_client_stat(perk_code, 0);
+    else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
+        self remove_permaperk(perk_code);
+}
+
+remove_permaperk(perk_code)
+{
+    // DEBUG_PRINT("removing: " + perk_code);
+    self.pers_upgrades_awarded[perk_code] = 0;
+    self playsoundtoplayer("evt_player_downgrade", self);
 }
 
 emergency_permaperks_cleanup()
@@ -1323,6 +1344,40 @@ fix_persistent_jug()
     DEBUG_PRINT("upgrade_keys => " + array_implode(", ", level.pers_upgrades_keys));
 }
 
+fixed_upgrade_jugg_active()
+{
+    PLAYER_ENDON
+
+    wait 1;
+    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 0);
+    DEBUG_PRINT("fixed_upgrade_jugg_active() init " + self.name);
+
+    while (true)
+    {
+        level waittill("start_of_round");
+
+        if (maps\mp\zombies\_zm_pers_upgrades::is_pers_system_active())
+        {
+            if (is_round(level.pers_jugg_round_lose_target))
+            {
+                self maps\mp\zombies\_zm_stats::increment_client_stat("pers_jugg_downgrade_count", 0);
+                wait 0.5;
+
+                if (self.pers["pers_jugg_downgrade_count"] >= level.pers_jugg_round_reached_max)
+                    break;
+            }
+        }
+    }
+
+    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 1);
+    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg", 0);
+    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg_downgrade_count", 0);
+    flag_set("pers_jug_cleared");
+
+    DEBUG_PRINT("fixed_upgrade_jugg_active() deinit " + self.name);
+}
+
+#if FEATURE_PERMAPERKS == 1
 watch_permaperk_award()
 {
     LEVEL_ENDON
@@ -1449,58 +1504,6 @@ award_permaperk(stat_name, perk_code, stat_value)
     self.stats_this_frame[stat_name] = 1;
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
     self playsoundtoplayer("evt_player_upgrade", self);
-}
-
-fixed_upgrade_jugg_active()
-{
-    PLAYER_ENDON
-
-    wait 1;
-    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 0);
-    DEBUG_PRINT("fixed_upgrade_jugg_active() init " + self.name);
-
-    while (true)
-    {
-        level waittill("start_of_round");
-
-        if (maps\mp\zombies\_zm_pers_upgrades::is_pers_system_active())
-        {
-            if (is_round(level.pers_jugg_round_lose_target))
-            {
-                self maps\mp\zombies\_zm_stats::increment_client_stat("pers_jugg_downgrade_count", 0);
-                wait 0.5;
-
-                if (self.pers["pers_jugg_downgrade_count"] >= level.pers_jugg_round_reached_max)
-                    break;
-            }
-        }
-    }
-
-    self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 1);
-    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg", 0);
-    self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg_downgrade_count", 0);
-    flag_set("pers_jug_cleared");
-
-    DEBUG_PRINT("fixed_upgrade_jugg_active() deinit " + self.name);
-}
-
-/* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
-remove_permaperk_wrapper(perk_code, round)
-{
-    if (!isDefined(round))
-        round = 1;
-
-    if (is_round(round) && isSubStr(perk_code, "pers_"))
-        self maps\mp\zombies\_zm_stats::zero_client_stat(perk_code, 0);
-    else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
-        self remove_permaperk(perk_code);
-}
-
-remove_permaperk(perk_code)
-{
-    // DEBUG_PRINT("removing: " + perk_code);
-    self.pers_upgrades_awarded[perk_code] = 0;
-    self playsoundtoplayer("evt_player_downgrade", self);
 }
 #endif
 
