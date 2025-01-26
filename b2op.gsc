@@ -84,14 +84,7 @@ init()
 #endif
 {
     level thread protect_file();
-    flag_init("game_started");
-    flag_init("box_rigged");
-    flag_init("permaperks_were_set");
-    flag_init("b2_on");
-    flag_init("char_taken_0");
-    flag_init("char_taken_1");
-    flag_init("char_taken_2");
-    flag_init("char_taken_3");
+    init_b2_flags();
 
 /* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
 #if DEBUG == 1 && ANCIENT == 1
@@ -297,6 +290,18 @@ protect_file()
     if (get_plutonium_version() >= VER_MODERN)
         bad_file();
 #endif
+}
+
+init_b2_flags()
+{
+    flag_init("game_started");
+    flag_init("b2_box_rigged");
+    flag_init("permaperks_were_set");
+    flag_init("b2_on");
+    flag_init("char_taken_0");
+    flag_init("char_taken_1");
+    flag_init("char_taken_2");
+    flag_init("char_taken_3");
 }
 
 bad_file()
