@@ -1786,7 +1786,7 @@ scan_in_box()
 
 #if FEATURE_FIRSTBOX == 1
 first_box()
-{   
+{
     level.rigged_hits = 0;
     thread print_scheduler("First Box module: ^2AVAILABLE");
     thread watch_for_finish_firstbox();
@@ -2063,6 +2063,10 @@ move_chest(box)
         if (!chest.hidden && chest.script_noteworthy == box)
         {
             print_scheduler("Box already in selected location");
+            if (isDefined(kept_move_logic))
+            {
+                level._zombiemode_custom_box_move_logic = kept_move_logic;
+            }
             return;
         }
         else if (!chest.hidden)
