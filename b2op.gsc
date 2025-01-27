@@ -1553,10 +1553,10 @@ fridge_watch_dvar()
             continue;
 
         message = getDvar("fridge");
-        if (isSubStr(message, "fridge all"))
-            rig_fridge(getSubStr(message, 11));
-        else if (isSubStr(message, "fridge"))
-            rig_fridge(getSubStr(message, 7), maps\mp\_utility::gethostplayer());
+        if (isSubStr(message, "all "))
+            rig_fridge(getSubStr(message, 4));
+        else
+            rig_fridge(message, maps\mp\_utility::gethostplayer());
         CLEAR(message)
 
         setDvar("fridge", "");
