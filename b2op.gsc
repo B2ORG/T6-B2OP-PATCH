@@ -71,7 +71,7 @@ main()
     replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
     replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
 
-#if DEBUG == 1
+#if DEBUG == 1 && FEATURE_CHARACTERS == 1
     replaceFunc(maps\mp\gametypes_zm\_globallogic_spawn::giveloadoutlevelspecific, ::replace_giveloadoutlevelspecific);
 #endif
 }
