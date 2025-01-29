@@ -1031,7 +1031,13 @@ dvar_watcher(dvars)
 
     /* We're setting them once again, to ensure lack of accidental detections */
     foreach (name in getArrayKeys(dvars))
-        setdvar(name, dvars[name]);
+    {
+        /* R4542 requires this */
+        if (get_plutonium_version() < 4542 || name != "sv_cheats")
+        {
+            setdvar(name, dvars[name]);
+        }
+    }
 
     while (true)
     {
