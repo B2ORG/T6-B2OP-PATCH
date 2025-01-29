@@ -1,3 +1,8 @@
+# Version 3.4
+
+- Fixed `fridge` dvar
+- Adjusted patch logic to make dvar management comaptibile with Plutonium R4542
+
 # Version 3.3
 
 - Reduced frequency and simplified logic for flashing patch checksums
