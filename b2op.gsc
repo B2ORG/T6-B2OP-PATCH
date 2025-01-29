@@ -941,6 +941,7 @@ set_dvars()
 
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                    */
+    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
     dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
@@ -965,7 +966,6 @@ set_dvars()
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
-    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
     dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    true,   false);
     /* Prevent host migration (redundant nowadays) */
     dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
