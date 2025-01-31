@@ -24,7 +24,7 @@
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
-#define FEATURE_CHARACTERS 0
+#define FEATURE_CHARACTERS 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -70,10 +70,6 @@ main()
 {
     replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
     replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-
-#if DEBUG == 1 && FEATURE_CHARACTERS == 1
-    replaceFunc(maps\mp\gametypes_zm\_globallogic_spawn::giveloadoutlevelspecific, ::replace_giveloadoutlevelspecific);
-#endif
 }
 #endif
 
@@ -120,7 +116,7 @@ on_game_start()
 
     thread set_dvars();
 #if FEATURE_CHARACTERS == 1
-    level thread reevaluate_character_settings();
+    thread hijack_personality_character();
 #if PLUTO == 1
     level thread character_wrapper();
 #endif
@@ -167,10 +163,6 @@ on_player_connected()
     {
         level waittill("connected", player);
         player thread on_player_spawned();
-#if FEATURE_CHARACTERS == 1
-        if (flag("initial_players_connected"))
-            player thread set_joining_player_character();
-#endif
     }
 }
 
@@ -727,11 +719,16 @@ has_magic()
     return is_true(level.enable_magic);
 }
 
+is_online_game()
+{
+    return is_true(level.onlinegame);
+}
+
 has_permaperks_system()
 {
-    // DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame)));
+    // DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_online_game()));
     /* Refer to init_persistent_abilities() */
-    return isDefined(level.pers_upgrade_boards) && is_true(level.onlinegame);
+    return isDefined(level.pers_upgrade_boards) && is_online_game();
 }
 
 is_special_round()
@@ -863,7 +860,7 @@ welcome_prints()
     self iPrintLn(" Detected Plutonium version: ^1" + get_plutonium_version());
 #elif REDACTED == 1
     self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
-    if (is_true(level.onlinegame))
+    if (is_online_game())
         self iPrintLn(" ^2ONLINE ^7MODE");
     else
         self iPrintLn(" ^3OFFLINE ^7MODE");
@@ -2439,165 +2436,60 @@ weapon_display_wrapper(weapon_key)
 }
 
 #if FEATURE_CHARACTERS == 1
-reevaluate_character_settings()
+hijack_personality_character()
 {
     LEVEL_ENDON
 
-    flag_wait("start_zombie_round_logic");
-
-#if REDACTED == 1
-    /* Stats system is down in offline game, fallback to a dvar */
-    if (!is_true(level.onlinegame))
+    while (!isDefined(level.givecustomcharacters))
+        wait 0.05;
+    if (is_survival_map())
     {
-        wait 0.1;
-        preset = getDvarInt("set_character") - 1;
-        if (is_survival_map())
-            return set_team_settings(preset);
-        else
-            return maps\mp\_utility::gethostplayer() set_character_index_internal(preset);
-    }
-#endif
-
-    stat = get_stat_for_map();
-    if (stat == "lh_clip")
-    {
-        preset = int(maps\mp\_utility::gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise")) - 1;
-        DEBUG_PRINT("survival preset " + preset);
-        return set_team_settings(preset);
-    }
-
-    DEBUG_PRINT("reevaluate_character_settings start");
-
-    wait 0.2;
-
-    free_presets = array(0, 1, 2, 3);
-    allocated = [];
-    /* Force host at the beginning to give conflict resolution priority */
-    players = array(maps\mp\_utility::gethostplayer());
-    foreach (player in level.players)
-    {
-        players = add_to_array(players, player, false);
-    }
-
-    /* Set characters from presets */
-    foreach (player in players)
-    {
-        preset = int(player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise"));
-        p = preset - 1;
-        DEBUG_PRINT("preset for " + player.name + ": " + preset);
-        if (preset > 0 && !isDefined(allocated[p]))
-        {
-            DEBUG_PRINT("bind preset " + p + " to " + player.name);
-            player set_character_index_internal(p);
-            allocated[p] = player;
-            /* If there are more than 4 players, we leave characters in the poll */
-            if (players.size <= 4)
-            {
-                arrayremovevalue(free_presets, p);
-            }
-        }
-    }
-
-    /* Assign remaining characters to other players */
-    foreach (player in level.players)
-    {
-        if (!isinarray(allocated, player))
-        {
-            /* Weasel always is on mob coop */
-            if (level.players.size > 1 && is_mob() && isinarray(free_presets, 3))
-            {
-                p = 3;
-            }
-            /* Richtofen always is on origins coop */
-            else if (level.players.size > 1 && is_origins() && isinarray(free_presets, 2))
-            {
-                p = 2;
-            }
-            else
-            {
-                free_presets = array_randomize(free_presets);
-                p = free_presets[0];
-            }
-            // DEBUG_PRINT("randomized: " + array_implode(", ", free_presets));
-            DEBUG_PRINT("bind remaining " + p + " to " + player.name);
-            player set_character_index_internal(p);
-            if (level.players.size <= 4)
-            {
-                arrayremovevalue(free_presets, p);
-            }
-        }
-    }
-}
-
-set_joining_player_character()
-{
-    PLAYER_ENDON
-    DEBUG_PRINT("set_joining_player_character()");
-    stat = get_stat_for_map();
-    /* Skip for survival maps */
-    if (stat == "lh_clip")
+        preset = parse_preset(get_stat_for_map(), array(1, 2));
+        /* Should use cia is defined right before the pointer checked in the while loop */
+        level.should_use_cia = preset - 1;
         return;
-    wait 0.2;
-
-    preset = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise");
-    if (preset > 0)
-    {
-        index = preset - 1;
-        if (flag("char_taken_" + index))
-        {
-            DEBUG_PRINT("preset " + preset + " already taken");
-            return;
-        }
-        self set_character_index_internal(index);
     }
+    level.old_givecustomcharacters = level.givecustomcharacters;
+    level.givecustomcharacters = ::override_personality_character;
 }
 
-set_team_settings(preset)
+override_personality_character()
 {
-    DEBUG_PRINT("set_team_settings(" + preset + ")");
-    switch (preset)
+    /* I need to run this check as original function also does it and it prevents setting the index too quick ... i think */
+    if (isdefined(level.hotjoin_player_setup) && [[level.hotjoin_player_setup]]("c_zom_farmgirl_viewhands"))
     {
-        case 0:
-        case 1:
-            level.should_use_cia = preset;
-            DEBUG_PRINT("should_use_cia: " + level.should_use_cia);
-            foreach (player in level.players)
-            {
-                player set_character_index_internal(level.should_use_cia);
-            }
-            break;
+        return;
     }
+
+    preset = parse_preset(get_stat_for_map(), array(1, 2, 3, 4));
+    charindex = preset - 1;
+    if (preset > 0 && !flag("b2_char_taken_" + charindex))
+    {
+        flag_set("b2_char_taken_" + charindex);
+        self.characterindex = charindex;
+        DEBUG_PRINT(self.name + " set character " + charindex);
+    }
+
+    self [[level.old_givecustomcharacters]]();
 }
 
-set_character_index_internal(index)
+parse_preset(stat, allowed_presets)
 {
-    DEBUG_PRINT("set_character_index_internal(" + index + ")");
-
-    /* Need to suppress hotjoin callback for the duration of index players */
-    if (isDefined(level.hotjoin_player_setup))
+    if (is_online_game())
     {
-        saved_hotjoin_player_setup = level.hotjoin_player_setup;
-        level.hotjoin_player_setup = undefined;
+        preset = int(self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(stat, "zm_highrise"));
+    }
+    else
+    {
+        preset = getDvarInt("set_character");
     }
 
-    switch (index)
+    /* Validation */
+    if (isinarray(allowed_presets, preset))
     {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-            flag_set("char_taken_" + index);
-            self.characterindex = index;
-            self [[level.givecustomcharacters]]();
-            DEBUG_PRINT(self.name + " set character " + index);
-            break;
+        return preset;
     }
-
-    /* Now need to restore the callback, as recalculated players should have the normal flow */
-    if (isDefined(saved_hotjoin_player_setup))
-    {
-        level.hotjoin_player_setup = saved_hotjoin_player_setup;
-    }
+    return 0;
 }
 
 get_stat_for_map()
@@ -2613,12 +2505,19 @@ get_stat_for_map()
 
 character_flag_cleanup()
 {
-    flag = "char_taken_" + self.characterindex;
-    flag_clear(flag);
-    DEBUG_PRINT("clearing flag: " + flag);
+    flag_clear("b2_char_taken_" + self.characterindex);
+    DEBUG_PRINT("clearing flag: b2_char_taken_" + self.characterindex);
 
     /* Need to invoke original callback afterwards */
     self maps\mp\gametypes_zm\_globallogic_player::callback_playerdisconnect();
+}
+
+terminate_character_wrapper()
+{
+    LEVEL_ENDON;
+    while (did_game_just_start())
+        wait 0.05;
+    level notify("kill_character_wrapper");
 }
 
 #if PLUTO == 1
@@ -2768,29 +2667,6 @@ character_wrapper()
         }
     }
 }
-
-terminate_character_wrapper()
-{
-    LEVEL_ENDON;
-    while (did_game_just_start())
-        wait 0.05;
-    level notify("kill_character_wrapper");
-}
-
-#if DEBUG == 1
-replace_giveloadoutlevelspecific( team, class )
-{
-    pixbeginevent( "giveLoadoutLevelSpecific" );
-    DEBUG_PRINT("reading custom character");
-    if ( isdefined( level.givecustomcharacters ) )
-        self [[ level.givecustomcharacters ]]();
-
-    if ( isdefined( level.givecustomloadout ) )
-        self [[ level.givecustomloadout ]]();
-
-    pixendevent();
-}
-#endif
 #endif
 #endif
 
