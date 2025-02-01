@@ -378,17 +378,20 @@ On Plutonium R4516+, the tank has been changed to match how it works on Steam an
 
 # Characters
 
-> [!IMPORTANT]
-> In version 3.3 character system is disabled due to some issues that need to be sorted out.
-
 Up until version 3.0, it was possible to set characters via Plugins system, but it's not particulary easy nor user friendly, so a new version of this system has been created.
+
+> [!NOTE]
+> You don't need to have the patch in for character selections to work if you're the off-host player, as long as the host has it, it'll work.
+
+> [!NOTE]
+> If in a coop game a player does not use any preset, it is possible for him to take a character before player with that character set. In that case preset will not work. In order for the system to work properly, have all players in the game set their presets.
+
+> [!TIP]
+> When using fast_restart, characters for off-host players are evaluated before host (that's how the game does it). I've decided to not change this behavior as it'd require further changes of the existing game logic. Instead, in order to preserve priority of character selection, use map_restart command.
 
 ## Character commands
 
-In order to set a character, paste the right command into the console in the main menu (or at any point before the game actually begins). You may have to leave the map and enter again for it to take effect if you do it in game. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
-
-> [!NOTE]
-> You don't need to have the patch in to enter this command. But host of your game needs to have it, so it's properly interpreted.
+In order to set a character, paste the right command into the console in the main menu before the game actually begins, or use chat message method on Plutonium. For survival maps, host setting applies to all players. Please note, if a character is already taken, your setting will not be applied.
 
 - CIA
 
@@ -507,10 +510,10 @@ statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 0;uploadstats
 On Plutonium 2905 and Live, you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect (that's the recommended way to change characters in game, as stat command may not always work). The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
 
 ```
-char name
+char <name>
 ```
 
-Where name is the name of the character. Following values are accepted:
+Where <name> is the name of the character. Following values are accepted:
 
 ```
 misty russman stuhlinger marlton weasel billy sal finn dempsey nikolai takeo richtofen cia cdc

@@ -933,7 +933,10 @@ set_dvars()
     }
 
 #if FEATURE_CHARACTERS == 1
-    level.callbackplayerdisconnect = ::character_flag_cleanup;
+    if (!is_survival_map())
+    {
+        level.callbackplayerdisconnect = ::character_flag_cleanup;
+    }
 #endif
 
     dvars = [];
@@ -2444,9 +2447,8 @@ hijack_personality_character()
         wait 0.05;
     if (is_survival_map())
     {
-        preset = parse_preset(get_stat_for_map(), array(1, 2));
-        /* Should use cia is defined right before the pointer checked in the while loop */
-        level.should_use_cia = preset - 1;
+        level.old_givecustomcharacters = level.givecustomcharacters;
+        level.givecustomcharacters = ::override_team_character;
         return;
     }
     level.old_givecustomcharacters = level.givecustomcharacters;
@@ -2456,18 +2458,41 @@ hijack_personality_character()
 override_personality_character()
 {
     /* I need to run this check as original function also does it and it prevents setting the index too quick ... i think */
-    if (isdefined(level.hotjoin_player_setup) && [[level.hotjoin_player_setup]]("c_zom_farmgirl_viewhands"))
-    {
+    if (run_default_character_hotjoin_safety())
         return;
-    }
 
-    preset = parse_preset(get_stat_for_map(), array(1, 2, 3, 4));
+    preset = self parse_preset(get_stat_for_map(), array(1, 2, 3, 4));
     charindex = preset - 1;
     if (preset > 0 && !flag("b2_char_taken_" + charindex))
     {
-        flag_set("b2_char_taken_" + charindex);
+        /* Need to assign level checks for coop specific logic in original callbacks */
+        if (is_mob() && charindex == 3)
+            level.has_weasel = true;
+        else if (is_origins() && charindex == 2)
+            level.has_richtofen = true;
+
         self.characterindex = charindex;
         DEBUG_PRINT(self.name + " set character " + charindex);
+    }
+
+    self [[level.old_givecustomcharacters]]();
+    /* Set it here, to avoid duplicates when some players don't have presets */
+    flag_set("b2_char_taken_" + self.characterindex);
+}
+
+override_team_character()
+{
+    /* I need to run this check as original function also does it and it prevents setting the index too quick ... i think */
+    if (run_default_character_hotjoin_safety())
+        return;
+
+    if (!flag("b2_char_taken_0") && !flag("b2_char_taken_1"))
+    {
+        preset = maps\mp\_utility::gethostplayer() parse_preset(get_stat_for_map(), array(1, 2));
+        charindex = preset - 1;
+        flag_set("b2_char_taken_" + charindex);
+        level.should_use_cia = charindex;
+        DEBUG_PRINT("Set character " + level.should_use_cia);
     }
 
     self [[level.old_givecustomcharacters]]();
@@ -2518,6 +2543,27 @@ terminate_character_wrapper()
     while (did_game_just_start())
         wait 0.05;
     level notify("kill_character_wrapper");
+}
+
+run_default_character_hotjoin_safety()
+{
+    if (is_survival_map())
+    {
+        if (isdefined(level.hotjoin_player_setup) && [[level.hotjoin_player_setup]]("c_zom_suit_viewhands"))
+            return true;
+    }
+    else if (is_tranzit() || is_die_rise() || is_buried())
+    {
+        if (isdefined(level.hotjoin_player_setup) && [[level.hotjoin_player_setup]]("c_zom_farmgirl_viewhands"))
+            return true;
+    }
+    /* Origins is not a mistake, they do use arlington there originally */
+    else if (is_mob() || is_origins())
+    {
+        if (isdefined(level.hotjoin_player_setup) && [[level.hotjoin_player_setup]]("c_zom_arlington_coat_viewhands"))
+            return true;
+    }
+    return false;
 }
 
 #if PLUTO == 1
