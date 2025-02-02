@@ -87,7 +87,7 @@ Again, i use this term to help people understand the concept, please do not get 
 
 ## How does B2 ecosystem interact with this new verification process
 
-Checksum of each new B2 patch version will be attached to the release, which will allow you to verify whether a valid patch is used yourself. In terms of what the patch do, it force enables displaying those checksums at the beginning of your game, and at the end of every even round past 20 will display both files checksums as well as game memory checksums for few seconds. They will be automatically hidden (it does it at the end of even round to not ruin screenshot of round milestones like a 100sr or something).
+Checksum of each new B2 patch version will be attached to the release, which will allow you to verify whether a valid patch is used yourself. In terms of what the patch do, it force enables displaying those checksums certain rounds (details on that below). They are only shown for few seconds and not on milestone rounds (to not ruin screenshots etc.)
 
 ## There are no linked resources or tools in this section
 
@@ -116,7 +116,7 @@ End of 18, 28, 38 onwards up to the end, and additionally
 
 2) I put the patch in the right folder but it does not work
 
-- Make sure you downloaded compiled version from [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section (do not download the zip file called Source code, it is added to the release automatically by github and contains raw code, that is not going to work) and that you downloaded the right version for the right launcher. Failing to do so may result in the patch not working at all, or misbehaving, which in some situations can cause your game to not be legit. Always match names of released files with the launcher you're using. Read Installation instructions above.
+- Make sure you downloaded right version from [releases section](https://github.com/B2ORG/T6-B2OP-PATCH/releases) (do not download the zip file called Source code, it is added to the release automatically by github and contains raw code, that is not going to work). Failing to do so may result in the patch not working at all, or misbehaving, which in some situations can cause your game to not be legit. Always match names of released files with the launcher you're using. Read Installation instructions above.
 
 3) It says the patch gives players first box, which is not legit. How come this patch is deemed an official patch for BO2 records?
 
@@ -165,7 +165,7 @@ steam_backspeed 1
 - Toogleable prints with time splits for key rounds
 - Optional box override (First Box patch)
 - Optional fridge override
-- ~~Optional character setting~~
+- Optional character setting
 - Disabled DOF (Depth of Field)
 
 # HUD
