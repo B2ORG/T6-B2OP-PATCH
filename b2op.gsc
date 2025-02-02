@@ -266,59 +266,11 @@ b2op_main_loop()
     }
 }
 
-protect_file()
-{
-    wait 0.05;
-#if RAW == 1
-    bad_file();
-#elif REDACTED == 1
-    if (is_plutonium())
-        bad_file();
-#elif PLUTO == 1
-    if (get_plutonium_version() <= VER_ANCIENT)
-        bad_file();
-#elif ANCIENT == 1
-    flag_wait("initial_blackscreen_passed");
-    if (get_plutonium_version() >= VER_MODERN)
-        bad_file();
-#endif
-}
-
-init_b2_flags()
-{
-    flag_init("game_started");
-    flag_init("b2_box_rigged");
-    flag_init("permaperks_were_set");
-    flag_init("b2_on");
-    flag_init("char_taken_0");
-    flag_init("char_taken_1");
-    flag_init("char_taken_2");
-    flag_init("char_taken_3");
-}
-
-bad_file()
-{
-    wait 0.75;
-    iPrintLn("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
-    wait 0.75;
-    iPrintLn("Please read the installation instructions on the patch ^5GitHub^7 page");
-    wait 0.75;
-    iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
-    wait 0.75;
-#if DEBUG == 0
-    level notify("end_game");
-#endif
-}
-
-duplicate_file()
-{
-    iPrintLn("ONLY ONE ^1B2 ^7PATCH CAN RUN AT THE SAME TIME!");
-#if DEBUG == 0
-    level notify("end_game");
-#endif
-}
-
-/* Utilities */
+/*
+ ************************************************************************************************************
+ ************************************************ UTILITIES *************************************************
+ ************************************************************************************************************
+*/
 
 generate_watermark_slots()
 {
@@ -758,88 +710,6 @@ wait_for_message_end()
     wait getDvarFloat("con_gameMsgWindow0FadeInTime") + getDvarFloat("con_gameMsgWindow0MsgTime") + getDvarFloat("con_gameMsgWindow0FadeOutTime");
 }
 
-set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
-{
-    if (!isDefined(col))
-        col = (1, 1, 1);
-
-    if (isDefined(level.B2_HUD))
-    {
-        data = level.B2_HUD[hud_key];
-        if (isDefined(data))
-        {
-            if (isDefined(data["x_align"]))
-                x_align = data["x_align"];
-            if (isDefined(data["y_align"]))
-                y_align = data["y_align"];
-            if (isDefined(data["x_pos"]))
-                x_pos = data["x_pos"];
-            if (isDefined(data["y_pos"]))
-                y_pos = data["y_pos"];
-            if (isDefined(data["color"]))
-                col = data["color"];
-        }
-    }
-
-    res_components = strTok(getDvar("r_mode"), "x");
-    ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
-    aspect_ratio = 1609;
-    switch (ratio)
-    {
-        case 160:       // 16:10
-            aspect_ratio = 1610;
-            break;
-        case 125:       // 5:4
-        case 133:       // 4:3
-        case 149:       // 3:2
-        case 150:       // 3:2
-            aspect_ratio = 43;
-            break;
-        case 237:       // 21:9
-        case 238:       // 21:9
-        case 240:       // 21:9
-        case 355:       // 32:9
-            aspect_ratio = 2109;
-            break;
-    }
-
-    if (x_pos == int(x_pos))
-        x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
-
-    // DEBUG_PRINT("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
-
-    self setpoint(x_align, y_align, x_pos, y_pos);
-    self.color = col;
-}
-
-recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
-{
-    if (level.players.size > 1)
-        return xpos;
-
-    if (isSubStr(tolower(xalign), "left") && xpos < 0)
-    {
-        if (aspect_ratio == 1610)
-            return xpos + 6;
-        if (aspect_ratio == 43)
-            return xpos + 14;
-        if (aspect_ratio == 2109)
-            return xpos - 21;
-    }
-
-    else if (isSubStr(tolower(xalign), "right") && xpos > 0)
-    {
-        if (aspect_ratio == 1610)
-            return xpos - 6;
-        if (aspect_ratio == 43)
-            return xpos - 14;
-        if (aspect_ratio == 2109)
-            return xpos + 21;
-    }
-
-    return xpos;
-}
-
 emulate_menu_call(content, ent)
 {
     if (!isDefined(ent))
@@ -848,7 +718,94 @@ emulate_menu_call(content, ent)
     ent notify ("menuresponse", "", content);
 }
 
-/* Functions */
+/*
+ ************************************************************************************************************
+ ****************************************** SINGLE PURPOSE FUNCTIONS ****************************************
+ ************************************************************************************************************
+*/
+
+#if PLUTO == 1
+fixed_wait_network_frame()
+{
+    if (level.players.size == 1)
+        wait 0.1;
+    else if (numremoteclients())
+    {
+        snapshot_ids = getsnapshotindexarray();
+
+        for (acked = undefined; !isdefined(acked); acked = snapshotacknowledged(snapshot_ids))
+            level waittill("snapacknowledged");
+    }
+    else
+        wait 0.1;
+}
+#endif
+
+protect_file()
+{
+    wait 0.05;
+#if RAW == 1
+    bad_file();
+#elif REDACTED == 1
+    if (is_plutonium())
+        bad_file();
+#elif PLUTO == 1
+    if (get_plutonium_version() <= VER_ANCIENT)
+        bad_file();
+#elif ANCIENT == 1
+    flag_wait("initial_blackscreen_passed");
+    if (get_plutonium_version() >= VER_MODERN)
+        bad_file();
+#endif
+}
+
+init_b2_flags()
+{
+    flag_init("game_started");
+    flag_init("b2_box_rigged");
+    flag_init("permaperks_were_set");
+    flag_init("b2_on");
+    flag_init("char_taken_0");
+    flag_init("char_taken_1");
+    flag_init("char_taken_2");
+    flag_init("char_taken_3");
+}
+
+bad_file()
+{
+    wait 0.75;
+    iPrintLn("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
+    wait 0.75;
+    iPrintLn("Please read the installation instructions on the patch ^5GitHub^7 page");
+    wait 0.75;
+    iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
+    wait 0.75;
+#if DEBUG == 0
+    level notify("end_game");
+#endif
+}
+
+duplicate_file()
+{
+    iPrintLn("ONLY ONE ^1B2 ^7PATCH CAN RUN AT THE SAME TIME!");
+#if DEBUG == 0
+    level notify("end_game");
+#endif
+}
+
+sniff()
+{
+    LEVEL_ENDON
+
+    wait randomFloatRange(0.1, 1.2);
+    if (flag("b2_on")) 
+    {
+        duplicate_file();
+    }
+    flag_set("b2_on");
+    level waittill("start_of_round");
+    flag_clear("b2_on");
+}
 
 welcome_prints()
 {
@@ -1066,20 +1023,6 @@ award_points(amount)
     self.score = amount;
 }
 
-sniff()
-{
-    LEVEL_ENDON
-
-    wait randomFloatRange(0.1, 1.2);
-    if (flag("b2_on")) 
-    {
-        duplicate_file();
-    }
-    flag_set("b2_on");
-    level waittill("start_of_round");
-    flag_clear("b2_on");
-}
-
 #if DEBUG == 1
 debug_mode()
 {
@@ -1130,6 +1073,12 @@ trap_fix()
             zombie.heath = MAX_VALID_HEALTH;
     }
 }
+
+/*
+ ************************************************************************************************************
+ *************************************************** HUD ****************************************************
+ ************************************************************************************************************
+*/
 
 #if FEATURE_HUD == 1
 hud_alpha_component()
@@ -1272,7 +1221,151 @@ buildable_hud()
         level.turbine_hud.alpha = 1;
     }
 }
+
+buildable_component()
+{
+    LEVEL_ENDON
+
+    if (!is_tracking_buildables())
+        return;
+
+    buildable_hud();
+
+    level.buildable_stats = [];
+    level.buildable_stats["springpad_zm"] = 0;
+    level.buildable_stats["turbine"] = 0;
+    level.buildable_stats["subwoofer_zm"] = 0;
+
+    while (true)
+    {
+        if (is_buried())
+        {
+            level.subwoofer_hud setValue(level.buildable_stats["subwoofer_zm"]);
+            level.turbine_hud setValue(level.buildable_stats["turbine"]);
+        }
+        level.springpad_hud setValue(level.buildable_stats["springpad_zm"]);
+
+        wait 0.1;
+    }
+}
+
+watch_stat(stat, map_array)
+{
+    if (!isDefined(map_array))
+        map_array = array("zm_buried");
+
+    if (!IsInArray(map_array, level.script))
+        return;
+
+    PLAYER_ENDON
+    CLEAR(map_array)
+
+    if (!isDefined(self.initial_stats[stat]))
+        self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
+
+    while (true)
+    {
+        stat_number = self getdstat("buildables", stat, "buildable_pickedup");
+        delta = stat_number - self.initial_stats[stat];
+
+        if (delta > 0 && stat_number > 0)
+        {
+            self.initial_stats[stat] = stat_number;
+            level.buildable_stats[stat] += delta;
+        }
+
+        wait 0.1;
+    }
+}
+
+set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
+{
+    if (!isDefined(col))
+        col = (1, 1, 1);
+
+    if (isDefined(level.B2_HUD))
+    {
+        data = level.B2_HUD[hud_key];
+        if (isDefined(data))
+        {
+            if (isDefined(data["x_align"]))
+                x_align = data["x_align"];
+            if (isDefined(data["y_align"]))
+                y_align = data["y_align"];
+            if (isDefined(data["x_pos"]))
+                x_pos = data["x_pos"];
+            if (isDefined(data["y_pos"]))
+                y_pos = data["y_pos"];
+            if (isDefined(data["color"]))
+                col = data["color"];
+        }
+    }
+
+    res_components = strTok(getDvar("r_mode"), "x");
+    ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
+    aspect_ratio = 1609;
+    switch (ratio)
+    {
+        case 160:       // 16:10
+            aspect_ratio = 1610;
+            break;
+        case 125:       // 5:4
+        case 133:       // 4:3
+        case 149:       // 3:2
+        case 150:       // 3:2
+            aspect_ratio = 43;
+            break;
+        case 237:       // 21:9
+        case 238:       // 21:9
+        case 240:       // 21:9
+        case 355:       // 32:9
+            aspect_ratio = 2109;
+            break;
+    }
+
+    if (x_pos == int(x_pos))
+        x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
+
+    // DEBUG_PRINT("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
+
+    self setpoint(x_align, y_align, x_pos, y_pos);
+    self.color = col;
+}
+
+recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
+{
+    if (level.players.size > 1)
+        return xpos;
+
+    if (isSubStr(tolower(xalign), "left") && xpos < 0)
+    {
+        if (aspect_ratio == 1610)
+            return xpos + 6;
+        if (aspect_ratio == 43)
+            return xpos + 14;
+        if (aspect_ratio == 2109)
+            return xpos - 21;
+    }
+
+    else if (isSubStr(tolower(xalign), "right") && xpos > 0)
+    {
+        if (aspect_ratio == 1610)
+            return xpos - 6;
+        if (aspect_ratio == 43)
+            return xpos - 14;
+        if (aspect_ratio == 2109)
+            return xpos + 21;
+    }
+
+    return xpos;
+}
 #endif
+
+/*
+ ************************************************************************************************************
+ ******************************************* PERMAPERKS / BANK **********************************************
+ ************************************************************************************************************
+*/
 
 fill_up_bank()
 {
@@ -1518,6 +1611,12 @@ award_permaperk(stat_name, perk_code, stat_value)
 }
 #endif
 
+/*
+ ************************************************************************************************************
+ ************************************************* FRIDGE ***************************************************
+ ************************************************************************************************************
+*/
+
 #if FEATURE_FRIDGE == 1
 fridge_handler()
 {
@@ -1680,6 +1779,12 @@ get_locker_stat(stat)
     // DEBUG_PRINT("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
     return value;
 }
+
+/*
+ ************************************************************************************************************
+ **************************************** FIRSTBOX / BOX LOCATION *******************************************
+ ************************************************************************************************************
+*/
 
 first_box_handler()
 {
@@ -2445,6 +2550,12 @@ weapon_display_wrapper(weapon_key)
     return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
 }
 
+/*
+ ************************************************************************************************************
+ *********************************************** CHARACTERS *************************************************
+ ************************************************************************************************************
+*/
+
 #if FEATURE_CHARACTERS == 1
 hijack_personality_character()
 {
@@ -2723,87 +2834,13 @@ character_wrapper()
 #endif
 #endif
 
-#if FEATURE_HUD == 1
-buildable_component()
-{
-    LEVEL_ENDON
-
-    if (!is_tracking_buildables())
-        return;
-
-    buildable_hud();
-
-    level.buildable_stats = [];
-    level.buildable_stats["springpad_zm"] = 0;
-    level.buildable_stats["turbine"] = 0;
-    level.buildable_stats["subwoofer_zm"] = 0;
-
-    while (true)
-    {
-        if (is_buried())
-        {
-            level.subwoofer_hud setValue(level.buildable_stats["subwoofer_zm"]);
-            level.turbine_hud setValue(level.buildable_stats["turbine"]);
-        }
-        level.springpad_hud setValue(level.buildable_stats["springpad_zm"]);
-
-        wait 0.1;
-    }
-}
-#endif
-
-watch_stat(stat, map_array)
-{
-    if (!isDefined(map_array))
-        map_array = array("zm_buried");
-
-    if (!IsInArray(map_array, level.script))
-        return;
-
-    PLAYER_ENDON
-    CLEAR(map_array)
-
-    if (!isDefined(self.initial_stats[stat]))
-        self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
-
-    while (true)
-    {
-        stat_number = self getdstat("buildables", stat, "buildable_pickedup");
-        delta = stat_number - self.initial_stats[stat];
-
-        if (delta > 0 && stat_number > 0)
-        {
-            self.initial_stats[stat] = stat_number;
-            level.buildable_stats[stat] += delta;
-        }
-
-        wait 0.1;
-    }
-}
-
-#if PLUTO == 1
-fixed_wait_network_frame()
-{
-    if (level.players.size == 1)
-        wait 0.1;
-    else if (numremoteclients())
-    {
-        snapshot_ids = getsnapshotindexarray();
-
-        for (acked = undefined; !isdefined(acked); acked = snapshotacknowledged(snapshot_ids))
-            level waittill("snapacknowledged");
-    }
-    else
-        wait 0.1;
-}
-#endif
-
-/*************************************************************************************
-***********************              ANCIENT                   ***********************
-*************************************************************************************/
+/*
+ ************************************************************************************************************
+ ************************************************ ANCIENT ***************************************************
+ ************************************************************************************************************
+*/
 
 #if ANCIENT == 1
-
 network_frame_hud()
 {
     LEVEL_ENDON
