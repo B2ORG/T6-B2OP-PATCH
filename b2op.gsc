@@ -2088,6 +2088,13 @@ move_chest(box)
             level notify("weapon_fly_away_start");
             wait 0.05;
             level notify("weapon_fly_away_end");
+
+            /* Prevents firesale to be included in origins dig cycle */
+            if (isDefined(level.dig_magic_box_moved))
+            {
+                level.dig_magic_box_moved = 0;
+            }
+
             break;
         }
     }
