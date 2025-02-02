@@ -44,7 +44,8 @@ Download script `b2op-plutonium.gsc` from releases section, and put it in your P
 %LOCALAPPDATA%\Plutonium\storage\t6\scripts\zm
 ```
 
-You may access above directory by pressing WINDOWS + R on your keyboard, paste above line to the prompt and press enter.
+> [!TIP]
+> You can press CTRL + R on your keyboard and paste this string there. Assuming you haven't changed any Plutonium paths, directory with scripts should open right away.
 
 For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted or Ancient on Plutonium)
 
@@ -407,6 +408,9 @@ Up until version 3.0, it was possible to set characters via Plugins system, but 
 
 > [!NOTE]
 > If in a coop game a player does not use any preset, it is possible for him to take a character before player with that character set. In that case preset will not work. In order for the system to work properly, have all players in the game set their presets.
+
+> [!NOTE]
+> Character settings are the same for B2FR & B2OP, which means you don't need to change the settings between these 2 patches
 
 > [!TIP]
 > When using fast_restart, characters for off-host players are evaluated before host (that's how the game does it). I've decided to not change this behavior as it'd require further changes of the existing game logic. Instead, in order to preserve priority of character selection, use map_restart command.
