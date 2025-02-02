@@ -20,6 +20,9 @@
 #define LUI_ROUND_PULSE_TIMES_DELTA 5
 #define LUI_PULSE_DURATION 500
 #define LUI_FIRST_ROUND_DURATION 1000
+#define STAT_TURBINE "turbine"
+#define STAT_SPRINGPAD "springpad_zm"
+#define STAT_SUBWOOFER "subwoofer_zm"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -192,9 +195,9 @@ on_player_spawned()
     if (is_tracking_buildables())
     {
         self.initial_stats = [];
-        self thread watch_stat("springpad_zm", array("zm_highrise", "zm_buried"));
-        self thread watch_stat("turbine");
-        self thread watch_stat("subwoofer_zm");
+        self thread watch_stat(STAT_SPRINGPAD);
+        self thread watch_stat(STAT_TURBINE);
+        self thread watch_stat(STAT_SUBWOOFER);
     }
 }
 
@@ -695,7 +698,12 @@ is_special_round()
 
 is_tracking_buildables()
 {
-    return is_buried() || is_die_rise();
+    return has_buildables(STAT_TURBINE) || has_buildables(STAT_SPRINGPAD) || has_buildables(STAT_SUBWOOFER);
+}
+
+has_buildables(name)
+{
+    return isDefined(level.zombie_buildables[name]);
 }
 
 #if FEATURE_HORDES == 1
@@ -1232,31 +1240,35 @@ show_hordes()
 
 buildable_hud()
 {
-    level.springpad_hud = createserverfontstring("objective", 1.3);
-    level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, -17, (1, 1, 1));
-    level.springpad_hud.label = &"SPRINGPADS: ^2";
-    level.springpad_hud setValue(0);
-
-    level.subwoofer_hud = createserverfontstring("objective", 1.3);
-    level.subwoofer_hud set_hud_properties("subwoofer_hud", "TOPLEFT", "TOPLEFT", -60, 0, (1, 1, 1));
-    level.subwoofer_hud.label = &"SUBWOOFERS: ^3";
-    level.subwoofer_hud setValue(0);
-
-    level.turbine_hud = createserverfontstring("objective", 1.3);
-    level.turbine_hud set_hud_properties("turbine_hud", "TOPLEFT", "TOPLEFT", -60, 17, (1, 1, 1));
-    level.turbine_hud.label = &"TURBINES: ^1";
-    level.turbine_hud setValue(0);
-
-    level.springpad_hud.alpha = 1;
-    if (is_die_rise())
+    y_pos = -17;
+    if (has_buildables(STAT_SPRINGPAD))
     {
-        level.subwoofer_hud destroy();
-        level.turbine_hud destroy();
+        level.springpad_hud = createserverfontstring("objective", 1.3);
+        level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
+        level.springpad_hud.label = &"SPRINGPADS: ^2";
+        level.springpad_hud setValue(0);
+        level.springpad_hud.alpha = 1;
+        y_pos += 17;
     }
-    else
+
+    if (has_buildables(STAT_SUBWOOFER))
     {
+        level.subwoofer_hud = createserverfontstring("objective", 1.3);
+        level.subwoofer_hud set_hud_properties("subwoofer_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
+        level.subwoofer_hud.label = &"SUBWOOFERS: ^3";
+        level.subwoofer_hud setValue(0);
         level.subwoofer_hud.alpha = 1;
+        y_pos += 17;
+    }
+
+    if (has_buildables(STAT_TURBINE))
+    {
+        level.turbine_hud = createserverfontstring("objective", 1.3);
+        level.turbine_hud set_hud_properties("turbine_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
+        level.turbine_hud.label = &"TURBINES: ^1";
+        level.turbine_hud setValue(0);
         level.turbine_hud.alpha = 1;
+        y_pos += 17;
     }
 }
 
@@ -1264,39 +1276,45 @@ buildable_component()
 {
     LEVEL_ENDON
 
-    if (!is_tracking_buildables())
+    /* Hardcoding to skip tranzit */
+    if (!is_tracking_buildables() || is_tranzit())
         return;
 
     buildable_hud();
 
     level.buildable_stats = [];
-    level.buildable_stats["springpad_zm"] = 0;
-    level.buildable_stats["turbine"] = 0;
-    level.buildable_stats["subwoofer_zm"] = 0;
+    level.buildable_stats[STAT_SPRINGPAD] = 0;
+    level.buildable_stats[STAT_TURBINE] = 0;
+    level.buildable_stats[STAT_SUBWOOFER] = 0;
 
     while (isDefined(level.buildable_stats))
     {
-        if (is_buried())
+        if (isDefined(level.springpad_hud))
         {
-            level.subwoofer_hud setValue(level.buildable_stats["subwoofer_zm"]);
-            level.turbine_hud setValue(level.buildable_stats["turbine"]);
+            level.springpad_hud setValue(level.buildable_stats[STAT_SPRINGPAD]);
         }
-        level.springpad_hud setValue(level.buildable_stats["springpad_zm"]);
+
+        if (isDefined(level.subwoofer_hud))
+        {
+            level.subwoofer_hud setValue(level.buildable_stats[STAT_SUBWOOFER]);
+        }
+
+        if (isDefined(level.turbine_hud))
+        {
+            level.turbine_hud setValue(level.buildable_stats[STAT_TURBINE]);
+        }
 
         wait 0.1;
     }
 }
 
-watch_stat(stat, map_array)
+watch_stat(stat)
 {
-    if (!isDefined(map_array))
-        map_array = array("zm_buried");
-
-    if (!IsInArray(map_array, level.script))
+    if (!has_buildables(stat))
         return;
 
     PLAYER_ENDON
-    CLEAR(map_array)
+    DEBUG_PRINT("Initializing stat watcher " + stat);
 
     if (!isDefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
