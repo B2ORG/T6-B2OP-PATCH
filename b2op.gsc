@@ -15,6 +15,11 @@
 #define NET_FRAME_SOLO 100
 #define NET_FRAME_COOP 50
 #define MAX_VALID_HEALTH 1044606905
+#define LUI_ROUND_PULSE_TIMES_MIN 2
+#define LUI_ROUND_MAX 100
+#define LUI_ROUND_PULSE_TIMES_DELTA 5
+#define LUI_PULSE_DURATION 500
+#define LUI_FIRST_ROUND_DURATION 1000
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -1076,6 +1081,23 @@ trap_fix()
     }
 }
 
+round_pulses()
+{
+    /* Original logic in ui_mp/t6/zombie/hudroundstatuszombie.lua::164 */
+    round_pulse_times = ceil(LUI_ROUND_PULSE_TIMES_MIN + (1 - min(level.round_number, LUI_ROUND_MAX) / LUI_ROUND_MAX) * LUI_ROUND_PULSE_TIMES_DELTA);
+
+    /* First transition from red to white */
+    time = LUI_PULSE_DURATION;
+    /* Pulse duration times 2, since pulse consists of 2 animations, use one less pulses due to last one being longer, it's evaluated next line */
+    time += (LUI_PULSE_DURATION * 2) * (round_pulse_times - 1);
+    /* Last pulse show white number, then fade out is longer */
+    time += LUI_PULSE_DURATION + LUI_FIRST_ROUND_DURATION;
+    /* Then fade in time of round number */
+    time += LUI_FIRST_ROUND_DURATION;
+    DEBUG_PRINT("round pulse time: " + time + " (round_pulse_times => " + round_pulse_times + ")");
+    return time;
+}
+
 /*
  ************************************************************************************************************
  *************************************************** HUD ****************************************************
@@ -1181,7 +1203,7 @@ show_split(start_time)
     if (!isDefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
         return;
 
-    wait 8.25;
+    wait MS_TO_SECONDS(round_pulses());
 
     timestamp = convert_time(MS_TO_SECONDS((getTime() - start_time)));
     if (is_true(flag("FIRST BOX")))

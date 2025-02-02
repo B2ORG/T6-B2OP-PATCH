@@ -196,6 +196,17 @@ kill_hud 1
 > [!WARNING]
 > Once HUD is killed, you won't be able to re-enable it without restarting the game, normally just hiding it using the method shown above should be enough.
 
+## Split display accuracy
+
+Prior to version 3.5 splits were not fully accurate. Since round 3.5, B2OP emulates the logic used by original code to calculate the accurate red number moment (end of fade-in transition). Below is a table showing time difference for each split between the actual red number time and time displayed by split message.
+
+| Round split | Offset (+ seconds) |
+| :--- | :---: |
+| 30 | -0.25 |
+| 50 | -1.25 |
+| 70 | -2.25 |
+| 100 | -4.25 |
+
 # Box / Fridge
 
 This patch has the following capabilites regarding box and fridge:
