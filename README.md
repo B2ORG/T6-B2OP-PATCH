@@ -185,6 +185,17 @@ timers 0;splits 0;buildables 0
 | SPH print | `splits` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
 
+## Kill hud
+
+You can also permanently disable all B2 hud for the entire game, which will additionally remove some allocations from the script itself. This shouldn't really be necessary, but for a situation where every single child variable counts it can be useful. To do that set the following DVAR
+
+```
+kill_hud 1
+```
+
+> [!WARNING]
+> Once HUD is killed, you won't be able to re-enable it without restarting the game, normally just hiding it using the method shown above should be enough.
+
 # Box / Fridge
 
 This patch has the following capabilites regarding box and fridge:

@@ -765,6 +765,7 @@ init_b2_flags()
     flag_init("b2_box_rigged");
     flag_init("permaperks_were_set");
     flag_init("b2_on");
+    flag_init("b2_hud_killed");
     flag_init("char_taken_0");
     flag_init("char_taken_1");
     flag_init("char_taken_2");
@@ -903,6 +904,7 @@ set_dvars()
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
     dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false);
 #if FEATURE_HORDES == 1
     dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
 #endif
@@ -1121,6 +1123,20 @@ hud_alpha_component()
                 level.turbine_hud.alpha = 1;
         }
 
+        if (getDvar("kill_hud") == "1")
+        {
+            flag_set("b2_killed_hud");
+            if (isDefined(level.timer_hud))
+                level.timer_hud destroyelem();
+            if (isDefined(level.round_hud))
+                level.round_hud destroyelem();
+            if (isDefined(level.springpad_hud))
+                level.springpad_hud destroyelem();
+            if (isDefined(level.subwoofer_hud))
+                level.subwoofer_hud destroyelem();
+            if (isDefined(level.turbine_hud))
+                level.turbine_hud destroyelem();
+        }
 
         wait 0.05;
     }
@@ -1236,7 +1252,7 @@ buildable_component()
     level.buildable_stats["turbine"] = 0;
     level.buildable_stats["subwoofer_zm"] = 0;
 
-    while (true)
+    while (isDefined(level.buildable_stats))
     {
         if (is_buried())
         {
@@ -1263,7 +1279,7 @@ watch_stat(stat, map_array)
     if (!isDefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
 
-    while (true)
+    while (!flag("b2_hud_killed"))
     {
         stat_number = self getdstat("buildables", stat, "buildable_pickedup");
         delta = stat_number - self.initial_stats[stat];
@@ -1276,6 +1292,9 @@ watch_stat(stat, map_array)
 
         wait 0.1;
     }
+
+    CLEAR(self.initial_stats)
+    CLEAR(level.buildable_stats)
 }
 
 set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
