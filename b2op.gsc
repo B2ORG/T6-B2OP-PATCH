@@ -128,7 +128,7 @@ on_game_start()
 
     flag_wait("initial_blackscreen_passed");
 
-    flag_set("game_started");
+    flag_set("b2_game_started");
 
     level thread b2op_main_loop();
 #if FEATURE_HUD == 1
@@ -510,7 +510,7 @@ player_wait_for_initial_blackscreen()
 {
     LEVEL_ENDON
 
-    while (!flag("game_started"))
+    while (!flag("b2_game_started"))
         wait 0.05;
 }
 
@@ -761,15 +761,15 @@ protect_file()
 
 init_b2_flags()
 {
-    flag_init("game_started");
+    flag_init("b2_game_started");
     flag_init("b2_box_rigged");
-    flag_init("permaperks_were_set");
+    flag_init("b2_permaperks_were_set");
     flag_init("b2_on");
     flag_init("b2_hud_killed");
-    flag_init("char_taken_0");
-    flag_init("char_taken_1");
-    flag_init("char_taken_2");
-    flag_init("char_taken_3");
+    flag_init("b2_char_taken_0");
+    flag_init("b2_char_taken_1");
+    flag_init("b2_char_taken_2");
+    flag_init("b2_char_taken_3");
 }
 
 bad_file()
@@ -1516,7 +1516,7 @@ watch_permaperk_award()
                 i++;
         }
 
-        if (i == present_players && flag("permaperks_were_set"))
+        if (i == present_players && flag("b2_permaperks_were_set"))
         {
             print_scheduler("Permaperks Awarded - ^1RESTARTING");
             wait 1;
@@ -1623,7 +1623,7 @@ resolve_permaperk(perk)
 award_permaperk(stat_name, perk_code, stat_value)
 {
     // DEBUG_PRINT("awarding: " + stat_name + " " + perk_code + " " + stat_value);
-    flag_set("permaperks_were_set");
+    flag_set("b2_permaperks_were_set");
     self.stats_this_frame[stat_name] = 1;
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
     self playsoundtoplayer("evt_player_upgrade", self);
