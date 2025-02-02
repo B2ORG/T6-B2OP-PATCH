@@ -1,3 +1,10 @@
+# Version 3.5
+
+- Changed implementation of the character system (after old one was found to cause issues with some in-game elements, such as Origins challenge crates) and re-enabled it
+- Fixed `lb` command adding fire sale to Origins dig spots drop cycle
+- Added `kill_hud` dvar to allow for complete removal of all B2 hud for the entire game (details in readme)
+- Fixed accuracy of splits (will now show exact time of red round number at any round)
+
 # Version 3.4
 
 - Fixed `fridge` dvar
