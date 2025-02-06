@@ -7,7 +7,7 @@
 #define BETA 0
 
 /* Const macros */
-#define B2OP_VER 3.5
+#define B2OP_VER 3.6
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -2253,12 +2253,6 @@ move_chest(box)
             wait 0.05;
             level notify("weapon_fly_away_end");
 
-            /* Prevents firesale to be included in origins dig cycle */
-            if (isDefined(level.dig_magic_box_moved))
-            {
-                level.dig_magic_box_moved = 0;
-            }
-
             break;
         }
     }
@@ -2269,8 +2263,15 @@ move_chest(box)
     if (isDefined(kept_move_logic))
         level._zombiemode_custom_box_move_logic = kept_move_logic;
 
+    /* Prevents firesale to be included in origins dig cycle */
+    if (isDefined(level.chest_name) && isDefined(level.dig_magic_box_moved))
+    {
+        level.dig_magic_box_moved = 0;
+    }
     CLEAR(level.chest_name)
+
     level.chest_min_move_usage = 4;
+    DEBUG_PRINT("dig_magic_box_moved: " + level.dig_magic_box_moved);
 }
 
 force_next_location()

@@ -1,3 +1,7 @@
+# Version 3.6
+
+- Additional fix to 3.5 change regarding `lb` command adding fire sale to Origins dig spots drop cycle
+
 # Version 3.5
 
 - Changed implementation of the character system (after old one was found to cause issues with some in-game elements, such as Origins challenge crates) and re-enabled it
