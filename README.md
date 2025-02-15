@@ -36,6 +36,9 @@ For Black Ops III you can check [oJumpy's community patches](https://steamcommun
 
 Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
 
+> [!TIP]
+> I've created a video on [how to install these patches](https://youtu.be/yjNbmlya6ik) in case instructions here are unclear
+
 ## Plutonium - Modern (R2905 & R3000+)
 
 Download script `b2op-plutonium.gsc` from releases section, and put it in your Plutonium folder, by default it's located in:
@@ -199,7 +202,7 @@ kill_hud 1
 
 ## Split display accuracy
 
-Prior to version 3.5 splits were not fully accurate. Since round 3.5, B2OP emulates the logic used by original code to calculate the accurate red number moment (end of fade-in transition). Below is a table showing time difference for each split between the actual red number time and time displayed by split message.
+Prior to version 3.5 splits were not fully accurate. Starting on 3.5, B2OP emulates the logic used by original code to calculate the accurate red number moment (end of fade-in transition). Below is a table showing time difference for each split between the actual red number time and time displayed by split message.
 
 | Round split | Offset (+ seconds) |
 | :--- | :---: |
