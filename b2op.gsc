@@ -269,8 +269,7 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_duration)
 #endif
-        level waittill("between_round_over");
-        DEBUG_PRINT("between_round_over of " + (level.round_number - 1) + " at " + MS_TO_SECONDS(getTime()));
+        // level waittill("between_round_over");
     }
 }
 
@@ -507,11 +506,20 @@ array_implode(separator, arr)
     for (i = 0; i < len; i++)
     {
         if (i == 0)
-            str += arr[i];
+            str += sstr(arr[i]);
         else
-            str += separator + arr[i];
+            str += separator + sstr(arr[i]);
     }
     return str;
+}
+
+sstr(value)
+{
+    if (!isDefined(value))
+        return "undefined";
+    else if (isarray(value))
+        return "{" + array_implode(", ", value) + "}";
+    return value;
 }
 
 player_wait_for_initial_blackscreen()
