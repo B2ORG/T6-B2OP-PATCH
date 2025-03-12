@@ -1,6 +1,7 @@
 from traceback import print_exc
 from copy import copy, deepcopy
 import subprocess, sys, os, zipfile, re, binascii, shutil
+from typing import Callable
 
 
 # Config
@@ -108,6 +109,11 @@ class Chunk:
         print("-" * 100, "\n")
 
 
+class GscToolException(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 class Gsc:
     REPLACEMENTS: dict[str, str] = {
         "#define RAW 1": "#define RAW 0",
@@ -160,7 +166,7 @@ def edit_in_place(path: str, **replace_pairs) -> None:
         gsc_io.write(gsc_content)
 
 
-def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, **sbp_args) -> subprocess.CompletedProcess:
+def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, eval_callback: Callable[[subprocess.CompletedProcess, str], subprocess.CompletedProcess] = None, **sbp_args) -> subprocess.CompletedProcess:
     call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
@@ -169,9 +175,17 @@ def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True,
         print_exc()
         sys.exit(1)
     else:
+        if callable(eval_callback):
+            return eval_callback(process, call)
         print("Output:")
         print(process.stdout.strip() if cli_output else "suppressed")
         return process
+
+
+def check_gsc_error(process: subprocess.CompletedProcess, cmd: str) -> subprocess.CompletedProcess:
+    if "[ERROR]" in process.stdout:
+        raise GscToolException(f"Command: '{cmd}'\n{process.stdout.strip()}")
+    return process
 
 
 def arg_path(*paths: str) -> str:
@@ -259,10 +273,10 @@ def main() -> None:
             os.path.join(CWD, B2OP), {"#define PLUTO 0": "#define PLUTO 1"}
         )
         wrap_subprocess_call(
-            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP, eval_callback=check_gsc_error
         )
         wrap_subprocess_call(
-            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP)
+            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP), eval_callback=check_gsc_error
         )
         file_rename(
             os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, "b2op_precompiled_pluto.gsc")
@@ -280,7 +294,7 @@ def main() -> None:
                 os.path.join(CWD, B2OP_TOMB), {}
             )
             wrap_subprocess_call(
-                COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", B2OP_TOMB
+                COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", B2OP_TOMB, eval_callback=check_gsc_error
             )
             file_rename(
                 os.path.join(CWD, COMPILED_DIR, B2OP_TOMB), os.path.join(CWD, COMPILED_DIR, "b2op-tomb.gsc")
@@ -299,7 +313,7 @@ def main() -> None:
             os.path.join(CWD, B2OP), {"#define REDACTED 0": "#define REDACTED 1"}
         )
         wrap_subprocess_call(
-            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP, eval_callback=check_gsc_error
         )
         file_rename(
             os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, COMPILED_DIR, "b2op-redacted.gsc")
@@ -313,10 +327,10 @@ def main() -> None:
             os.path.join(CWD, B2OP), {"#define ANCIENT 0": "#define ANCIENT 1"}
         )
         wrap_subprocess_call(
-            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP
+            COMPILER_GSCTOOL, "-m", MODE_PARSE, "-g", GAME_PARSE, "-s", "pc", B2OP, eval_callback=check_gsc_error
         )
         wrap_subprocess_call(
-            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP)
+            COMPILER_GSCTOOL, "-m", MODE_COMP, "-g", GAME_COMP, "-s", "pc", arg_path(CWD, PARSED_DIR, B2OP), eval_callback=check_gsc_error
         )
         file_rename(
             os.path.join(CWD, PARSED_DIR, B2OP), os.path.join(CWD, PARSED_DIR, "b2op_precompiled_ancient.gsc")
