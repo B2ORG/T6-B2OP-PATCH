@@ -1006,7 +1006,7 @@ set_dvars()
 
     CLEAR(dvars)
 
-    level thread dvar_watcher(protected);
+    level thread dvar_protection(protected);
 }
 
 set_dvar_internal(dvar)
@@ -1034,7 +1034,7 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
     return dvar_data;
 }
 
-dvar_watcher(dvars)
+dvar_protection(dvars)
 {
 #if FEATURE_LIVE_PROTECTION == 1
     LEVEL_ENDON
@@ -1502,21 +1502,21 @@ watch_stat(stat)
     CLEAR(level.buildable_stats)
 }
 
-/* TODO Fix argument naming alignment & relative instead x & y after deprecating extensions */
-set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
+set_hud_properties(hud_key, alignment, relative, x_pos, y_pos, col)
 {
     if (!isDefined(col))
         col = (1, 1, 1);
 
     if (isDefined(level.B2_HUD))
     {
+        print("^1B2_HUD extension is deprecated and will be removed in the future release");
         data = level.B2_HUD[hud_key];
         if (isDefined(data))
         {
             if (isDefined(data["x_align"]))
-                x_align = data["x_align"];
+                alignment = data["x_align"];
             if (isDefined(data["y_align"]))
-                y_align = data["y_align"];
+                relative = data["y_align"];
             if (isDefined(data["x_pos"]))
                 x_pos = data["x_pos"];
             if (isDefined(data["y_pos"]))
@@ -1549,20 +1549,20 @@ set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
     }
 
     if (x_pos == int(x_pos))
-        x_pos = recalculate_x_for_aspect_ratio(x_align, x_pos, aspect_ratio);
+        x_pos = recalculate_x_for_aspect_ratio(alignment, x_pos, aspect_ratio);
 
     // DEBUG_PRINT("ratio: " + ratio + " | aspect_ratio: " + aspect_ratio + " | x_pos: " + x_pos + " | w: " + res_components[0] + " | h: " + res_components[1]);
 
-    self setpoint(x_align, y_align, x_pos, y_pos);
+    self setpoint(alignment, relative, x_pos, y_pos);
     self.color = col;
 }
 
-recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
+recalculate_x_for_aspect_ratio(alignment, xpos, aspect_ratio)
 {
     if (level.players.size > 1)
         return xpos;
 
-    if (isSubStr(tolower(xalign), "left") && xpos < 0)
+    if (isSubStr(tolower(alignment), "left") && xpos < 0)
     {
         if (aspect_ratio == 1610)
             return xpos + 6;
@@ -1572,7 +1572,7 @@ recalculate_x_for_aspect_ratio(xalign, xpos, aspect_ratio)
             return xpos - 21;
     }
 
-    else if (isSubStr(tolower(xalign), "right") && xpos > 0)
+    else if (isSubStr(tolower(alignment), "right") && xpos > 0)
     {
         if (aspect_ratio == 1610)
             return xpos - 6;
