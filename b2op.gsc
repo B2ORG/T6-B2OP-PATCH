@@ -535,6 +535,12 @@ sstr(value)
     return value;
 }
 
+naive_round(floating_point)
+{
+	floating_point = int(floating_point * 1000);
+	return floating_point / 1000;
+}
+
 player_wait_for_initial_blackscreen()
 {
     LEVEL_ENDON
