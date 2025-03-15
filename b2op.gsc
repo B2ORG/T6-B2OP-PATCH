@@ -23,6 +23,12 @@
 #define STAT_TURBINE "turbine"
 #define STAT_SPRINGPAD "springpad_zm"
 #define STAT_SUBWOOFER "subwoofer_zm"
+#define BOXTRACKER_KEY_JOKER "joker"
+#define BOXTRACKER_KEY_TOTAL "total"
+#define WEAPON_NAME_MK1 "ray_gun_zm"
+#define WEAPON_NAME_MK2 "raygun_mark2_zm"
+#define WEAPON_NAME_MONK "cymbal_monkey_zm"
+#define WEAPON_NAME_EMP "emp_grenade_zm"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -33,6 +39,7 @@
 #define FEATURE_SPH 0
 #define FEATURE_LIVE_PROTECTION 1
 #define FEATURE_CHARACTERS 1
+#define FEATURE_BOXTRACKER 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -140,6 +147,12 @@ on_game_start()
 
     level thread b2op_main_loop();
 #if FEATURE_HUD == 1
+#if FEATURE_BOXTRACKER == 1
+    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
+    {
+        box_tracker_hud();
+    }
+#endif
     create_timers();
     level thread hud_alpha_component();
     level thread buildable_component();
@@ -199,6 +212,13 @@ on_player_spawned()
         self thread watch_stat(STAT_TURBINE);
         self thread watch_stat(STAT_SUBWOOFER);
     }
+
+#if FEATURE_BOXTRACKER == 1
+    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
+    {
+        self thread setup_box_tracker();
+    }
+#endif
 }
 
 b2op_main_loop()
@@ -714,6 +734,17 @@ has_buildables(name)
     return isDefined(level.zombie_buildables[name]);
 }
 
+box_has_joker()
+{
+    /* Need to hardcode, first check happens before chests are fully setup */
+    return !is_farm() && !is_depot();
+}
+
+emp_on_the_map()
+{
+    return isDefined(level.zombie_weapons[WEAPON_NAME_EMP]);
+}
+
 #if FEATURE_HORDES == 1
 get_zombies_left()
 {
@@ -791,6 +822,7 @@ init_b2_flags()
     flag_init("b2_char_taken_1");
     flag_init("b2_char_taken_2");
     flag_init("b2_char_taken_3");
+    flag_init("b2_boxtracker_hud_busy");
 }
 
 bad_file()
@@ -1246,6 +1278,131 @@ show_hordes()
 }
 #endif
 
+#if FEATURE_BOXTRACKER == 1
+box_tracker_hud()
+{
+    y_pos = -100;
+    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
+    {
+        level.boxtracker_total_hud = createserverfontstring("objective", 1.2);
+        level.boxtracker_total_hud set_hud_properties("boxtracker_total_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_total_hud.label = &"BOX HITS: ";
+        level.boxtracker_total_hud setValue(0);
+        level.boxtracker_total_hud.alpha = 1;
+        y_pos += 15;
+    }
+
+    if (is_tracking_box_key(WEAPON_NAME_MK1))
+    {
+        level.boxtracker_mk1_hud = createserverfontstring("objective", 1.1);
+        level.boxtracker_mk1_hud set_hud_properties("boxtracker_mk1_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_mk1_hud.label = &"RayGun MK1: ";
+        level.boxtracker_mk1_hud setValue(0);
+        level.boxtracker_mk1_hud.alpha = 1;
+        y_pos += 11;
+    }
+
+    if (is_tracking_box_key(WEAPON_NAME_MK2))
+    {
+        level.boxtracker_mk2_hud = createserverfontstring("objective", 1.1);
+        level.boxtracker_mk2_hud set_hud_properties("boxtracker_mk2_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_mk2_hud.label = &"RayGun MK2: ";
+        level.boxtracker_mk2_hud setValue(0);
+        level.boxtracker_mk2_hud.alpha = 1;
+        y_pos += 11;
+    }
+
+    if (is_tracking_box_key(WEAPON_NAME_MONK))
+    {
+        level.boxtracker_monk_hud = createserverfontstring("objective", 1.1);
+        level.boxtracker_monk_hud set_hud_properties("boxtracker_monk_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_monk_hud.label = &"Monkeys: ";
+        level.boxtracker_monk_hud setValue(0);
+        level.boxtracker_monk_hud.alpha = 1;
+        y_pos += 11;
+    }
+
+    if (is_tracking_box_key(WEAPON_NAME_EMP))
+    {
+        level.boxtracker_emp_hud = createserverfontstring("objective", 1.1);
+        level.boxtracker_emp_hud set_hud_properties("boxtracker_emp_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_emp_hud.label = &"EMPs: ";
+        level.boxtracker_emp_hud setValue(0);
+        level.boxtracker_emp_hud.alpha = 1;
+        y_pos += 11;
+    }
+
+    if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
+    {
+        level.boxtracker_joker_hud = createserverfontstring("objective", 1.1);
+        level.boxtracker_joker_hud set_hud_properties("boxtracker_joker_hud", "LEFT", "LEFT", -60, y_pos);
+        level.boxtracker_joker_hud.label = &"Teddies: ";
+        level.boxtracker_joker_hud setValue(0);
+        level.boxtracker_joker_hud.alpha = 1;
+        y_pos += 11;
+    }
+}
+
+update_boxtracker_hud(key)
+{
+    LEVEL_ENDON
+
+    while (flag("b2_boxtracker_hud_busy"))
+    {
+        wait 0.05;
+    }
+
+    flag_set("b2_boxtracker_hud_busy");
+
+    DEBUG_PRINT("update_boxtracker_hud() lock acquired, key: " + sstr(key));
+
+    val = 0;
+    if (is_tracking_box_key(key))
+    {
+        switch (key)
+        {
+            case BOXTRACKER_KEY_TOTAL:
+                level.boxtracker_total_hud setValue(level.total_box_hits);
+                break;
+            case BOXTRACKER_KEY_JOKER:
+                level.boxtracker_joker_hud setValue(level.boxtracker_pulls[key]);
+                break;
+            case WEAPON_NAME_MK1:
+                foreach (pull in level.boxtracker_pulls[key])
+                {
+                    val += pull;
+                }
+                level.boxtracker_mk1_hud setValue(val);
+                break;
+            case WEAPON_NAME_MK2:
+                foreach (pull in level.boxtracker_pulls[key])
+                {
+                    val += pull;
+                }
+                level.boxtracker_mk2_hud setValue(val);
+                break;
+            case WEAPON_NAME_MONK:
+                foreach (pull in level.boxtracker_pulls[key])
+                {
+                    val += pull;
+                }
+                level.boxtracker_monk_hud setValue(val);
+                break;
+            case WEAPON_NAME_EMP:
+                foreach (pull in level.boxtracker_pulls[key])
+                {
+                    val += pull;
+                }
+                level.boxtracker_emp_hud setValue(val);
+                break;
+        }
+    }
+
+    flag_clear("b2_boxtracker_hud_busy");
+    DEBUG_PRINT("update_boxtracker_hud() lock released, value: '" + val + "' for key '" + key + "'");
+}
+#endif
+
 buildable_hud()
 {
     y_pos = -17;
@@ -1345,6 +1502,7 @@ watch_stat(stat)
     CLEAR(level.buildable_stats)
 }
 
+/* TODO Fix argument naming alignment & relative instead x & y after deprecating extensions */
 set_hud_properties(hud_key, x_align, y_align, x_pos, y_pos, col)
 {
     if (!isDefined(col))
@@ -1901,7 +2059,6 @@ init_boxhits_watcher()
 watch_box_state()
 {
     LEVEL_ENDON
-    level endon("break_firstbox");
 
     while (!isDefined(self.zbarrier))
         wait 0.05;
@@ -1911,10 +2068,113 @@ watch_box_state()
         while (self.zbarrier getzbarrierpiecestate(2) != "opening")
             wait 0.05;
         level.total_box_hits++;
+
+#if FEATURE_BOXTRACKER == 1
+        if (is_survival_map())
+        {
+            update_boxtracker_hud(BOXTRACKER_KEY_TOTAL);
+            self.zbarrier thread boxtracker_watchweapon(self.chest_user);
+        }
+#endif
+
         while (self.zbarrier getzbarrierpiecestate(2) == "opening")
             wait 0.05;
     }
 }
+
+#if FEATURE_BOXTRACKER == 1
+setup_box_tracker()
+{
+    PLAYER_ENDON
+
+    if (!isDefined(level.boxtracker_pulls))
+    {
+        if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
+        {
+            level.boxtracker_pulls[BOXTRACKER_KEY_JOKER] = 0;
+        }
+
+        foreach (wpn in getArrayKeys(level.zombie_weapons))
+        {
+            if (is_tracking_box_key(wpn))
+            {
+                level.boxtracker_pulls[wpn] = [];
+            }
+        }
+    }
+
+    DEBUG_PRINT("created boxtracker pull array with keys " + array_implode(", ", getArrayKeys(level.boxtracker_pulls)));
+
+    flag_wait("initial_blackscreen_passed");
+
+    foreach (key in getArrayKeys(level.boxtracker_pulls))
+    {
+        if (!isDefined(level.boxtracker_pulls[key][self.name]))
+        {
+            level.boxtracker_pulls[key][self.name] = 0;
+            DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
+        }
+    }
+}
+
+boxtracker_watchweapon(player)
+{
+    self notify("kill_boxtracker_watchweapon");
+    LEVEL_ENDON
+    self endon("kill_boxtracker_watchweapon");
+
+    if (!isDefined(player) || !isPlayer(player))
+    {
+        DEBUG_PRINT("boxtracker_watchweapon missing player!");
+        return;
+    }
+
+    self waittill("randomization_done");
+    DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
+
+    if (!isDefined(self.weapon_string))
+    {
+        level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
+        thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
+        return;
+    }
+
+    if (!is_tracking_box_key(self.weapon_string))
+    {
+        return;
+    }
+
+    key = self.weapon_string;
+
+    if (!isDefined(level.boxtracker_pulls[key]) || !isDefined(level.boxtracker_pulls[key][player.name]))
+    {
+        DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
+        return;
+    }
+
+    level.boxtracker_pulls[key][player.name]++;
+
+    thread update_boxtracker_hud(key);
+}
+
+is_tracking_box_key(key)
+{
+    switch (key)
+    {
+        case BOXTRACKER_KEY_JOKER:
+            return is_survival_map() && box_has_joker();
+        case WEAPON_NAME_MONK:
+        case WEAPON_NAME_EMP:
+            return is_survival_map() && emp_on_the_map();
+        case WEAPON_NAME_MK1:
+        case WEAPON_NAME_MK2:
+        case BOXTRACKER_KEY_TOTAL:
+            return is_survival_map();
+        default:
+            return false;
+    }
+}
+#endif
 
 scan_in_box()
 {
@@ -2355,16 +2615,16 @@ get_weapon_key(weapon_str, verifier)
     switch(weapon_str)
     {
         case "mk1":
-            key = "ray_gun_zm";
+            key = WEAPON_NAME_MK1;
             break;
         case "mk2":
-            key = "raygun_mark2_zm";
+            key = WEAPON_NAME_MK2;
             break;
         case "monk":
-            key = "cymbal_monkey_zm";
+            key = WEAPON_NAME_MONK;
             break;
         case "emp":
-            key = "emp_grenade_zm";
+            key = WEAPON_NAME_EMP;
             break;
         case "time":
             key = "time_bomb_zm";
@@ -2546,11 +2806,11 @@ player_box_weapon_verification(weapon_key)
 
     switch (weapon_key)
     {
-        case "ray_gun_zm":
-            if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade("raygun_mark2_zm"))
+        case WEAPON_NAME_MK1:
+            if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade(WEAPON_NAME_MK2))
                 return "";
-        case "raygun_mark2_zm":
-            if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade("ray_gun_zm"))
+        case WEAPON_NAME_MK2:
+            if (self maps\mp\zombies\_zm_weapons::has_weapon_or_upgrade(WEAPON_NAME_MK1))
                 return "";
     }
 
@@ -2610,9 +2870,9 @@ fridge_pap_weapon_attachment_rules(weapon_key)
 
 weapon_display_wrapper(weapon_key)
 {
-    if (weapon_key == "emp_grenade_zm")
+    if (weapon_key == WEAPON_NAME_EMP)
         return "Emp Grenade";
-    if (weapon_key == "cymbal_monkey_zm")
+    if (weapon_key == WEAPON_NAME_MONK)
         return "Cymbal Monkey";
         
     return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
