@@ -3,7 +3,8 @@
 #define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
-#define DEBUG 0
+#define DEBUG 1
+#define DEBUG_HUD 1
 #define BETA 0
 
 /* Const macros */
@@ -97,11 +98,6 @@ init()
     level thread protect_file();
     init_b2_flags();
 
-/* In this case i need it enabled from main script, cause injecting another GSC into ancient smell */
-#if DEBUG == 1 && ANCIENT == 1
-    level.B2_NETWORK_HUD = ::network_frame_hud;
-#endif
-
     level thread on_game_start();
 #if DEBUG == 1
     level thread _dvar_reader();
@@ -156,20 +152,17 @@ on_game_start()
     create_timers();
     level thread hud_alpha_component();
     level thread buildable_component();
-
-    if (isDefined(level.B2_NETWORK_HUD))
-        level thread [[level.B2_NETWORK_HUD]]();
 #endif
     level thread first_box_handler();
 #if FEATURE_FRIDGE == 1
     level thread fridge_handler();
 #endif
 
-    if (isDefined(level.B2_POWERUP_TRACKING))
-        level thread [[level.B2_POWERUP_TRACKING]]();
-
 #if DEBUG == 1
     debug_mode();
+#if DEBUG_HUD == 1
+    thread _network_frame_hud();
+#endif
 #endif
 #if BETA == 1
     beta_mode();
@@ -199,10 +192,6 @@ on_player_spawned()
 
     self thread welcome_prints();
     self thread evaluate_network_frame();
-#if FEATURE_HUD == 1
-    if (isDefined(level.B2_ZONES))
-        self thread [[level.B2_ZONES]]();
-#endif
     self thread fill_up_bank();
 
     if (is_tracking_buildables())
@@ -218,6 +207,10 @@ on_player_spawned()
     {
         self thread setup_box_tracker();
     }
+#endif
+
+#if DEBUG == 1 && DEBUG_HUD == 1
+    self thread _zone_hud();
 #endif
 }
 
@@ -1243,6 +1236,9 @@ show_split(start_time)
 
     if (getDvar("splits") == "0")
         return;
+
+    if (isDefined(level.B2_SPLITS))
+        print("^1B2_SPLITS extension is deprecated and will be removed in a future release");
 
     /* B2 splits used, only use rounds specified */
     if (isDefined(level.B2_SPLITS) && !IsInArray(level.B2_SPLITS, level.round_number))
@@ -3164,12 +3160,12 @@ character_wrapper()
 
 /*
  ************************************************************************************************************
- ************************************************ ANCIENT ***************************************************
+ ************************************************* DEBUG ****************************************************
  ************************************************************************************************************
 */
 
-#if ANCIENT == 1
-network_frame_hud()
+#if DEBUG == 1
+_network_frame_hud()
 {
     LEVEL_ENDON
     netframe_hud = createserverfontstring("default", 1.3);
@@ -3185,6 +3181,104 @@ network_frame_hud()
     }
 }
 
+_zone_hud()
+{
+    PLAYER_ENDON
+
+    player_wait_for_initial_blackscreen();
+
+    self thread _get_my_coordinates();
+
+    self.hud_zone = createfontstring("objective" , 1.2);
+    self.hud_zone setpoint("CENTER", "BOTTOM", 0, 20);
+    self.hud_zone.alpha = 0.8;
+
+    old_zonename = "old";
+    new_zonename = "new";
+
+    while (true)
+    {
+        wait 0.05;
+
+        if (!isAlive(self))
+            continue;
+
+        new_zonename = self get_current_zone();
+
+        if (old_zonename == new_zonename)
+            continue;
+
+        self notify("stop_showing_zone");
+
+        self thread _show_zone(new_zonename, self.hud_zone);
+
+        old_zonename = new_zonename;
+    }
+}
+
+_show_zone(zone, hud)
+{
+    level endon("end_game");
+    self endon("disconnect");
+    self endon("stop_showing_zone");
+
+    if (hud.alpha != 0)
+    {
+        hud fadeOverTime(0.5);
+        hud.alpha = 0;
+        wait 0.5;
+    }
+
+    hud setText(zone);
+
+    hud fadeOverTime(0.5);
+    hud.alpha = 0.8;
+
+    wait 3;
+
+    hud fadeOverTime(0.5);
+    hud.alpha = 0;
+}
+
+_get_my_coordinates()
+{
+    self.coordinates_x_hud = createfontstring("objective" , 1.1);
+	self.coordinates_x_hud setpoint("CENTER", "BOTTOM", -40, 10);
+	self.coordinates_x_hud.alpha = 0.66;
+	self.coordinates_x_hud.color = (1, 1, 1);
+	self.coordinates_x_hud.hidewheninmenu = 0;
+
+    self.coordinates_y_hud = createfontstring("objective" , 1.1);
+	self.coordinates_y_hud setpoint("CENTER", "BOTTOM", 0, 10);
+	self.coordinates_y_hud.alpha = 0.66;
+	self.coordinates_y_hud.color = (1, 1, 1);
+	self.coordinates_y_hud.hidewheninmenu = 0;
+
+    self.coordinates_z_hud = createfontstring("objective" , 1.1);
+	self.coordinates_z_hud setpoint("CENTER", "BOTTOM", 40, 10);
+	self.coordinates_z_hud.alpha = 0.66;
+	self.coordinates_z_hud.color = (1, 1, 1);
+	self.coordinates_z_hud.hidewheninmenu = 0;
+
+	while (true)
+	{
+		self.coordinates_x_hud setValue(naive_round(self.origin[0]));
+		self.coordinates_y_hud setValue(naive_round(self.origin[1]));
+		self.coordinates_z_hud setValue(naive_round(self.origin[2]));
+
+		wait 0.05;
+	}
+}
+
+#endif
+
+/*
+ ************************************************************************************************************
+ ************************************************ ANCIENT ***************************************************
+ ************************************************************************************************************
+*/
+
+#if ANCIENT == 1
 is_classic()
 {
     var = getdvar( "ui_zm_gamemodegroup" );
