@@ -580,16 +580,8 @@ sstr(value)
 
 naive_round(floating_point)
 {
-	floating_point = int(floating_point * 1000);
-	return floating_point / 1000;
-}
-
-player_wait_for_initial_blackscreen()
-{
-    LEVEL_ENDON
-
-    while (!flag("b2_game_started"))
-        wait 0.05;
+    floating_point = int(floating_point * 1000);
+    return floating_point / 1000;
 }
 
 is_town()
@@ -774,6 +766,16 @@ is_tracking_buildables()
 has_buildables(name)
 {
     return isDefined(level.zombie_buildables[name]);
+}
+
+get_locker_stat(stat)
+{
+    if (!isDefined(stat))
+        stat = "name";
+
+    value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
+    // DEBUG_PRINT("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
+    return value;
 }
 
 box_has_joker()
