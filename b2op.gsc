@@ -2024,8 +2024,6 @@ first_box_handler()
 
     /*  Init thread counting box hits */
     thread init_boxhits_watcher();
-    /* Scan weapons in the box */
-    thread scan_in_box();
 #if FEATURE_FIRSTBOX == 1
     /* First Box main loop */
     thread first_box();
@@ -2070,6 +2068,8 @@ watch_box_state()
         while (self.zbarrier getzbarrierpiecestate(2) != "opening")
             wait 0.05;
         level.total_box_hits++;
+
+        self.zbarrier thread scan_in_box();
 
 #if FEATURE_BOXTRACKER == 1
         if (is_survival_map())
@@ -2180,7 +2180,11 @@ is_tracking_box_key(key)
 
 scan_in_box()
 {
+    self notify("scan_in_box_start");
+
     LEVEL_ENDON
+    self endon("randomization_done");
+    self endon("scan_in_box_start");
 
     if (is_town() || is_farm() || is_depot() || is_tranzit())
         should_be_in_box = 25;
@@ -2199,7 +2203,7 @@ scan_in_box()
     if (is_die_rise() || is_origins())
         offset = 1;
 
-    while (isDefined(should_be_in_box))
+    while (true)
     {
         wait 0.05;
 
@@ -2211,15 +2215,19 @@ scan_in_box()
                 in_box++;
         }
 
-        // DEBUG_PRINT("in_box: " + in_box + " should: " + should_be_in_box);
+        DEBUG_PRINT("scanning in box " + in_box + "/" + should_be_in_box);
 
         if (in_box == should_be_in_box)
             continue;
-
-        else if ((offset > 0) && (in_box == (should_be_in_box + offset)))
+        if ((offset > 0) && (in_box == (should_be_in_box + offset)))
             continue;
 
-        thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
+        /* Up to this round we allow RNG manipulation */
+        if (!is_round(RNG_ROUND))
+            thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
+        /* Afterwards it is an offence */
+        else
+            thread generate_watermark("BOX MANIPULATION", (1, 0.6, 0.2), 0.66);
         break;
     }
 }
