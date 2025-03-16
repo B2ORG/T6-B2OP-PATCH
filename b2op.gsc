@@ -30,11 +30,13 @@
 #define WEAPON_NAME_MK2 "raygun_mark2_zm"
 #define WEAPON_NAME_MONK "cymbal_monkey_zm"
 #define WEAPON_NAME_EMP "emp_grenade_zm"
+#define RNG_ROUND 11
 
 /* Feature flags */
 #define FEATURE_HUD 1
 #define FEATURE_PERMAPERKS 1
 #define FEATURE_FIRSTBOX 1
+#define FEATURE_BOX_LOCATION 1
 #define FEATURE_FRIDGE 1
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
