@@ -81,6 +81,12 @@
 #include maps\mp\zombies\_zm_audio;
 #endif
 
+/*
+ ************************************************************************************************************
+ ********************************************* INITIALIZATION ***********************************************
+ ************************************************************************************************************
+*/
+
 #if PLUTO == 1
 main()
 {
@@ -95,14 +101,12 @@ init_utility()
 init()
 #endif
 {
-    level thread protect_file();
+    thread protect_file();
+    thread on_player_connected();
     init_b2_flags();
-
-    level thread on_game_start();
-#if DEBUG == 1
-    level thread _dvar_reader();
-#endif
-}
+    init_b2_dvars();
+    init_b2_characters();
+    init_b2_permaperks();
 
 #if DEBUG == 1
 _dvar_reader()
@@ -118,52 +122,24 @@ _dvar_reader()
         DEBUG_PRINT("DVAR " + val + " => " + getDvar(val));
         setDvar("getDvarValue", "");
     }
+    thread post_init();
 }
 #endif
 
-on_game_start()
+post_init()
 {
     LEVEL_ENDON
 
-    thread set_dvars();
-#if FEATURE_CHARACTERS == 1
-    thread hijack_personality_character();
-#if PLUTO == 1
-    level thread character_wrapper();
-#endif
-#endif
-#if FEATURE_PERMAPERKS == 1
-    level thread perma_perks_setup();
-#endif
-    level thread on_player_connected();
-
     flag_wait("initial_blackscreen_passed");
 
-    flag_set("b2_game_started");
-
-    level thread b2op_main_loop();
-#if FEATURE_HUD == 1
-#if FEATURE_BOXTRACKER == 1
-    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
-    {
-        box_tracker_hud();
-    }
-#endif
-    create_timers();
-    level thread hud_alpha_component();
-    level thread buildable_component();
-#endif
-    level thread first_box_handler();
-#if FEATURE_FRIDGE == 1
-    level thread fridge_handler();
-#endif
+    thread init_b2_hud();
+    init_b2_box();
+    thread b2op_main_loop();
 
 #if DEBUG == 1
     debug_mode();
-#if DEBUG_HUD == 1
-    thread _network_frame_hud();
 #endif
-#endif
+
 #if BETA == 1
     beta_mode();
 #endif
@@ -214,6 +190,63 @@ on_player_spawned()
 #endif
 }
 
+init_b2_characters()
+{
+#if FEATURE_CHARACTERS == 1
+    thread hijack_personality_character();
+#endif
+}
+
+init_b2_permaperks()
+{
+#if FEATURE_PERMAPERKS == 1
+    thread perma_perks_setup();
+#endif
+}
+
+init_b2_hud()
+{
+#if FEATURE_HUD == 1
+    create_timers();
+    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
+    {
+        box_tracker_hud();
+    }
+
+    thread buildable_component();
+    thread box_handler();
+    thread fridge_handler();
+
+#if DEBUG_HUD == 1
+    thread _network_frame_hud();
+#endif
+#endif
+}
+
+init_b2_box()
+{
+    if (!has_magic())
+        return;
+
+    LEVEL_ENDON
+
+    while (!isDefined(level.chests))
+    {
+        /* Escape if chests are not defined yet */
+        if (!did_game_just_start())
+            return;
+        wait 0.05;
+    }
+
+    level.total_box_hits = 0;
+    array_thread(level.chests, ::watch_box_state);
+
+#if FEATURE_FIRSTBOX == 1
+    /* First Box main loop */
+    thread first_box();
+#endif
+}
+
 b2op_main_loop()
 {
     LEVEL_ENDON
@@ -227,27 +260,33 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_start = getTime();
 #endif
+
 #if FEATURE_HUD == 1
         if (isDefined(level.round_hud))
         {
             level.round_hud setTimerUp(0);
         }
 #endif
+
 #if FEATURE_SPH == 1
         hordes_count = get_hordes_left();
 #endif
+
 #if FEATURE_HORDES == 1
         level thread show_hordes();
 #endif
+
         if (has_permaperks_system())
         {
             emergency_permaperks_cleanup();
         }
 
         level waittill("end_of_round");
+
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_duration = getTime() - round_start;
 #endif
+
 #if FEATURE_HUD == 1
         if (isDefined(level.round_hud))
         {
@@ -255,18 +294,21 @@ b2op_main_loop()
         }
         level thread show_split(game_start);
 #endif
+
 #if FEATURE_SPH == 1
         if (is_round(57) && hordes_count > 2)
         {
             print_scheduler("SPH of round " + (level.round_number - 1) + ": ^1" + (int((MS_TO_SECONDS(round_duration) / hordes_count) * 1000) / 1000));
         }
 #endif
+
 #if FEATURE_PERMAPERKS == 1
         if (has_permaperks_system())
         {
             setDvar("award_perks", 1);
         }
 #endif
+
         /* This is less invasive way, less intrusive and threads spin up only at the end of round */
         if (!is_round(100))
         {
@@ -279,6 +321,7 @@ b2op_main_loop()
             level thread print_checksums();
         }
 #endif
+
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_duration)
 #endif
@@ -929,7 +972,7 @@ should_print_checksum()
 }
 #endif
 
-set_dvars()
+init_b2_dvars()
 {
     LEVEL_ENDON
 
@@ -957,13 +1000,16 @@ set_dvars()
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
     dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false);
+    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+
 #if FEATURE_HORDES == 1
     dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
 #endif
-    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+
 #if FEATURE_CHARACTERS == 1 && REDACTED == 1
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
 #endif
+
     if (getDvar("steam_backspeed") == "1")
     {
         dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
