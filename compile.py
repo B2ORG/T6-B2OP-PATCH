@@ -114,6 +114,11 @@ class GscToolException(Exception):
         super().__init__(*args)
 
 
+class CodeStyleException(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 class Gsc:
     REPLACEMENTS: dict[str, str] = {
         "#define RAW 1": "#define RAW 0",
@@ -138,7 +143,7 @@ class Gsc:
             line: int = self._code.count("\n", 0, tab)
             print(f"TAB found in line {line + 1}. Make sure to use 4 spaces instead of a tab!")
             if FORCE_SPACES:
-                sys.exit(1)
+                raise CodeStyleException(f"Found TABs in line {line + 1}")
         return self
 
 
