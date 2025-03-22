@@ -1259,6 +1259,14 @@ create_timers()
     level.round_hud setText("0:00");
 }
 
+timers_alpha(value)
+{
+    if (isDefined(level.timer_hud) && level.timer_hud.alpha != int(value))
+        level.timer_hud.alpha = int(value);
+    if (isDefined(level.round_hud) && level.round_hud.alpha != int(value))
+        level.round_hud.alpha = int(value);
+}
+
 keep_displaying_old_time(time)
 {
     LEVEL_ENDON
@@ -1405,6 +1413,18 @@ update_boxtracker_hud(key)
     flag_clear("b2_boxtracker_hud_busy");
     DEBUG_PRINT("update_boxtracker_hud() lock released, value: '" + val + "' for key '" + key + "'");
 }
+
+box_tracker_alpha(value)
+{
+    if (isDefined(level.boxtracker_total_hud) && level.boxtracker_total_hud.alpha != int(value))
+        level.boxtracker_total_hud.alpha = int(value);
+    if (isDefined(level.boxtracker_joker_hud) && level.boxtracker_joker_hud.alpha != int(value))
+        level.boxtracker_joker_hud.alpha = int(value);
+    if (isDefined(level.boxtracker_mk1_hud) && level.boxtracker_mk1_hud.alpha != int(value))
+        level.boxtracker_mk1_hud.alpha = int(value);
+    if (isDefined(level.boxtracker_mk2_hud) && level.boxtracker_mk2_hud.alpha != int(value))
+        level.boxtracker_mk2_hud.alpha = int(value);
+}
 #endif
 
 buildable_hud()
@@ -1475,6 +1495,16 @@ buildable_component()
 
         wait 0.1;
     }
+}
+
+buildables_alpha(value)
+{
+    if (isDefined(level.springpad_hud) && level.springpad_hud.alpha != int(value))
+        level.springpad_hud.alpha = int(value);
+    if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha != int(value))
+        level.subwoofer_hud.alpha = int(value);
+    if (isDefined(level.turbine_hud) && level.turbine_hud.alpha != int(value))
+        level.turbine_hud.alpha = int(value);
 }
 
 watch_stat(stat)
