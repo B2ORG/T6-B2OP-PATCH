@@ -1299,63 +1299,6 @@ round_pulses()
 */
 
 #if FEATURE_HUD == 1
-hud_alpha_component()
-{
-    LEVEL_ENDON
-
-    while (true)
-    {
-        if (getDvar("timers") == "0")
-        {
-            if (isDefined(level.timer_hud) && level.timer_hud.alpha > 0)
-                level.timer_hud.alpha = 0;
-            if (isDefined(level.round_hud) && level.round_hud.alpha > 0)
-                level.round_hud.alpha = 0;
-        }
-        else if (getDvar("timers") == "1")
-        {
-            if (isDefined(level.timer_hud) && level.timer_hud.alpha == 0)
-                level.timer_hud.alpha = 1;
-            if (isDefined(level.round_hud) && level.round_hud.alpha == 0)
-                level.round_hud.alpha = 1;
-        }
-
-        if (getDvar("buildables") == "0")
-        {
-            if (isDefined(level.springpad_hud) && level.springpad_hud.alpha > 0)
-                level.springpad_hud.alpha = 0;
-            if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha > 0)
-                level.subwoofer_hud.alpha = 0;
-            if (isDefined(level.turbine_hud) && level.turbine_hud.alpha > 0)
-                level.turbine_hud.alpha = 0;
-        }
-        else if (getDvar("buildables") == "1")
-        {
-            if (isDefined(level.springpad_hud) && level.springpad_hud.alpha == 0)
-                level.springpad_hud.alpha = 1;
-            if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha == 0)
-                level.subwoofer_hud.alpha = 1;
-            if (isDefined(level.turbine_hud) && level.turbine_hud.alpha == 0)
-                level.turbine_hud.alpha = 1;
-        }
-
-        if (getDvar("kill_hud") == "1")
-        {
-            flag_set("b2_killed_hud");
-            if (isDefined(level.timer_hud))
-                level.timer_hud destroyelem();
-            if (isDefined(level.round_hud))
-                level.round_hud destroyelem();
-            if (isDefined(level.springpad_hud))
-                level.springpad_hud destroyelem();
-            if (isDefined(level.subwoofer_hud))
-                level.subwoofer_hud destroyelem();
-            if (isDefined(level.turbine_hud))
-                level.turbine_hud destroyelem();
-        }
-
-        wait 0.05;
-    }
 }
 
 create_timers()
