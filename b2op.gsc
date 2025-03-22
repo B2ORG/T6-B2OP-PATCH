@@ -1334,7 +1334,7 @@ box_tracker_hud()
     {
         level.boxtracker_mk1_hud = createserverfontstring("objective", 1.1);
         level.boxtracker_mk1_hud set_hud_properties("boxtracker_mk1_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_mk1_hud.label = &"RayGun MK1: ";
+        level.boxtracker_mk1_hud.label = &"MK1: ";
         level.boxtracker_mk1_hud setValue(0);
         level.boxtracker_mk1_hud.alpha = 1;
         y_pos += 11;
@@ -1344,7 +1344,7 @@ box_tracker_hud()
     {
         level.boxtracker_mk2_hud = createserverfontstring("objective", 1.1);
         level.boxtracker_mk2_hud set_hud_properties("boxtracker_mk2_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_mk2_hud.label = &"RayGun MK2: ";
+        level.boxtracker_mk2_hud.label = &"MK2: ";
         level.boxtracker_mk2_hud setValue(0);
         level.boxtracker_mk2_hud.alpha = 1;
         y_pos += 11;
@@ -1354,7 +1354,7 @@ box_tracker_hud()
     {
         level.boxtracker_joker_hud = createserverfontstring("objective", 1.1);
         level.boxtracker_joker_hud set_hud_properties("boxtracker_joker_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_joker_hud.label = &"Teddies: ";
+        level.boxtracker_joker_hud.label = &"Joker: ";
         level.boxtracker_joker_hud setValue(0);
         level.boxtracker_joker_hud.alpha = 1;
         y_pos += 11;
