@@ -1399,20 +1399,6 @@ update_boxtracker_hud(key)
                 }
                 level.boxtracker_mk2_hud setValue(val);
                 break;
-            case WEAPON_NAME_MONK:
-                foreach (pull in level.boxtracker_pulls[key])
-                {
-                    val += pull;
-                }
-                level.boxtracker_monk_hud setValue(val);
-                break;
-            case WEAPON_NAME_EMP:
-                foreach (pull in level.boxtracker_pulls[key])
-                {
-                    val += pull;
-                }
-                level.boxtracker_emp_hud setValue(val);
-                break;
         }
     }
 
