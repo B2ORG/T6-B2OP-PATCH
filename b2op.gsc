@@ -1299,6 +1299,27 @@ round_pulses()
 */
 
 #if FEATURE_HUD == 1
+kill_hud()
+{
+    flag_set("b2_killed_hud");
+    if (isDefined(level.timer_hud))
+        level.timer_hud destroyelem();
+    if (isDefined(level.round_hud))
+        level.round_hud destroyelem();
+    if (isDefined(level.springpad_hud))
+        level.springpad_hud destroyelem();
+    if (isDefined(level.subwoofer_hud))
+        level.subwoofer_hud destroyelem();
+    if (isDefined(level.turbine_hud))
+        level.turbine_hud destroyelem();
+    if (isDefined(level.boxtracker_total_hud))
+        level.boxtracker_total_hud destroyelem();
+    if (isDefined(level.boxtracker_mk1_hud))
+        level.boxtracker_mk1_hud destroyelem();
+    if (isDefined(level.boxtracker_mk2_hud))
+        level.boxtracker_mk2_hud destroyelem();
+    if (isDefined(level.boxtracker_joker_hud))
+        level.boxtracker_joker_hud destroyelem();
 }
 
 create_timers()
@@ -2062,66 +2083,30 @@ player_rig_fridge(weapon)
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
     }
 }
-get_locker_stat(stat)
-{
-    if (!isDefined(stat))
-        stat = "name";
 
-    value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
-    // DEBUG_PRINT("get_locker_stat(): value='" + value + "' for stat='" + stat + "'");
-    return value;
-}
-
-/*
- ************************************************************************************************************
- **************************************** FIRSTBOX / BOX LOCATION *******************************************
- ************************************************************************************************************
-*/
-
-first_box_handler()
 fridge_weapon_verification(weapon_key)
 {
-    LEVEL_ENDON
     wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
     // DEBUG_PRINT("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
-    if (!has_magic())
-        return;
     if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
         return "";
 
-    flag_wait("initial_blackscreen_passed");
     if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
         return "";
 
-    /*  Init thread counting box hits */
-    thread init_boxhits_watcher();
-#if FEATURE_FIRSTBOX == 1
-    /* First Box main loop */
-    thread first_box();
-    /* First Box location main loop */
-    thread first_box_location();
-#endif
     return wpn;
 }
 
-init_boxhits_watcher()
 fridge_pap_weapon_verification(weapon_key)
 {
-    LEVEL_ENDON
-    level endon("break_firstbox");
     weapon_key = fridge_weapon_verification(weapon_key);
     // DEBUG_PRINT("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
 
-    while (!isDefined(level.chests))
     /* Give set attachment if weapon supports it */
     att = fridge_pap_weapon_attachment_rules(weapon_key);
     if (weapon_key != "" && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon_key, att))
     {
-        /* Escape if chests are not defined yet */
-        if (!did_game_just_start())
-            return;
-        wait 0.05;
         base = maps\mp\zombies\_zm_weapons::get_base_name(weapon_key);
         return level.zombie_weapons[base].upgrade_name + "+" + att;
     }
@@ -2133,15 +2118,6 @@ fridge_pap_weapon_verification(weapon_key)
     return weapon_key;
 }
 
-    level.total_box_hits = 0;
-    foreach (chest in level.chests)
-        chest thread watch_box_state();
-
-    /* Extra code for the purpose of location manager */
-    while (level.total_box_hits == 0)
-        wait 0.05;
-
-    level notify("break_box_location");
 fridge_pap_weapon_attachment_rules(weapon_key)
 {
     switch (weapon_key)
@@ -2152,6 +2128,11 @@ fridge_pap_weapon_attachment_rules(weapon_key)
 }
 #endif
 
+/*
+ ************************************************************************************************************
+ ******************************************* Shared box logic ***********************************************
+ ************************************************************************************************************
+*/
 
 watch_box_state()
 {
@@ -2180,100 +2161,6 @@ watch_box_state()
             wait 0.05;
     }
 }
-
-#if FEATURE_BOXTRACKER == 1
-setup_box_tracker()
-{
-    PLAYER_ENDON
-
-    if (!isDefined(level.boxtracker_pulls))
-    {
-        if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
-        {
-            level.boxtracker_pulls[BOXTRACKER_KEY_JOKER] = 0;
-        }
-
-        foreach (wpn in getArrayKeys(level.zombie_weapons))
-        {
-            if (is_tracking_box_key(wpn))
-            {
-                level.boxtracker_pulls[wpn] = [];
-            }
-        }
-    }
-
-    DEBUG_PRINT("created boxtracker pull array with keys " + array_implode(", ", getArrayKeys(level.boxtracker_pulls)));
-
-    flag_wait("initial_blackscreen_passed");
-
-    foreach (key in getArrayKeys(level.boxtracker_pulls))
-    {
-        if (!isDefined(level.boxtracker_pulls[key][self.name]))
-        {
-            level.boxtracker_pulls[key][self.name] = 0;
-            DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
-        }
-    }
-}
-
-boxtracker_watchweapon(player)
-{
-    self notify("kill_boxtracker_watchweapon");
-    LEVEL_ENDON
-    self endon("kill_boxtracker_watchweapon");
-
-    if (!isDefined(player) || !isPlayer(player))
-    {
-        DEBUG_PRINT("boxtracker_watchweapon missing player!");
-        return;
-    }
-
-    self waittill("randomization_done");
-    DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
-
-    if (!isDefined(self.weapon_string))
-    {
-        level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
-        thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
-        return;
-    }
-
-    if (!is_tracking_box_key(self.weapon_string))
-    {
-        return;
-    }
-
-    key = self.weapon_string;
-
-    if (!isDefined(level.boxtracker_pulls[key]) || !isDefined(level.boxtracker_pulls[key][player.name]))
-    {
-        DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
-        return;
-    }
-
-    level.boxtracker_pulls[key][player.name]++;
-
-    thread update_boxtracker_hud(key);
-}
-
-is_tracking_box_key(key)
-{
-    switch (key)
-    {
-        case BOXTRACKER_KEY_JOKER:
-            return is_survival_map() && box_has_joker();
-        case WEAPON_NAME_MONK:
-        case WEAPON_NAME_EMP:
-            return is_survival_map() && emp_on_the_map();
-        case WEAPON_NAME_MK1:
-        case WEAPON_NAME_MK2:
-        case BOXTRACKER_KEY_TOTAL:
-            return is_survival_map();
-        default:
-            return false;
-    }
-}
-#endif
 
 scan_in_box()
 {
@@ -2312,7 +2199,7 @@ scan_in_box()
                 in_box++;
         }
 
-        DEBUG_PRINT("scanning in box " + in_box + "/" + should_be_in_box);
+        // DEBUG_PRINT("scanning in box " + in_box + "/" + should_be_in_box);
 
         if (in_box == should_be_in_box)
             continue;
@@ -2326,394 +2213,6 @@ scan_in_box()
         else
             thread generate_watermark("BOX MANIPULATION", (1, 0.6, 0.2), 0.66);
         break;
-    }
-}
-
-#if FEATURE_FIRSTBOX == 1
-first_box()
-{
-    level.rigged_hits = 0;
-    thread print_scheduler("First Box module: ^2AVAILABLE");
-    thread watch_for_finish_firstbox();
-    thread box_watch_dvar();
-#if PLUTO == 1
-    thread box_watch_chat();
-#endif
-}
-
-box_watch_dvar()
-{
-    LEVEL_ENDON
-    level endon("break_firstbox");
-
-    setDvar("fb", "");
-    while (true)
-    {
-        wait 0.05;
-
-        if (getDvar("fb") == "")
-            continue;
-
-        thread rig_box(strtok(getDvar("fb"), "|"), level.players[0]);
-        wait_network_frame();
-
-        while (flag("box_rigged"))
-            wait 0.05;
-
-        setDvar("fb", "");
-    }
-}
-
-#if PLUTO == 1
-box_watch_chat()
-{
-    LEVEL_ENDON
-    level endon("break_firstbox");
-
-    while (true)
-    {
-        level waittill("say", message, player);
-
-        if (isSubStr(message, "fb"))
-            wpn_key = getSubStr(message, 3);
-        else
-            continue;
-
-        thread rig_box(strtok(wpn_key, "|"), player);
-        wait_network_frame();
-
-        while (flag("box_rigged"))
-            wait 0.05;
-    }
-}
-#endif
-
-rig_box(guns, player)
-{
-    LEVEL_ENDON
-
-    weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
-    if (level.players.size == 1)
-        weapon_key = level.players[0] player_box_weapon_verification(weapon_key);
-    else
-        weapon_key = server_box_weapon_verification(weapon_key);
-
-    if (weapon_key == "")
-    {
-        print_scheduler("Wrong weapon key: ^1" + guns[0]);
-        return;
-    }
-
-    // weapon_name = level.zombie_weapons[weapon_key].name;
-    print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
-    if (guns.size > 1)
-        print_scheduler("^1" + (guns.size - 1) + "^7 more gun codes in the queue");
-    thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
-    level.rigged_hits++;
-
-    saved_check = level.special_weapon_magicbox_check;
-    current_box_hits = level.total_box_hits;
-    removed_guns = [];
-
-    flag_set("box_rigged");
-    // DEBUG_PRINT("FIRST BOX: flag('box_rigged'): " + flag("box_rigged"));
-
-    level.special_weapon_magicbox_check = undefined;
-    foreach (weapon in getarraykeys(level.zombie_weapons))
-    {
-        if ((weapon != weapon_key) && is_true(level.zombie_weapons[weapon].is_in_box))
-        {
-            removed_guns[removed_guns.size] = weapon;
-            level.zombie_weapons[weapon].is_in_box = 0;
-            // DEBUG_PRINT("FIRST BOX: setting " + weapon + ".is_in_box to 0");
-        }
-    }
-
-    /* This was causing the pers_treasure_chest_choosespecialweapon() check to fail and return keys[0] */
-    if (has_permaperks_system())
-    {
-        level.pers_box_weapon_lose_round = 1;
-        /* This is a for so i don't override player var */
-        for (i = 0; i < level.players.size; i++)
-            level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
-    }
-
-    /* Critical loop responsible for restoring proper state */
-    while ((current_box_hits == level.total_box_hits) || !isDefined(level.total_box_hits))
-    {
-        if (is_round(11))
-        {
-            // DEBUG_PRINT("FIRST BOX: breaking out of First Box above round 10");
-            break;
-        }
-        wait 0.05;
-    }
-        
-    wait 5;
-
-    level.special_weapon_magicbox_check = saved_check;
-
-    // DEBUG_PRINT("FIRST BOX: removed_guns.size " + removed_guns.size);
-    if (removed_guns.size > 0)
-    {
-        foreach (rweapon in removed_guns)
-        {
-            level.zombie_weapons[rweapon].is_in_box = 1;
-            // DEBUG_PRINT("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
-        }
-    }
-
-    /* Handle gun chaining recursively */
-    if (guns.size > 1 && isDefined(level.total_box_hits))
-    {
-        new_gun_array = [];
-        for (i = 1; i < guns.size; i++)
-            new_gun_array[new_gun_array.size] = guns[i];
-
-        rig_box(new_gun_array, player);
-    }
-
-    flag_clear("box_rigged");
-}
-
-watch_for_finish_firstbox()
-{
-    LEVEL_ENDON
-
-    while (!is_round(11))
-        wait 0.1;
-
-    print_scheduler("First Box module: ^1" + "DISABLED");
-    if (level.rigged_hits)
-        print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
-
-    level notify("break_firstbox");
-    // DEBUG_PRINT("FIRST BOX: notifying module to break");
-    CLEAR(level.rigged_hits)
-    CLEAR(level.total_box_hits)
-}
-
-first_box_location()
-{
-    LEVEL_ENDON
-    level endon("break_firstbox");
-
-    if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
-        return;
-
-    flag_wait("moving_chest_enabled");
-
-    thread location_watch_dvar();
-#if PLUTO == 1
-    thread location_watch_chat();
-#endif
-}
-
-location_watch_dvar()
-{
-    LEVEL_ENDON
-    level endon("break_firstbox");
-    level endon("break_box_location");
-
-    setDvar("lb", "");
-    while (true)
-    {
-        wait 0.05;
-
-        dvar = getDvar("lb");
-        if (dvar == "")
-            continue;
-
-        if (is_mob() && !flag("afterlife_start_over"))
-        {
-            print_scheduler("^3Players must leave initial afterlife mode first!", level.players[0]);
-            setDvar("lb", "");
-            continue;
-        }
-
-        process_selection = process_box_location(dvar);
-
-        if (process_selection == "no box selected")
-        {
-            print_scheduler("Incorrect selection: ^1" + dvar, level.players[0]);
-            setDvar("lb", "");
-            continue;
-        }
-
-        chests_script = [];
-        foreach (chest in level.chests)
-            chests_script[chests_script.size] = chest.script_noteworthy;
-
-        if (!isinarray(chests_script, process_selection))
-            continue;
-
-        thread move_chest(process_selection);
-        level notify("break_box_location");
-    }
-}
-
-#if PLUTO == 1
-location_watch_chat()
-{
-    LEVEL_ENDON
-    level endon("break_firstbox");
-    level endon("break_box_location");
-
-    while (true)
-    {
-        level waittill("say", message, player, ishidden);
-
-        if (isSubStr(message, "lb"))
-            loc_selection = getSubStr(message, 3);
-        else
-            continue;
-
-        if (is_mob() && !flag("afterlife_start_over"))
-        {
-            print_scheduler("^3Players must leave initial afterlife mode first!");
-            continue;
-        }
-
-        process_selection = process_box_location(loc_selection);
-
-        if (process_selection == "no box selected")
-        {
-            print_scheduler("Incorrect selection: ^1" + loc_selection);
-            continue;
-        }
-
-        chests_script = [];
-        foreach (chest in level.chests)
-            chests_script[chests_script.size] = chest.script_noteworthy;
-
-        if (!isinarray(chests_script, process_selection))
-            continue;
-
-        thread move_chest(process_selection);
-        level notify("break_box_location");
-    }
-}
-#endif
-
-move_chest(box)
-{
-    LEVEL_ENDON
-
-    if (isDefined(level._zombiemode_custom_box_move_logic))
-        kept_move_logic = level._zombiemode_custom_box_move_logic;
-
-    level._zombiemode_custom_box_move_logic = ::force_next_location;
-    foreach (chest in level.chests)
-    {
-        if (!chest.hidden && chest.script_noteworthy == box)
-        {
-            print_scheduler("Box already in selected location");
-            if (isDefined(kept_move_logic))
-            {
-                level._zombiemode_custom_box_move_logic = kept_move_logic;
-            }
-            return;
-        }
-        else if (!chest.hidden)
-        {
-            level.chest_min_move_usage = 8;
-            level.chest_name = box;
-            print_box_location(box);
-
-            flag_set("moving_chest_now");
-            chest thread maps\mp\zombies\_zm_magicbox::treasure_chest_move();
-
-            wait 0.05;
-            level notify("weapon_fly_away_start");
-            wait 0.05;
-            level notify("weapon_fly_away_end");
-
-            break;
-        }
-    }
-
-    while (flag("moving_chest_now"))
-        wait 0.05;
-
-    if (isDefined(kept_move_logic))
-        level._zombiemode_custom_box_move_logic = kept_move_logic;
-
-    /* Prevents firesale to be included in origins dig cycle */
-    if (isDefined(level.chest_name) && isDefined(level.dig_magic_box_moved))
-    {
-        level.dig_magic_box_moved = 0;
-    }
-    CLEAR(level.chest_name)
-
-    level.chest_min_move_usage = 4;
-    DEBUG_PRINT("dig_magic_box_moved: " + level.dig_magic_box_moved);
-}
-
-force_next_location()
-{
-    for (b=0; b<level.chests.size; b++)
-    {
-        if (level.chests[b].script_noteworthy == level.chest_name)
-            level.chest_index = b;
-    }
-}
-
-process_box_location(input_msg)
-{
-    // DEBUG_PRINT("Input for 'lb': " + input_msg);
-    switch (tolower(input_msg))
-    {
-        case "dt":
-            return "town_chest_2";
-        case "qr":
-            return "town_chest";
-        case "cafe":
-            return "cafe_chest";
-        case "warden":
-            return "start_chest";
-        case "yellow":
-            return "start_chest2";
-        case "green":
-            return "start_chest1";
-        case "2":
-            return "bunker_tank_chest";
-        case "3":
-            return "bunker_cp_chest";
-        default:
-            return "no box selected";
-    }
-}
-
-print_box_location(loc)
-{
-    switch (loc)
-    {
-        case "town_chest_2":
-            print_scheduler("Box moving to: ^3Double Tap Cage");
-            break;
-        case "town_chest":
-            print_scheduler("Box moving to: ^3Quick Revive Room");
-            break;
-        case "cafe_chest":
-            print_scheduler("Box moving to: ^3Cafeteria");
-            break;
-        case "start_chest":
-            print_scheduler("Box moving to: ^3Warden's Office");
-            break;
-        case "start_chest2":
-            print_scheduler("Box moving to: ^3Yellow House");
-            break;
-        case "start_chest1":
-            print_scheduler("Box moving to: ^3Green House");
-            break;
-        case "bunker_tank_chest":
-            print_scheduler("Box moving to: ^3Generator 2");
-            break;
-        case "bunker_cp_chest":
-            print_scheduler("Box moving to: ^3Generator 3");
-            break;
-        default:
-            print_scheduler("Box moving to: ^2" + loc);
     }
 }
 
@@ -2885,7 +2384,6 @@ get_weapon_key(weapon_str, verifier)
     // DEBUG_PRINT("get_weapon_key(): weapon_key: " + key);
     return key;
 }
-#endif
 
 default_weapon_verification()
 {
@@ -2895,6 +2393,241 @@ default_weapon_verification()
         return "";
 
     return weapon_key;
+}
+
+weapon_display_wrapper(weapon_key)
+{
+    if (weapon_key == WEAPON_NAME_EMP)
+        return "Emp Grenade";
+    if (weapon_key == WEAPON_NAME_MONK)
+        return "Cymbal Monkey";
+        
+    return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
+}
+
+/*
+ ************************************************************************************************************
+ ********************************************* Box tracker **************************************************
+ ************************************************************************************************************
+*/
+
+#if FEATURE_BOXTRACKER == 1
+setup_box_tracker()
+{
+    PLAYER_ENDON
+
+    if (!isDefined(level.boxtracker_pulls))
+    {
+        if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
+        {
+            level.boxtracker_pulls[BOXTRACKER_KEY_JOKER] = 0;
+        }
+
+        foreach (wpn in getArrayKeys(level.zombie_weapons))
+        {
+            if (is_tracking_box_key(wpn))
+            {
+                level.boxtracker_pulls[wpn] = [];
+            }
+        }
+    }
+
+    DEBUG_PRINT("created boxtracker pull array with keys " + array_implode(", ", getArrayKeys(level.boxtracker_pulls)));
+
+    flag_wait("initial_blackscreen_passed");
+
+    foreach (key in getArrayKeys(level.boxtracker_pulls))
+    {
+        if (!isDefined(level.boxtracker_pulls[key][self.name]))
+        {
+            level.boxtracker_pulls[key][self.name] = 0;
+            DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
+        }
+    }
+}
+
+boxtracker_watchweapon(player)
+{
+    self notify("kill_boxtracker_watchweapon");
+    LEVEL_ENDON
+    self endon("kill_boxtracker_watchweapon");
+
+    if (!isDefined(player) || !isPlayer(player))
+    {
+        DEBUG_PRINT("boxtracker_watchweapon missing player!");
+        return;
+    }
+
+    self waittill("randomization_done");
+    DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
+
+    if (!isDefined(self.weapon_string))
+    {
+        level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
+        thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
+        return;
+    }
+
+    if (!is_tracking_box_key(self.weapon_string))
+    {
+        return;
+    }
+
+    key = self.weapon_string;
+
+    if (!isDefined(level.boxtracker_pulls[key]) || !isDefined(level.boxtracker_pulls[key][player.name]))
+    {
+        DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
+        return;
+    }
+
+    level.boxtracker_pulls[key][player.name]++;
+
+    thread update_boxtracker_hud(key);
+}
+
+is_tracking_box_key(key)
+{
+    switch (key)
+    {
+        case BOXTRACKER_KEY_JOKER:
+            return is_survival_map() && box_has_joker();
+        case WEAPON_NAME_MONK:
+        case WEAPON_NAME_EMP:
+            return is_survival_map() && emp_on_the_map();
+        case WEAPON_NAME_MK1:
+        case WEAPON_NAME_MK2:
+        case BOXTRACKER_KEY_TOTAL:
+            return is_survival_map();
+        default:
+            return false;
+    }
+}
+#endif
+
+/*
+ ************************************************************************************************************
+ ********************************************** First box ***************************************************
+ ************************************************************************************************************
+*/
+
+#if FEATURE_FIRSTBOX == 1
+first_box()
+{
+    LEVEL_ENDON
+
+    level.rigged_hits = 0;
+    thread print_scheduler("First Box module: ^2AVAILABLE");
+
+    while (!is_round(RNG_ROUND))
+        wait 0.1;
+
+    print_scheduler("First Box module: ^1" + "DISABLED");
+    if (level.rigged_hits)
+        print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
+
+    CLEAR(level.rigged_hits)
+}
+
+firstbox_input(value, key, player)
+{
+    /* Additional check, prevents rigging past RNG_ROUND */
+    if (!isDefined(level.rigged_hits))
+        return true;
+
+    if (!isDefined(player))
+        player = gethostplayer();
+    thread rig_box(strtok(value, "|"), player);
+
+    return true;
+}
+
+rig_box(guns, player)
+{
+    LEVEL_ENDON
+
+    weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
+    if (level.players.size == 1)
+        weapon_key = level.players[0] player_box_weapon_verification(weapon_key);
+    else
+        weapon_key = server_box_weapon_verification(weapon_key);
+
+    if (weapon_key == "")
+    {
+        print_scheduler("Wrong weapon key: ^1" + guns[0]);
+        return;
+    }
+
+    // weapon_name = level.zombie_weapons[weapon_key].name;
+    print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
+    if (guns.size > 1)
+        print_scheduler("^1" + (guns.size - 1) + "^7 more gun codes in the queue");
+    thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
+    level.rigged_hits++;
+
+    saved_check = level.special_weapon_magicbox_check;
+    current_box_hits = level.total_box_hits;
+    removed_guns = [];
+
+    flag_set("b2_fb_locked");
+    // DEBUG_PRINT("FIRST BOX: flag('box_rigged'): " + flag("b2_fb_locked"));
+
+    level.special_weapon_magicbox_check = undefined;
+    foreach (weapon in getarraykeys(level.zombie_weapons))
+    {
+        if ((weapon != weapon_key) && is_true(level.zombie_weapons[weapon].is_in_box))
+        {
+            removed_guns[removed_guns.size] = weapon;
+            level.zombie_weapons[weapon].is_in_box = 0;
+            // DEBUG_PRINT("FIRST BOX: setting " + weapon + ".is_in_box to 0");
+        }
+    }
+
+    /* This was causing the pers_treasure_chest_choosespecialweapon() check to fail and return keys[0] */
+    if (has_permaperks_system())
+    {
+        level.pers_box_weapon_lose_round = 1;
+        /* This is a for so i don't override player var */
+        for (i = 0; i < level.players.size; i++)
+            level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
+    }
+
+    /* Critical loop responsible for restoring proper state */
+    while ((current_box_hits == level.total_box_hits) || !isDefined(level.total_box_hits))
+    {
+        if (is_round(RNG_ROUND))
+        {
+            // DEBUG_PRINT("FIRST BOX: breaking out of First Box above round 10");
+            break;
+        }
+        wait 0.05;
+    }
+        
+    wait 5;
+
+    level.special_weapon_magicbox_check = saved_check;
+
+    // DEBUG_PRINT("FIRST BOX: removed_guns.size " + removed_guns.size);
+    if (removed_guns.size > 0)
+    {
+        foreach (rweapon in removed_guns)
+        {
+            level.zombie_weapons[rweapon].is_in_box = 1;
+            // DEBUG_PRINT("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
+        }
+    }
+
+    /* Handle gun chaining recursively */
+    if (guns.size > 1 && isDefined(level.total_box_hits))
+    {
+        new_gun_array = [];
+        for (i = 1; i < guns.size; i++)
+            new_gun_array[new_gun_array.size] = guns[i];
+
+        rig_box(new_gun_array, player);
+    }
+
+    flag_clear("b2_fb_locked");
 }
 
 box_weapon_verification(weapon_key)
@@ -2931,59 +2664,177 @@ server_box_weapon_verification(weapon_key)
 
     return weapon_key;
 }
+#endif
 
-fridge_weapon_verification(weapon_key)
+/*
+ ************************************************************************************************************
+ ******************************************** Box location **************************************************
+ ************************************************************************************************************
+*/
+
+#if FEATURE_BOX_LOCATION == 1
+box_location_input(value, key, player)
 {
-    wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
-    // DEBUG_PRINT("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
+    /* Map not supported by lb logic */
+    if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
+        return true;
+    /* Chest moving logic not yet processed by gsc */
+    if (!flag("moving_chest_enabled"))
+        return true;
+    /* Box has been hit already */
+    if (is_true(level.total_box_hits))
+    {
+        flag_set("b2_lb_locked");
+        return true;
+    }
+    /* Initial afterlife - logic not ready */
+    if (is_mob() && !flag("afterlife_start_over"))
+    {
+        print_scheduler("^3Players must leave initial afterlife mode first!", level.players[0]);
+        return true;
+    }
 
-    if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
-        return "";
+    process_selection = process_box_location(value);
 
-    if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
-        return "";
+    if (process_selection == "no box selected")
+    {
+        print_scheduler("Incorrect selection: ^1" + value, level.players[0]);
+        return true;
+    }
 
-    return wpn;
+    chests_script = [];
+    foreach (chest in level.chests)
+        chests_script[chests_script.size] = chest.script_noteworthy;
+
+    if (!isinarray(chests_script, process_selection))
+        return true;
+
+    thread move_chest(process_selection);
+    flag_set("b2_lb_locked");
 }
 
-fridge_pap_weapon_verification(weapon_key)
+move_chest(box)
 {
-    weapon_key = fridge_weapon_verification(weapon_key);
-    // DEBUG_PRINT("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
+    LEVEL_ENDON
 
-    /* Give set attachment if weapon supports it */
-    att = fridge_pap_weapon_attachment_rules(weapon_key);
-    if (weapon_key != "" && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon_key, att))
+    if (isDefined(level._zombiemode_custom_box_move_logic))
+        kept_move_logic = level._zombiemode_custom_box_move_logic;
+
+    level._zombiemode_custom_box_move_logic = ::force_next_location;
+    foreach (chest in level.chests)
     {
-        base = maps\mp\zombies\_zm_weapons::get_base_name(weapon_key);
-        return level.zombie_weapons[base].upgrade_name + "+" + att;
+        if (!chest.hidden && chest.script_noteworthy == box)
+        {
+            print_scheduler("Box already in selected location");
+            if (isDefined(kept_move_logic))
+            {
+                level._zombiemode_custom_box_move_logic = kept_move_logic;
+            }
+            return;
+        }
+        else if (!chest.hidden)
+        {
+            level.chest_min_move_usage = 8;
+            level.chest_name = box;
+            print_box_location(box);
+
+            flag_set("moving_chest_now");
+            chest thread maps\mp\zombies\_zm_magicbox::treasure_chest_move();
+
+            wait 0.05;
+            level notify("weapon_fly_away_start");
+            wait 0.05;
+            level notify("weapon_fly_away_end");
+
+            break;
+        }
     }
-    /* Else just give base attachment */
-    else if (weapon_key != "")
+
+    while (flag("moving_chest_now"))
+        wait 0.05;
+
+    if (isDefined(kept_move_logic))
+        level._zombiemode_custom_box_move_logic = kept_move_logic;
+
+    /* Prevents firesale to be included in origins dig cycle */
+    if (isDefined(level.chest_name) && isDefined(level.dig_magic_box_moved))
     {
-        return maps\mp\zombies\_zm_weapons::get_upgrade_weapon(weapon_key);
+        level.dig_magic_box_moved = 0;
     }
-    return weapon_key;
+    CLEAR(level.chest_name)
+
+    level.chest_min_move_usage = 4;
+    DEBUG_PRINT("dig_magic_box_moved: " + level.dig_magic_box_moved);
 }
 
-fridge_pap_weapon_attachment_rules(weapon_key)
+force_next_location()
 {
-    switch (weapon_key)
+    for (b=0; b<level.chests.size; b++)
     {
+        if (level.chests[b].script_noteworthy == level.chest_name)
+            level.chest_index = b;
+    }
+}
+
+process_box_location(input_msg)
+{
+    // DEBUG_PRINT("Input for 'lb': " + input_msg);
+    switch (tolower(input_msg))
+    {
+        case "dt":
+            return "town_chest_2";
+        case "qr":
+            return "town_chest";
+        case "cafe":
+            return "cafe_chest";
+        case "warden":
+            return "start_chest";
+        case "yellow":
+            return "start_chest2";
+        case "green":
+            return "start_chest1";
+        case "2":
+            return "bunker_tank_chest";
+        case "3":
+            return "bunker_cp_chest";
         default:
-            return "mms";
+            return "no box selected";
     }
 }
 
-weapon_display_wrapper(weapon_key)
+print_box_location(loc)
 {
-    if (weapon_key == WEAPON_NAME_EMP)
-        return "Emp Grenade";
-    if (weapon_key == WEAPON_NAME_MONK)
-        return "Cymbal Monkey";
-        
-    return maps\mp\zombies\_zm_weapons::get_weapon_display_name(weapon_key);
+    switch (loc)
+    {
+        case "town_chest_2":
+            print_scheduler("Box moving to: ^3Double Tap Cage");
+            break;
+        case "town_chest":
+            print_scheduler("Box moving to: ^3Quick Revive Room");
+            break;
+        case "cafe_chest":
+            print_scheduler("Box moving to: ^3Cafeteria");
+            break;
+        case "start_chest":
+            print_scheduler("Box moving to: ^3Warden's Office");
+            break;
+        case "start_chest2":
+            print_scheduler("Box moving to: ^3Yellow House");
+            break;
+        case "start_chest1":
+            print_scheduler("Box moving to: ^3Green House");
+            break;
+        case "bunker_tank_chest":
+            print_scheduler("Box moving to: ^3Generator 2");
+            break;
+        case "bunker_cp_chest":
+            print_scheduler("Box moving to: ^3Generator 3");
+            break;
+        default:
+            print_scheduler("Box moving to: ^2" + loc);
+    }
 }
+#endif
 
 /*
  ************************************************************************************************************
