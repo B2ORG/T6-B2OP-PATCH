@@ -3194,8 +3194,8 @@ character_wrapper()
             }
 
 #if DEBUG == 1
-            print_scheduler("Characterindex: ^1" + player.characterindex, player);
-            // print_scheduler("Shader: ^1" + player.whos_who_shader, player);
+    print_scheduler("Characterindex: ^1" + player.characterindex, player);
+    // print_scheduler("Shader: ^1" + player.whos_who_shader, player);
 #endif
         }
     }
@@ -3288,33 +3288,32 @@ _show_zone(zone, hud)
 _get_my_coordinates()
 {
     self.coordinates_x_hud = createfontstring("objective" , 1.1);
-	self.coordinates_x_hud setpoint("CENTER", "BOTTOM", -40, 10);
-	self.coordinates_x_hud.alpha = 0.66;
-	self.coordinates_x_hud.color = (1, 1, 1);
-	self.coordinates_x_hud.hidewheninmenu = 0;
+    self.coordinates_x_hud setpoint("CENTER", "BOTTOM", -40, 10);
+    self.coordinates_x_hud.alpha = 0.66;
+    self.coordinates_x_hud.color = (1, 1, 1);
+    self.coordinates_x_hud.hidewheninmenu = 0;
 
     self.coordinates_y_hud = createfontstring("objective" , 1.1);
-	self.coordinates_y_hud setpoint("CENTER", "BOTTOM", 0, 10);
-	self.coordinates_y_hud.alpha = 0.66;
-	self.coordinates_y_hud.color = (1, 1, 1);
-	self.coordinates_y_hud.hidewheninmenu = 0;
+    self.coordinates_y_hud setpoint("CENTER", "BOTTOM", 0, 10);
+    self.coordinates_y_hud.alpha = 0.66;
+    self.coordinates_y_hud.color = (1, 1, 1);
+    self.coordinates_y_hud.hidewheninmenu = 0;
 
     self.coordinates_z_hud = createfontstring("objective" , 1.1);
-	self.coordinates_z_hud setpoint("CENTER", "BOTTOM", 40, 10);
-	self.coordinates_z_hud.alpha = 0.66;
-	self.coordinates_z_hud.color = (1, 1, 1);
-	self.coordinates_z_hud.hidewheninmenu = 0;
+    self.coordinates_z_hud setpoint("CENTER", "BOTTOM", 40, 10);
+    self.coordinates_z_hud.alpha = 0.66;
+    self.coordinates_z_hud.color = (1, 1, 1);
+    self.coordinates_z_hud.hidewheninmenu = 0;
 
-	while (true)
-	{
-		self.coordinates_x_hud setValue(naive_round(self.origin[0]));
-		self.coordinates_y_hud setValue(naive_round(self.origin[1]));
-		self.coordinates_z_hud setValue(naive_round(self.origin[2]));
+    while (true)
+    {
+        self.coordinates_x_hud setValue(naive_round(self.origin[0]));
+        self.coordinates_y_hud setValue(naive_round(self.origin[1]));
+        self.coordinates_z_hud setValue(naive_round(self.origin[2]));
 
-		wait 0.05;
-	}
+        wait 0.05;
+    }
 }
-
 #endif
 
 /*
