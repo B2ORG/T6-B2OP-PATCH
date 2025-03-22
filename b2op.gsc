@@ -121,6 +121,7 @@ post_init()
 
     thread init_b2_hud();
     init_b2_box();
+    init_b2_watchers();
     thread b2op_main_loop();
 
 #if DEBUG == 1
@@ -231,6 +232,60 @@ init_b2_box()
 #if FEATURE_FIRSTBOX == 1
     /* First Box main loop */
     thread first_box();
+#endif
+}
+
+init_b2_watchers()
+{
+    dvars = [];
+#if FEATURE_HUD == 1
+    dvars["timers"] = ::timers_alpha;
+    dvars["buildables"] = ::buildables_alpha;
+    dvars["kill_hud"] = ::kill_hud;
+#endif
+
+#if FEATURE_BOXTRACKER == 1 && FEATURE_HUD == 1
+    dvars["box_tracker"] = ::box_tracker_alpha;
+#endif
+
+#if FEATURE_FRIDGE == 1
+    dvars["fridge"] = ::fridge_input;
+#endif
+
+#if FEATURE_FIRSTBOX == 1
+    dvars["fb"] = ::firstbox_input;
+#endif
+
+#if FEATURE_BOX_LOCATION == 1
+    dvars["lb"] = ::box_location_input;
+#endif
+
+#if DEBUG == 1
+    dvars["getDvarValue"] = ::_dvar_reader;
+#endif
+
+    thread dvar_watcher(dvars);
+
+#if PLUTO == 1
+    chat = [];
+#if FEATURE_FRIDGE == 1
+    chat["fridge"] = ::fridge_input;
+#endif
+
+#if FEATURE_FIRSTBOX == 1
+    chat["fb"] = ::firstbox_input;
+#endif
+
+#if FEATURE_BOX_LOCATION == 1
+    chat["lb"] = ::box_location_input;
+#endif
+
+#if FEATURE_CHARACTERS == 1
+    dvars["char"] = ::characters_input;
+    dvars["whoami"] = ::check_whoami;
+#endif
+
+    thread chat_watcher(chat);
 #endif
 }
 
@@ -843,6 +898,7 @@ protect_file()
 }
 
 init_b2_flags()
+dvar_watcher(dvars)
 {
     flag_init("b2_game_started");
     flag_init("b2_box_rigged");
@@ -854,7 +910,59 @@ init_b2_flags()
     flag_init("b2_char_taken_2");
     flag_init("b2_char_taken_3");
     flag_init("b2_boxtracker_hud_busy");
+    LEVEL_ENDON
+
+    keys = getArrayKeys(dvars);
+    foreach (key in keys)
+    {
+        setdvar(key, "");
+    }
+
+    while (true)
+    {
+        foreach (dvar in keys)
+        {
+            value = getDvar(dvar);
+            if (!flag("b2_" + dvar + "_locked") && value != "")
+            {
+                DEBUG_PRINT("dvar_callback('" + value + "', '" + dvar + "')");
+                reset = [[dvars[dvar]]](value, dvar);
+                if (is_true(reset))
+                {
+                    setDvar(dvar, "");
+                }
+            }
+        }
+
+        wait 0.05;
+    }
 }
+
+#if PLUTO == 1
+chat_watcher(lookups)
+{
+    LEVEL_ENDON
+
+    keys = getArrayKeys(lookups);
+    while (true)
+    {
+        level waittill("say", message, player);
+
+        foreach (chat in keys)
+        {
+            if (!flag("b2_" + chat + "_locked") && isstrstart(message, chat))
+            {
+                DEBUG_PRINT("chat_callback('" + getSubStr(message, chat.size + 1) + "', '" + chat + "', '" + player.name + "')");
+                [[lookups[chat]]](getSubStr(message, chat.size + 1), chat, player);
+                break;
+            }
+        }
+
+        CLEAR(message)
+        CLEAR(chat)
+    }
+}
+#endif
 
 bad_file()
 {
