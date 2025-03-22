@@ -1365,26 +1365,6 @@ box_tracker_hud()
         y_pos += 11;
     }
 
-    if (is_tracking_box_key(WEAPON_NAME_MONK))
-    {
-        level.boxtracker_monk_hud = createserverfontstring("objective", 1.1);
-        level.boxtracker_monk_hud set_hud_properties("boxtracker_monk_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_monk_hud.label = &"Monkeys: ";
-        level.boxtracker_monk_hud setValue(0);
-        level.boxtracker_monk_hud.alpha = 1;
-        y_pos += 11;
-    }
-
-    if (is_tracking_box_key(WEAPON_NAME_EMP))
-    {
-        level.boxtracker_emp_hud = createserverfontstring("objective", 1.1);
-        level.boxtracker_emp_hud set_hud_properties("boxtracker_emp_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_emp_hud.label = &"EMPs: ";
-        level.boxtracker_emp_hud setValue(0);
-        level.boxtracker_emp_hud.alpha = 1;
-        y_pos += 11;
-    }
-
     if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
     {
         level.boxtracker_joker_hud = createserverfontstring("objective", 1.1);
