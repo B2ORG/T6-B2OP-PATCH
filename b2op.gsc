@@ -1882,18 +1882,32 @@ fridge_handler()
     LEVEL_ENDON
 
     if (!has_permaperks_system())
+    {
+        flag_set("b2_fridge_locked");
         return;
+    }
 
     // DEBUG_PRINT("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 
     print_scheduler("Fridge module: ^2AVAILABLE");
-#if PLUTO == 1
-    thread fridge_watch_chat();
-#endif
-    thread fridge_watch_dvar();
-    thread fridge_watch_state();
+    while (!flag("b2_fridge_locked"))
+    {
+        foreach (player in level.players)
+        {
+            locker = player get_locker_stat();
+            /* Save state of the locker, if it's any weapon */
+            if (!isDefined(player.fridge_state) && locker != "")
+                player.fridge_state = locker;
+            /* If locker is saved, but stat is cleared, break out */
+            else if (isDefined(player.fridge_state) && locker == "")
+                flag_set("b2_fridge_locked");
+        }
 
-    level waittill("terminate_fridge_process");
+        if (is_round(RNG_ROUND))
+            flag_set("b2_fridge_locked");
+
+        wait 0.1;
+    }
     print_scheduler("Fridge module: ^1DISABLED");
 
     /* Cleanup */
@@ -1904,72 +1918,38 @@ fridge_handler()
     }
 }
 
-fridge_watch_dvar()
+fridge_input(value, key, player)
 {
-    LEVEL_ENDON
-    level endon("terminate_fridge_process");
-
-    setDvar("fridge", "");
-    while (true)
+    if (flag("b2_fridge_locked"))
     {
-        wait 0.05;
-        if (getDvar("fridge") == "")
-            continue;
-
-        message = getDvar("fridge");
-        if (isSubStr(message, "all "))
-            rig_fridge(getSubStr(message, 4));
-        else
-            rig_fridge(message, maps\mp\_utility::gethostplayer());
-        CLEAR(message)
-
-        setDvar("fridge", "");
+        return true;
     }
-}
 
-#if PLUTO == 1
-fridge_watch_chat()
-{
-    LEVEL_ENDON
-    level endon("terminate_fridge_process");
-
-    while (true)
+    set_all = false;
+    if (isstrstart(value, "all "))
     {
-        level waittill("say", message, player);
-
-        if (isSubStr(message, "fridge all") && player ishost())
-            rig_fridge(getSubStr(message, 11));
-        else if (isSubStr(message, "fridge"))
-            rig_fridge(getSubStr(message, 7), player);
-    }
-}
-#endif
-
-fridge_watch_state()
-{
-    LEVEL_ENDON
-
-    fridge_claimed = false;
-
-    while (!fridge_claimed)
-    {
-        foreach (player in level.players)
+        value = getSubStr(value, 4);
+        /* Dvar watcher won't provide player at all, that's how we identify it */
+        if (!isDefined(player) || (isDefined(player) && player ishost()))
         {
-            locker = player get_locker_stat();
-            /* Save state of the locker, if it's any weapon */
-            if (!isDefined(player.fridge_state) && locker != "")
-                player.fridge_state = locker;
-            /* If locker is saved, but stat is cleared, break out */
-            else if (isDefined(player.fridge_state) && locker == "")
-                fridge_claimed = true;
+            set_all = true;
         }
-
-        if (is_round(11))
-            fridge_claimed = true;
-
-        wait 0.25;
     }
-    level notify("terminate_fridge_process");
+
+    if (set_all)
+    {
+        rig_fridge(value);
+    }
+    else if (isDefined(player) && player maps\mp\zombies\_zm_utility::is_player())
+    {
+        rig_fridge(value, player);
+    }
+    else
+    {
+        rig_fridge(value, maps\mp\_utility::gethostplayer());
+    }
+
+    return true;
 }
 
 rig_fridge(key, player)
@@ -2027,8 +2007,6 @@ player_rig_fridge(weapon)
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
     }
 }
-#endif
-
 get_locker_stat(stat)
 {
     if (!isDefined(stat))
@@ -2046,13 +2024,20 @@ get_locker_stat(stat)
 */
 
 first_box_handler()
+fridge_weapon_verification(weapon_key)
 {
     LEVEL_ENDON
+    wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
+    // DEBUG_PRINT("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
     if (!has_magic())
         return;
+    if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
+        return "";
 
     flag_wait("initial_blackscreen_passed");
+    if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
+        return "";
 
     /*  Init thread counting box hits */
     thread init_boxhits_watcher();
@@ -2062,20 +2047,36 @@ first_box_handler()
     /* First Box location main loop */
     thread first_box_location();
 #endif
+    return wpn;
 }
 
 init_boxhits_watcher()
+fridge_pap_weapon_verification(weapon_key)
 {
     LEVEL_ENDON
     level endon("break_firstbox");
+    weapon_key = fridge_weapon_verification(weapon_key);
+    // DEBUG_PRINT("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
 
     while (!isDefined(level.chests))
+    /* Give set attachment if weapon supports it */
+    att = fridge_pap_weapon_attachment_rules(weapon_key);
+    if (weapon_key != "" && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon_key, att))
     {
         /* Escape if chests are not defined yet */
         if (!did_game_just_start())
             return;
         wait 0.05;
+        base = maps\mp\zombies\_zm_weapons::get_base_name(weapon_key);
+        return level.zombie_weapons[base].upgrade_name + "+" + att;
     }
+    /* Else just give base attachment */
+    else if (weapon_key != "")
+    {
+        return maps\mp\zombies\_zm_weapons::get_upgrade_weapon(weapon_key);
+    }
+    return weapon_key;
+}
 
     level.total_box_hits = 0;
     foreach (chest in level.chests)
@@ -2086,7 +2087,16 @@ init_boxhits_watcher()
         wait 0.05;
 
     level notify("break_box_location");
+fridge_pap_weapon_attachment_rules(weapon_key)
+{
+    switch (weapon_key)
+    {
+        default:
+            return "mms";
+    }
 }
+#endif
+
 
 watch_box_state()
 {
