@@ -382,8 +382,8 @@ init_b2_watchers()
 #endif
 
 #if FEATURE_CHARACTERS == 1
-    dvars["char"] = ::characters_input;
-    dvars["whoami"] = ::check_whoami;
+    chat["char"] = ::characters_input;
+    chat["whoami"] = ::check_whoami;
 #endif
 
 #if FEATURE_BOXTRACKER == 1
