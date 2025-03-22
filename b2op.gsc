@@ -110,23 +110,8 @@ init()
     init_b2_characters();
     init_b2_permaperks();
 
-#if DEBUG == 1
-_dvar_reader()
-{
-    LEVEL_ENDON
-    setDvar("getDvarValue", "");
-    while (true)
-    {
-        wait 0.05;
-        val = getDvar("getDvarValue");
-        if (val == "")
-            continue;
-        DEBUG_PRINT("DVAR " + val + " => " + getDvar(val));
-        setDvar("getDvarValue", "");
-    }
     thread post_init();
 }
-#endif
 
 post_init()
 {
@@ -3210,6 +3195,12 @@ character_wrapper()
 */
 
 #if DEBUG == 1
+_dvar_reader(dvar)
+{
+    DEBUG_PRINT("DVAR " + dvar + " => " + getDvar(dvar));
+    return true;
+}
+
 _network_frame_hud()
 {
     LEVEL_ENDON
@@ -3230,7 +3221,7 @@ _zone_hud()
 {
     PLAYER_ENDON
 
-    player_wait_for_initial_blackscreen();
+    flag_wait("initial_blackscreen_passed");
 
     self thread _get_my_coordinates();
 
