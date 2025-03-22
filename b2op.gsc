@@ -341,6 +341,10 @@ init_b2_watchers()
     dvars["kill_hud"] = ::kill_hud;
 #endif
 
+#if FEATURE_BOXTRACKER == 1
+    dvars["avg"] = ::get_box_average;
+#endif
+
 #if FEATURE_BOXTRACKER == 1 && FEATURE_HUD == 1
     dvars["box_tracker"] = ::box_tracker_alpha;
 #endif
@@ -380,6 +384,10 @@ init_b2_watchers()
 #if FEATURE_CHARACTERS == 1
     dvars["char"] = ::characters_input;
     dvars["whoami"] = ::check_whoami;
+#endif
+
+#if FEATURE_BOXTRACKER == 1
+    dvars["avg"] = ::get_box_average;
 #endif
 
     thread chat_watcher(chat);
@@ -2385,7 +2393,7 @@ get_weapon_key(weapon_str, verifier)
     return key;
 }
 
-default_weapon_verification()
+default_weapon_verification(weapon_key)
 {
     weapon_key = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
 
@@ -2501,6 +2509,14 @@ is_tracking_box_key(key)
             return is_survival_map();
         default:
             return false;
+    }
+}
+
+get_box_average(value, key, player)
+{
+    switch (value)
+    {
+
     }
 }
 #endif
