@@ -2579,6 +2579,10 @@ rig_box(guns, player)
     if (weapon_key == "")
     {
         print_scheduler("Wrong weapon key: ^1" + guns[0]);
+        if (guns.size > 1 && isDefined(level.total_box_hits))
+        {
+            rig_box(array_shift(guns), player);
+        }
         return;
     }
 
@@ -2634,11 +2638,7 @@ rig_box(guns, player)
     /* Handle gun chaining recursively */
     if (guns.size > 1 && isDefined(level.total_box_hits))
     {
-        new_gun_array = [];
-        for (i = 1; i < guns.size; i++)
-            new_gun_array[new_gun_array.size] = guns[i];
-
-        rig_box(new_gun_array, player);
+        rig_box(array_shift(guns), player);
     }
 
     flag_clear("b2_fb_locked");
