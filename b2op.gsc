@@ -464,9 +464,6 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_duration)
 #endif
-
-        if (is_round(RNG_ROUND))
-            level notify("b2_box_free");
         // level waittill("between_round_over");
     }
 }
@@ -2118,15 +2115,14 @@ watch_box_state()
 #if FEATURE_BOXTRACKER == 1
         if (is_survival_map())
         {
-            // update_boxtracker_hud(BOXTRACKER_KEY_TOTAL);
             self.zbarrier thread boxtracker_watchweapon(self.chest_user);
         }
 #endif
 
         self.zbarrier waittill("randomization_done");
         wait 0.05;
-        level notify("b2_box_free");
-        DEBUG_PRINT("emit 'b2_box_free'");
+        level notify("b2_box_restore");
+        DEBUG_PRINT("emit 'b2_box_restore'");
     }
 }
 
@@ -2438,7 +2434,6 @@ boxtracker_watchweapon(player)
 
     key = self.weapon_string;
 
-    /* TODO Additional logic for tracking which hit to use for averages */
     foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
     {
         if (player player_box_weapon_verification(wpn_to_avg) != "" || key == wpn_to_avg)
@@ -2543,12 +2538,14 @@ first_box()
     level.rigged_hits = 0;
     thread print_scheduler("First Box module: ^2AVAILABLE");
 
-    while (!is_round(RNG_ROUND))
+    while (!is_round(RNG_ROUND) && !is_true(level.zombie_vars["zombie_powerup_fire_sale_on"]))
         wait 0.1;
 
     print_scheduler("First Box module: ^1" + "DISABLED");
     if (level.rigged_hits)
         print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
+    level notify("b2_box_restore");
+    flag_set("b2_first_box_terminated");
 
     CLEAR(level.rigged_hits)
 }
@@ -2569,6 +2566,9 @@ firstbox_input(value, key, player)
 rig_box(guns, player)
 {
     LEVEL_ENDON
+
+    if (flag("b2_first_box_terminated"))
+        return;
 
     weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
     if (level.players.size == 1)
@@ -2620,7 +2620,7 @@ rig_box(guns, player)
             level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
     }
 
-    level waittill("b2_box_free");
+    level waittill("b2_box_restore");
     wait 0.1;
 
     level.special_weapon_magicbox_check = saved_check;
