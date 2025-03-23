@@ -725,6 +725,21 @@ sstr(value)
     return value;
 }
 
+gettype(value)
+{
+    if (isint(value))
+        return "integer";
+    if (isfloat(value))
+        return "float";
+    if (isstring(value))
+        return "string";
+    if (isarray(value))
+        return "array";
+    if (value == true || value == false)
+        return "boolean";
+    return "struct";
+}
+
 naive_round(floating_point)
 {
     floating_point = int(floating_point * 1000);
