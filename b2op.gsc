@@ -2445,9 +2445,6 @@ is_tracking_box_key(key)
     {
         case BOXTRACKER_KEY_JOKER:
             return is_survival_map() && box_has_joker();
-        case WEAPON_NAME_MONK:
-        case WEAPON_NAME_EMP:
-            return is_survival_map() && emp_on_the_map();
         case WEAPON_NAME_MK1:
         case WEAPON_NAME_MK2:
         case BOXTRACKER_KEY_TOTAL:
