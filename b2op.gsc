@@ -696,19 +696,38 @@ array_create(values, keys)
 
 array_implode(separator, arr)
 {
-    str = "";
-    len = arr.size;
-    if (len == 0)
+    if (arr.size == 0)
         return "";
 
-    for (i = 0; i < len; i++)
+    str = "";
+    first = true;
+    foreach (element in arr)
     {
-        if (i == 0)
-            str += sstr(arr[i]);
+        if (first)
+            str += sstr(element);
         else
-            str += separator + sstr(arr[i]);
+            str += separator + sstr(element);
+
+        first = false;
     }
     return str;
+}
+
+array_shift(arr)
+{
+    new_arr = [];
+    if (arr.size < 2)
+        return new_arr;
+
+    first = true;
+    foreach (value in arr)
+    {
+        if (!first)
+            new_arr[new_arr.size] = value;
+        first = false;
+    }
+
+    return new_arr;
 }
 
 sstr(value)
