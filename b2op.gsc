@@ -738,6 +738,46 @@ naive_round(floating_point)
     return floating_point / 1000;
 }
 
+number_round(floating_point, decimal_places, format)
+{
+    if (!isDefined(decimal_places))
+        decimal_places = 0;
+
+    factor = int(pow(10, decimal_places));
+    scaled = floating_point * factor;
+    decimal = scaled - int(scaled);
+
+    if (is_true(format))
+    {
+        full_scaled = int(scaled);
+        full = "" + (int(full_scaled / factor));
+        decimal = "" + (int(abs(full_scaled) % factor));
+
+        // DEBUG_PRINT("decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + gettype(scaled) + " typeof(factor)=" + gettype(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
+
+        for (i = decimal.size; i < decimal_places; i++)
+        {
+            decimal = "0" + decimal;
+        }
+
+        number = full;
+        if (floating_point < 0 && full == "0")
+            number = "-" + full;
+        if (decimal_places)
+            number += "." + decimal;
+        return number;
+    }
+
+    if (decimal >= 0.5)
+        scaled = int(scaled) + 1;
+    else if (decimal <= -0.5)
+        scaled = int(scaled) - 1;
+    else
+        scaled = int(scaled);
+
+    return scaled / factor;
+}
+
 is_town()
 {
     return level.script == "zm_transit" && level.scr_zm_map_start_location == "town" && level.scr_zm_ui_gametype_group == "zsurvival";
