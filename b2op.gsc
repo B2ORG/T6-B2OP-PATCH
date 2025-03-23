@@ -338,9 +338,7 @@ init_b2_watchers()
 #endif
 
 #if FEATURE_BOXTRACKER == 1
-    dvars["avg"] = ::get_box_average;
-#endif
-
+    dvars["box"] = ::print_box_stats;
 #endif
 
 #if FEATURE_FRIDGE == 1
@@ -381,7 +379,7 @@ init_b2_watchers()
 #endif
 
 #if FEATURE_BOXTRACKER == 1
-    dvars["avg"] = ::get_box_average;
+    chat["box"] = ::print_box_stats;
 #endif
 
     thread chat_watcher(chat);
@@ -2322,7 +2320,7 @@ setup_box_tracker()
 {
     PLAYER_ENDON
 
-    if (!isDefined(level.boxtracker_pulls))
+    if (!isDefined(level.boxtracker_pulls) || !isDefined(level.boxtracker_cnt_to_avg))
     {
         if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
         {
@@ -2334,6 +2332,7 @@ setup_box_tracker()
             if (is_tracking_box_key(wpn))
             {
                 level.boxtracker_pulls[wpn] = [];
+                level.boxtracker_cnt_to_avg[wpn] = 0;
             }
         }
     }
@@ -2370,16 +2369,25 @@ boxtracker_watchweapon(player)
     if (!isDefined(self.weapon_string))
     {
         level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
-        // thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
-        return;
-    }
-
-    if (!is_tracking_box_key(self.weapon_string))
-    {
         return;
     }
 
     key = self.weapon_string;
+
+    /* TODO Additional logic for tracking which hit to use for averages */
+    foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
+    {
+        if (player player_box_weapon_verification(wpn_to_avg) != "" || key == wpn_to_avg)
+        {
+            level.boxtracker_cnt_to_avg[wpn_to_avg]++;
+            DEBUG_PRINT("Adding '" + wpn_to_avg + "' to available_but_did_not_get");
+        }
+    }
+
+    if (!is_tracking_box_key(key))
+    {
+        return;
+    }
 
     if (!isDefined(level.boxtracker_pulls[key]) || !isDefined(level.boxtracker_pulls[key][player.name]))
     {
@@ -2388,8 +2396,7 @@ boxtracker_watchweapon(player)
     }
 
     level.boxtracker_pulls[key][player.name]++;
-
-    // thread update_boxtracker_hud(key);
+    print_box_stats(key, "box");
 }
 
 is_tracking_box_key(key)
@@ -2410,12 +2417,54 @@ is_tracking_box_key(key)
     }
 }
 
-get_box_average(value, key, player)
+print_box_stats(value, key, player)
 {
-    switch (value)
-    {
+    DEBUG_PRINT("print_box_stats('" + value + "')");
 
+    weapon = get_weapon_key(value);
+
+    switch (weapon)
+    {
+        case WEAPON_NAME_MK1:
+            print_scheduler("Hits total: ^1" + level.total_box_hits 
+                + "^7 MK1 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK1) 
+                + "^7 MK1 avg: ^1" + get_average(WEAPON_NAME_MK1)
+            );
+            break;
+        case WEAPON_NAME_MK2:
+            print_scheduler("Hits total: ^1" + level.total_box_hits 
+                + "^7 MK2 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK2) 
+                + "^7 MK2 avg: ^1" + get_average(WEAPON_NAME_MK2)
+            );
+            break;
+        default:
+            print_scheduler("Hits total: ^1" + level.total_box_hits + "^7 Jokers: ^1" + level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]);
+            print_scheduler("^7 MK1 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK1) + "^7 MK1 avg: ^1" + get_average(WEAPON_NAME_MK1));
+            print_scheduler("^7 MK2 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK2) + "^7 MK2 avg: ^1" + get_average(WEAPON_NAME_MK2));
     }
+
+    return true;
+}
+
+get_total_pulls(key)
+{
+    value = 0;
+    if (!isDefined(level.boxtracker_pulls[key]))
+        return value;
+
+    foreach (pull in level.boxtracker_pulls[key])
+        value += pull;
+    return value;
+}
+
+get_average(key)
+{
+    no_joker_pulls = level.boxtracker_cnt_to_avg[key] - level.boxtracker_pulls[BOXTRACKER_KEY_JOKER];
+    key_pulls = get_total_pulls(key);
+    if (no_joker_pulls == 0 || key_pulls == 0)
+        return 0;
+
+    return number_round(no_joker_pulls / key_pulls, 3, true);
 }
 #endif
 
