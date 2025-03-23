@@ -2536,7 +2536,7 @@ first_box()
     LEVEL_ENDON
 
     level.rigged_hits = 0;
-    thread print_scheduler("First Box module: ^2AVAILABLE");
+    print_scheduler("First Box module: ^2AVAILABLE");
 
     while (!is_round(RNG_ROUND) && !is_true(level.zombie_vars["zombie_powerup_fire_sale_on"]))
         wait 0.1;
