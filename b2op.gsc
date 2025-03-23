@@ -196,10 +196,6 @@ init_b2_hud()
 {
 #if FEATURE_HUD == 1
     create_timers();
-    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
-    {
-        box_tracker_hud();
-    }
 
     thread buildable_component();
     thread fridge_handler();
@@ -345,8 +341,6 @@ init_b2_watchers()
     dvars["avg"] = ::get_box_average;
 #endif
 
-#if FEATURE_BOXTRACKER == 1 && FEATURE_HUD == 1
-    dvars["box_tracker"] = ::box_tracker_alpha;
 #endif
 
 #if FEATURE_FRIDGE == 1
@@ -1335,14 +1329,6 @@ kill_hud()
         level.subwoofer_hud destroyelem();
     if (isDefined(level.turbine_hud))
         level.turbine_hud destroyelem();
-    if (isDefined(level.boxtracker_total_hud))
-        level.boxtracker_total_hud destroyelem();
-    if (isDefined(level.boxtracker_mk1_hud))
-        level.boxtracker_mk1_hud destroyelem();
-    if (isDefined(level.boxtracker_mk2_hud))
-        level.boxtracker_mk2_hud destroyelem();
-    if (isDefined(level.boxtracker_joker_hud))
-        level.boxtracker_joker_hud destroyelem();
 }
 
 create_timers()
@@ -1420,109 +1406,6 @@ show_hordes()
         zombies_value = get_hordes_left();
         print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value);
     }
-}
-#endif
-
-#if FEATURE_BOXTRACKER == 1
-box_tracker_hud()
-{
-    y_pos = -100;
-    if (is_tracking_box_key(BOXTRACKER_KEY_TOTAL))
-    {
-        level.boxtracker_total_hud = createserverfontstring("objective", 1.2);
-        level.boxtracker_total_hud set_hud_properties("boxtracker_total_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_total_hud.label = &"BOX HITS: ";
-        level.boxtracker_total_hud setValue(0);
-        level.boxtracker_total_hud.alpha = 1;
-        y_pos += 15;
-    }
-
-    if (is_tracking_box_key(WEAPON_NAME_MK1))
-    {
-        level.boxtracker_mk1_hud = createserverfontstring("objective", 1.1);
-        level.boxtracker_mk1_hud set_hud_properties("boxtracker_mk1_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_mk1_hud.label = &"MK1: ";
-        level.boxtracker_mk1_hud setValue(0);
-        level.boxtracker_mk1_hud.alpha = 1;
-        y_pos += 11;
-    }
-
-    if (is_tracking_box_key(WEAPON_NAME_MK2))
-    {
-        level.boxtracker_mk2_hud = createserverfontstring("objective", 1.1);
-        level.boxtracker_mk2_hud set_hud_properties("boxtracker_mk2_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_mk2_hud.label = &"MK2: ";
-        level.boxtracker_mk2_hud setValue(0);
-        level.boxtracker_mk2_hud.alpha = 1;
-        y_pos += 11;
-    }
-
-    if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
-    {
-        level.boxtracker_joker_hud = createserverfontstring("objective", 1.1);
-        level.boxtracker_joker_hud set_hud_properties("boxtracker_joker_hud", "LEFT", "LEFT", -60, y_pos);
-        level.boxtracker_joker_hud.label = &"Joker: ";
-        level.boxtracker_joker_hud setValue(0);
-        level.boxtracker_joker_hud.alpha = 1;
-        y_pos += 11;
-    }
-}
-
-update_boxtracker_hud(key)
-{
-    LEVEL_ENDON
-
-    while (flag("b2_boxtracker_hud_busy"))
-    {
-        wait 0.05;
-    }
-
-    flag_set("b2_boxtracker_hud_busy");
-
-    DEBUG_PRINT("update_boxtracker_hud() lock acquired, key: " + sstr(key));
-
-    val = 0;
-    if (is_tracking_box_key(key))
-    {
-        switch (key)
-        {
-            case BOXTRACKER_KEY_TOTAL:
-                level.boxtracker_total_hud setValue(level.total_box_hits);
-                break;
-            case BOXTRACKER_KEY_JOKER:
-                level.boxtracker_joker_hud setValue(level.boxtracker_pulls[key]);
-                break;
-            case WEAPON_NAME_MK1:
-                foreach (pull in level.boxtracker_pulls[key])
-                {
-                    val += pull;
-                }
-                level.boxtracker_mk1_hud setValue(val);
-                break;
-            case WEAPON_NAME_MK2:
-                foreach (pull in level.boxtracker_pulls[key])
-                {
-                    val += pull;
-                }
-                level.boxtracker_mk2_hud setValue(val);
-                break;
-        }
-    }
-
-    flag_clear("b2_boxtracker_hud_busy");
-    DEBUG_PRINT("update_boxtracker_hud() lock released, value: '" + val + "' for key '" + key + "'");
-}
-
-box_tracker_alpha(value)
-{
-    if (isDefined(level.boxtracker_total_hud) && level.boxtracker_total_hud.alpha != int(value))
-        level.boxtracker_total_hud.alpha = int(value);
-    if (isDefined(level.boxtracker_joker_hud) && level.boxtracker_joker_hud.alpha != int(value))
-        level.boxtracker_joker_hud.alpha = int(value);
-    if (isDefined(level.boxtracker_mk1_hud) && level.boxtracker_mk1_hud.alpha != int(value))
-        level.boxtracker_mk1_hud.alpha = int(value);
-    if (isDefined(level.boxtracker_mk2_hud) && level.boxtracker_mk2_hud.alpha != int(value))
-        level.boxtracker_mk2_hud.alpha = int(value);
 }
 #endif
 
@@ -2175,7 +2058,7 @@ watch_box_state()
 #if FEATURE_BOXTRACKER == 1
         if (is_survival_map())
         {
-            update_boxtracker_hud(BOXTRACKER_KEY_TOTAL);
+            // update_boxtracker_hud(BOXTRACKER_KEY_TOTAL);
             self.zbarrier thread boxtracker_watchweapon(self.chest_user);
         }
 #endif
@@ -2487,7 +2370,7 @@ boxtracker_watchweapon(player)
     if (!isDefined(self.weapon_string))
     {
         level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
-        thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
+        // thread update_boxtracker_hud(BOXTRACKER_KEY_JOKER);
         return;
     }
 
@@ -2506,7 +2389,7 @@ boxtracker_watchweapon(player)
 
     level.boxtracker_pulls[key][player.name]++;
 
-    thread update_boxtracker_hud(key);
+    // thread update_boxtracker_hud(key);
 }
 
 is_tracking_box_key(key)
