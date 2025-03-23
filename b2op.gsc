@@ -464,6 +464,9 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         CLEAR(round_duration)
 #endif
+
+        if (is_round(RNG_ROUND))
+            level notify("b2_box_free");
         // level waittill("between_round_over");
     }
 }
@@ -2101,8 +2104,10 @@ watch_box_state()
         }
 #endif
 
-        while (self.zbarrier getzbarrierpiecestate(2) == "opening")
-            wait 0.05;
+        self.zbarrier waittill("randomization_done");
+        wait 0.05;
+        level notify("b2_box_free");
+        DEBUG_PRINT("emit 'b2_box_free'");
     }
 }
 
@@ -2579,7 +2584,7 @@ rig_box(guns, player)
         {
             removed_guns[removed_guns.size] = weapon;
             level.zombie_weapons[weapon].is_in_box = 0;
-            // DEBUG_PRINT("FIRST BOX: setting " + weapon + ".is_in_box to 0");
+            DEBUG_PRINT("rig_box(" + weapon_key + "): setting " + weapon + ".is_in_box to 0");
         }
     }
 
@@ -2592,18 +2597,8 @@ rig_box(guns, player)
             level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
     }
 
-    /* Critical loop responsible for restoring proper state */
-    while ((current_box_hits == level.total_box_hits) || !isDefined(level.total_box_hits))
-    {
-        if (is_round(RNG_ROUND))
-        {
-            // DEBUG_PRINT("FIRST BOX: breaking out of First Box above round 10");
-            break;
-        }
-        wait 0.05;
-    }
-        
-    wait 5;
+    level waittill("b2_box_free");
+    wait 0.1;
 
     level.special_weapon_magicbox_check = saved_check;
 
@@ -2613,7 +2608,7 @@ rig_box(guns, player)
         foreach (rweapon in removed_guns)
         {
             level.zombie_weapons[rweapon].is_in_box = 1;
-            // DEBUG_PRINT("FIRST BOX: setting " + rweapon + ".is_in_box to 1");
+            DEBUG_PRINT("rig_box(" + weapon_key + "): setting " + rweapon + ".is_in_box to 1");
         }
     }
 
