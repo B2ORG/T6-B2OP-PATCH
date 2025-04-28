@@ -7,7 +7,7 @@
 #define BETA 0
 
 /* Const macros */
-#define B2OP_VER 3.7
+#define B2OP_VER 3.8
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -955,6 +955,8 @@ set_dvars()
     dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);
     /* Offsets for pluto draws compatibile with b2 timers */
     dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
+    /* Displays the game status ID */
+    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    false,  false,      ::is_4k);
 
     protected = [];
     foreach (dvar in dvars)
