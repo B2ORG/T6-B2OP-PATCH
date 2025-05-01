@@ -1,3 +1,11 @@
+# Version 3.8
+
+- Add enabling `cg_drawIdentifier` dvar for future Pluto update
+
+# Version 3.7
+
+- Restore correct default value for `ai_corpseCount` dvar
+
 # Version 3.6
 
 - Additional fix to 3.5 change regarding `lb` command adding fire sale to Origins dig spots drop cycle

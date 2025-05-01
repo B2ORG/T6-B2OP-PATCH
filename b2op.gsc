@@ -8,7 +8,7 @@
 #define BETA 0
 
 /* Const macros */
-#define B2OP_VER 3.6
+#define B2OP_VER 3.8
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -1228,6 +1228,87 @@ should_print_checksum()
     return false;
 }
 #endif
+
+set_dvars()
+{
+    LEVEL_ENDON
+
+    /* 2 layers for Irony */
+    if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
+    {
+        if (!is_4k())
+        {
+            level.round_start_custom_func = ::trap_fix;
+        }
+    }
+
+#if FEATURE_CHARACTERS == 1
+    if (!is_survival_map())
+    {
+        level.callbackplayerdisconnect = ::character_flag_cleanup;
+    }
+#endif
+
+    dvars = [];
+    /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                    */
+    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
+    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
+    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false);
+#if FEATURE_HORDES == 1
+    dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
+#endif
+    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+#if FEATURE_CHARACTERS == 1 && REDACTED == 1
+    dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
+#endif
+    if (getDvar("steam_backspeed") == "1")
+    {
+        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
+        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.7",                  false,  false);
+    }
+    else
+    {
+        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "1",                    false,  false);
+        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.9",                  false,  false);
+    }
+    dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "8",                    true,   false);
+    /* Prevent host migration (redundant nowadays) */
+    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
+    /* Force post dlc1 patch on recoil */
+    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,  false);
+    /* Remove Depth of Field */
+    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);
+    /* Fix for devblocks in r3903/3904 */
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_3k);
+    /* Use native health fix, r4516+ */
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);
+    /* Defines if Pluto error fixes are applied, r4516+ */
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);
+    /* Enables flashing hashes of individual scripts */
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);
+    /* Offsets for pluto draws compatibile with b2 timers */
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
+    /* Displays the game status ID */
+    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    false,  false,      ::is_4k);
+
+    protected = [];
+    foreach (dvar in dvars)
+    {
+        set_dvar_internal(dvar);
+        if (is_true(dvar.protected))
+            protected[dvar.name] = dvar.value;
+    }
+
+    CLEAR(dvars)
+
+    level thread dvar_watcher(protected);
+}
 
 set_dvar_internal(dvar)
 {
