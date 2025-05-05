@@ -1248,8 +1248,13 @@ set_dvar_internal(dvar)
 
 register_dvar(dvar, set_value, b2_protect, init_only, closure)
 {
-    if (isDefined(closure) && ![[closure]]())
-        return undefined;
+    if (isDefined(closure))
+    {
+        if (isarray(closure) && !call_func_with_variadic_args(closure[0], array_shift(closure)))
+            return undefined;
+        else if (![[closure]]())
+            return undefined;
+    }
 
     dvar_data = SpawnStruct();
     dvar_data.name = dvar;
