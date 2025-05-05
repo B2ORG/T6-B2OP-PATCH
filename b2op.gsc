@@ -1192,14 +1192,8 @@ welcome_prints()
 
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
-
     wait 0.75;
-#if PLUTO == 1
-    self iprintln(get_launcher_as_txt() + " " + COLOR_TXT(get_plutonium_version(), COL_RED) + " | " + get_session_status_as_txt() + " | " + get_connection_status_as_txt());
-#else
-    self iprintln(get_launcher_as_txt() + " | " + get_session_status_as_txt() + " | " + get_connection_status_as_txt());
-#endif
-
+    self iprintln(compose_welcome_print());
     wait 0.75;
     self iprintln("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 
@@ -1208,6 +1202,18 @@ welcome_prints()
     print_scheduler(COLOR_TXT("DEPRECATION NOTICE", COL_RED), self);
     print_scheduler("Version for " + COLOR_TXT(get_launcher_as_txt(), COL_RED) + "is deprecated. Check ReadMe for more info!", self);
 #endif
+}
+
+compose_welcome_print()
+{
+    out = array(get_launcher_as_txt());
+    if (get_plutonium_version())
+        out[0] += " " + COLOR_TXT(get_plutonium_version(), COL_RED);
+    out[out.size] = get_session_status_as_txt();
+    out[out.size] = get_connection_status_as_txt();
+    if (is_plutonium_version(4843))
+        out[out.size] = get_graphic_content_as_txt();
+    return array_implode(" | ", out);
 }
 
 #if PLUTO == 1
@@ -1411,6 +1417,13 @@ get_session_status_as_txt()
     if (sessionmodeisprivate())
         return COLOR_TXT("PRIVATE", COL_GREEN);
     return COLOR_TXT("SOLO", COL_YELLOW);
+}
+
+get_graphic_content_as_txt()
+{
+    if (!is_mature())
+        return COLOR_TXT("REDUCED GC", COL_YELLOW);
+    return COLOR_TXT("UNRESTRICTED GC", COL_GREEN);
 }
 
 load_b2_splits()
