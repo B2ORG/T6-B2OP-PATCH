@@ -147,6 +147,11 @@ class Gsc:
         return self
 
 
+    def check_debug(self) -> "Gsc":
+        self.debugger = self._code.find("#define DEBUG 1") != -1
+        return self
+
+
     def save(self, path: str, local_changes: dict[str, str]) -> "Gsc":
         changes: dict[str, str] = deepcopy(Gsc.REPLACEMENTS) | local_changes
         changed: str = copy(self._code)
@@ -270,7 +275,11 @@ def main() -> None:
     clear_files(os.path.join(CWD, PARSED_DIR), r".*")
     clear_files(os.path.join(CWD, COMPILED_DIR), r".*")
 
-    gsc: Gsc = Gsc().load_file(os.path.join(CWD, B2OP)).check_whitespace()
+    gsc: Gsc = (Gsc()
+        .load_file(os.path.join(CWD, B2OP))
+        .check_whitespace()
+        .check_debug()
+    )
 
     # New pluto
     with Chunk("PLUTONIUM:"):
@@ -350,6 +359,10 @@ def main() -> None:
         )
 
         flash_hash(os.path.join(CWD, COMPILED_DIR, "b2op-ancient.gsc"))
+
+    # Warn if release has debugger enabled
+    if gsc.debugger:
+        print(f"WARNING!!! Debugger is enabled")
 
     # Reset file
     gsc.save(os.path.join(CWD, B2OP), {"#define RAW 0": "#define RAW 1"})
