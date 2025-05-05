@@ -1119,6 +1119,11 @@ dvar_protector(dvars)
     }
 }
 
+dvar_watcher(dvars)
+{
+
+}
+
 #if PLUTO == 1
 chat_watcher(lookups)
 {
