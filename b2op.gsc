@@ -264,7 +264,7 @@ init_b2_dvars()
     /* 2 layers for Irony */
     if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
     {
-        if (!is_pluto_version(VER_4K))
+        if (!is_plutonium_version(VER_4K))
         {
             level.round_start_custom_func = ::trap_fix;
         }
@@ -309,7 +309,7 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
-    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "8",                    true,   false,      array(::is_pluto_version, 4837, true));
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "8",                    true,   false,      array(::is_plutonium_version, 4837, true));
     /* Prevent host migration (redundant nowadays) */
     dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
     /* Force post dlc1 patch on recoil */
@@ -317,17 +317,17 @@ init_b2_dvars()
     /* Remove Depth of Field */
     dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);
     /* Fix for devblocks in r3903/3904 */
-    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      array(::is_pluto_version, VER_3K));
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      array(::is_plutonium_version, VER_3K));
     /* Use native health fix, r4516+ */
-    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       array(::is_pluto_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       array(::is_plutonium_version, VER_4K));
     /* Defines if Pluto error fixes are applied, r4516+ */
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      array(::is_pluto_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Enables flashing hashes of individual scripts */
-    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_pluto_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Offsets for pluto draws compatibile with b2 timers */
     dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
     /* Displays the game status ID */
-    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    false,  false,      array(::is_pluto_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    false,  false,      array(::is_plutonium_version, VER_4K));
 
     protected = [];
     foreach (dvar in dvars)
@@ -950,7 +950,7 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
-    return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_pluto_version(VER_4K));
+    return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_plutonium_version(VER_4K));
 }
 
 is_redacted()
@@ -963,7 +963,7 @@ is_plutonium()
     return !is_redacted();
 }
 
-is_pluto_version(version, negate)
+is_plutonium_version(version, negate)
 {
     if (is_true(negate))
         return get_plutonium_version() < version;
@@ -1430,7 +1430,7 @@ load_b2_splits()
 {
     splits = [];
 #if PLUTO == 1
-    if (is_pluto_version(VER_4K) && fs_testfile("splits.txt"))
+    if (is_plutonium_version(VER_4K) && fs_testfile("splits.txt"))
     {
         // DEBUG_PRINT("splits init");
         f = fs_fopen("splits.txt", "read");
