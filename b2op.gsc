@@ -1192,6 +1192,16 @@ welcome_prints()
 #endif
     wait 0.75;
     self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
+
+#if REDACTED == 1
+    level waittill("end_of_round");
+    print_scheduler("^1DEPRECATION NOTICE", self);
+    print_scheduler("Version for ^1Redacted ^7is deprecated. Check ReadMe for more info!", self);
+#elif ANCIENT == 1
+    level waittill("end_of_round");
+    print_scheduler("^1DEPRECATION NOTICE", self);
+    print_scheduler("Version for ^1Ancient ^7is deprecated. Check ReadMe for more info!", self);
+#endif
 }
 
 #if PLUTO == 1
