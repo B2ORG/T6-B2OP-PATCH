@@ -93,8 +93,8 @@
 #if PLUTO == 1
 main()
 {
-    replaceFunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-    replaceFunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+    replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+    replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
 }
 #endif
 
@@ -214,7 +214,7 @@ init_b2_box()
 
     LEVEL_ENDON
 
-    while (!isDefined(level.chests))
+    while (!isdefined(level.chests))
     {
         /* Escape if chests are not defined yet */
         if (!did_game_just_start())
@@ -285,7 +285,7 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
 #endif
 
-    if (getDvar("steam_backspeed") == "1")
+    if (getdvar("steam_backspeed") == "1")
     {
         dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
         dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.7",                  false,  false);
@@ -357,7 +357,7 @@ init_b2_watchers()
 #endif
 
 #if DEBUG == 1
-    dvars["getDvarValue"] = ::_dvar_reader;
+    dvars["getdvarValue"] = ::_dvar_reader;
 #endif
 
     thread dvar_watcher(dvars);
@@ -394,19 +394,19 @@ b2op_main_loop()
     LEVEL_ENDON
 
     // DEBUG_PRINT("initialized b2op_main_loop");
-    game_start = getTime();
+    game_start = gettime();
 
     while (true)
     {
         level waittill("start_of_round");
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
-        round_start = getTime();
+        round_start = gettime();
 #endif
 
 #if FEATURE_HUD == 1
-        if (isDefined(level.round_hud))
+        if (isdefined(level.round_hud))
         {
-            level.round_hud setTimerUp(0);
+            level.round_hud settimerup(0);
         }
 #endif
 
@@ -426,11 +426,11 @@ b2op_main_loop()
         level waittill("end_of_round");
 
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
-        round_duration = getTime() - round_start;
+        round_duration = gettime() - round_start;
 #endif
 
 #if FEATURE_HUD == 1
-        if (isDefined(level.round_hud))
+        if (isdefined(level.round_hud))
         {
             level.round_hud thread keep_displaying_old_time(round_duration);
         }
@@ -447,7 +447,7 @@ b2op_main_loop()
 #if FEATURE_PERMAPERKS == 1
         if (has_permaperks_system())
         {
-            setDvar("award_perks", 1);
+            setdvar("award_perks", 1);
         }
 #endif
 
@@ -517,29 +517,29 @@ generate_watermark(text, color, alpha_override)
     if (is_true(flag(text)))
         return;
 
-    if (!isDefined(level.set_of_slots))
+    if (!isdefined(level.set_of_slots))
         generate_watermark_slots();
 
     x_pos = get_watermark_position("perm");
-    if (!isDefined(x_pos))
+    if (!isdefined(x_pos))
         return;
 
-    if (!isDefined(color))
+    if (!isdefined(color))
         color = (1, 1, 1);
 
-    if (!isDefined(alpha_override))
+    if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
     watermark = createserverfontstring("hudsmall" , 1.2);
-    watermark setPoint("CENTER", "TOP", x_pos, -5);
+    watermark setpoint("CENTER", "TOP", x_pos, -5);
     watermark.color = color;
-    watermark setText(text);
+    watermark settext(text);
     watermark.alpha = alpha_override;
     watermark.hidewheninmenu = 0;
 
     flag_set(text);
 
-    if (!isDefined(level.num_of_watermarks))
+    if (!isdefined(level.num_of_watermarks))
         level.num_of_watermarks = 0;
     level.num_of_watermarks++;
 }
@@ -551,23 +551,23 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     if (is_true(flag(text)))
         return;
 
-    if (!isDefined(level.set_of_slots))
+    if (!isdefined(level.set_of_slots))
         generate_watermark_slots();
 
     x_pos = get_watermark_position("temp");
-    if (!isDefined(x_pos))
+    if (!isdefined(x_pos))
         return;
 
-    if (!isDefined(color))
+    if (!isdefined(color))
         color = (1, 1, 1);
 
-    if (!isDefined(alpha_override))
+    if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
     twatermark = createserverfontstring("hudsmall" , 1.2);
-    twatermark setPoint("CENTER", "TOP", x_pos, -17);
+    twatermark setpoint("CENTER", "TOP", x_pos, -17);
     twatermark.color = color;
-    twatermark setText(text);
+    twatermark settext(text);
     twatermark.alpha = alpha_override;
     twatermark.hidewheninmenu = 0;
 
@@ -596,13 +596,13 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 
 print_scheduler(content, player, delay)
 {
-    if (!isDefined(delay))
+    if (!isdefined(delay))
     {
         delay = 0;
     }
 
     // DEBUG_PRINT("print_scheduler(content='" + content + ")");
-    if (isDefined(player))
+    if (isdefined(player))
     {
         // DEBUG_PRINT(player.name + ": print scheduled: " + content);
         player thread player_print_scheduler(content, delay);
@@ -619,19 +619,19 @@ player_print_scheduler(content, delay)
 {
     PLAYER_ENDON
 
-    while (delay > 0 && isDefined(self.scheduled_prints) && getDvarInt("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getDvarInt("con_gameMsgWindow0LineCount"))
+    while (delay > 0 && isdefined(self.scheduled_prints) && getdvarint("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount"))
     {
         if (delay > 0)
             delay -= 0.05;
         wait 0.05;
     }
 
-    if (isDefined(self.scheduled_prints))
+    if (isdefined(self.scheduled_prints))
         self.scheduled_prints++;
     else
         self.scheduled_prints = 1;
 
-    self iPrintLn(content);
+    self iprintln(content);
     wait_for_message_end();
     self.scheduled_prints--;
 
@@ -685,7 +685,7 @@ array_create(values, keys)
     for (i = 0; i < values.size; i++)
     {
         key = i;
-        if (isDefined(keys[i]))
+        if (isdefined(keys[i]))
             key = keys[i];
 
         new_array[key] = values[i];
@@ -757,7 +757,7 @@ call_func_with_variadic_args(callback, arg_array)
 
 sstr(value)
 {
-    if (!isDefined(value))
+    if (!isdefined(value))
         return "undefined";
     else if (isarray(value))
         return "{" + array_implode(", ", value) + "}";
@@ -787,7 +787,7 @@ naive_round(floating_point)
 
 number_round(floating_point, decimal_places, format)
 {
-    if (!isDefined(decimal_places))
+    if (!isdefined(decimal_places))
         decimal_places = 0;
 
     factor = int(pow(10, decimal_places));
@@ -882,7 +882,7 @@ is_victis_map()
 
 did_game_just_start()
 {
-    return !isDefined(level.start_round) || !is_round(level.start_round + 2);
+    return !isdefined(level.start_round) || !is_round(level.start_round + 2);
 }
 
 is_round(rnd)
@@ -911,11 +911,11 @@ fetch_pluto_definition()
 
 try_parse_pluto_version()
 {
-    dvar = getDvar("version");
-    if (!isSubStr(dvar, "Plutonium"))
+    dvar = getdvar("version");
+    if (!issubstr(dvar, "Plutonium"))
         return 0;
 
-    parsed = getSubStr(dvar, 23, 27);
+    parsed = getsubstr(dvar, 23, 27);
     return int(parsed);
 }
 
@@ -927,11 +927,11 @@ get_plutonium_version()
 
     definitions = fetch_pluto_definition();
     detected_version = 0;
-    foreach (definition in array_reverse(getArrayKeys(definitions)))
+    foreach (definition in array_reverse(getarraykeys(definitions)))
     {
         version = definitions[definition];
         // DEBUG_PRINT("definition: " + definition + " version: " + version);
-        if (getDvar(definition) != "")
+        if (getdvar(definition) != "")
             detected_version = version;
     }
     return detected_version;
@@ -939,12 +939,12 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
-    return (getDvar("cg_debugInfoCornerOffset") == "40 0" && is_pluto_version(VER_4K));
+    return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_pluto_version(VER_4K));
 }
 
 is_redacted()
 {
-    return isSubStr(getDvar("sv_referencedFFNames"), "patch_redacted");
+    return issubstr(getdvar("sv_referencedFFNames"), "patch_redacted");
 }
 
 is_plutonium()
@@ -971,9 +971,9 @@ is_online_game()
 
 has_permaperks_system()
 {
-    // DEBUG_PRINT("has_permaperks_system()=" + (isDefined(level.pers_upgrade_boards) && is_online_game()));
+    // DEBUG_PRINT("has_permaperks_system()=" + (isdefined(level.pers_upgrade_boards) && is_online_game()));
     /* Refer to init_persistent_abilities() */
-    return isDefined(level.pers_upgrade_boards) && is_online_game();
+    return isdefined(level.pers_upgrade_boards) && is_online_game();
 }
 
 is_special_round()
@@ -988,12 +988,12 @@ is_tracking_buildables()
 
 has_buildables(name)
 {
-    return isDefined(level.zombie_buildables[name]);
+    return isdefined(level.zombie_buildables[name]);
 }
 
 get_locker_stat(stat)
 {
-    if (!isDefined(stat))
+    if (!isdefined(stat))
         stat = "name";
 
     value = self getdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", stat);
@@ -1009,7 +1009,7 @@ box_has_joker()
 
 emp_on_the_map()
 {
-    return isDefined(level.zombie_weapons[WEAPON_NAME_EMP]);
+    return isdefined(level.zombie_weapons[WEAPON_NAME_EMP]);
 }
 
 #if FEATURE_HORDES == 1
@@ -1026,12 +1026,12 @@ get_hordes_left()
 
 wait_for_message_end()
 {
-    wait getDvarFloat("con_gameMsgWindow0FadeInTime") + getDvarFloat("con_gameMsgWindow0MsgTime") + getDvarFloat("con_gameMsgWindow0FadeOutTime");
+    wait getdvarfloat("con_gameMsgWindow0FadeInTime") + getdvarfloat("con_gameMsgWindow0MsgTime") + getdvarfloat("con_gameMsgWindow0FadeOutTime");
 }
 
 emulate_menu_call(content, ent)
 {
-    if (!isDefined(ent))
+    if (!isdefined(ent))
         ent = level.players[0];
 
     ent notify ("menuresponse", "", content);
@@ -1082,7 +1082,7 @@ dvar_protector(dvars)
 {
     LEVEL_ENDON
 
-    keys = getArrayKeys(dvars);
+    keys = getarraykeys(dvars);
     foreach (key in keys)
     {
         setdvar(key, "");
@@ -1092,14 +1092,14 @@ dvar_protector(dvars)
     {
         foreach (dvar in keys)
         {
-            value = getDvar(dvar);
+            value = getdvar(dvar);
             if (!flag("b2_" + dvar + "_locked") && value != "")
             {
                 DEBUG_PRINT("dvar_callback('" + value + "', '" + dvar + "')");
                 reset = [[dvars[dvar]]](value, dvar);
                 if (is_true(reset))
                 {
-                    setDvar(dvar, "");
+                    setdvar(dvar, "");
                 }
             }
         }
@@ -1113,7 +1113,7 @@ chat_watcher(lookups)
 {
     LEVEL_ENDON
 
-    keys = getArrayKeys(lookups);
+    keys = getarraykeys(lookups);
     while (true)
     {
         level waittill("say", message, player);
@@ -1122,8 +1122,8 @@ chat_watcher(lookups)
         {
             if (!flag("b2_" + chat + "_locked") && isstrstart(message, chat))
             {
-                DEBUG_PRINT("chat_callback('" + getSubStr(message, chat.size + 1) + "', '" + chat + "', '" + player.name + "')");
-                [[lookups[chat]]](getSubStr(message, chat.size + 1), chat, player);
+                DEBUG_PRINT("chat_callback('" + getsubstr(message, chat.size + 1) + "', '" + chat + "', '" + player.name + "')");
+                [[lookups[chat]]](getsubstr(message, chat.size + 1), chat, player);
                 break;
             }
         }
@@ -1137,11 +1137,11 @@ chat_watcher(lookups)
 bad_file()
 {
     wait 0.75;
-    iPrintLn("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
+    iprintln("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
     wait 0.75;
-    iPrintLn("Please read the installation instructions on the patch ^5GitHub^7 page");
+    iprintln("Please read the installation instructions on the patch ^5GitHub^7 page");
     wait 0.75;
-    iPrintLn("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
+    iprintln("Source: ^3github.com/B2ORG/T6-B2OP-PATCH");
     wait 0.75;
 #if DEBUG == 0
     level notify("end_game");
@@ -1150,7 +1150,7 @@ bad_file()
 
 duplicate_file()
 {
-    iPrintLn("ONLY ONE ^1B2 ^7PATCH CAN RUN AT THE SAME TIME!");
+    iprintln("ONLY ONE ^1B2 ^7PATCH CAN RUN AT THE SAME TIME!");
 #if DEBUG == 0
     level notify("end_game");
 #endif
@@ -1160,7 +1160,7 @@ sniff()
 {
     LEVEL_ENDON
 
-    wait randomFloatRange(0.1, 1.2);
+    wait randomfloatrange(0.1, 1.2);
     if (flag("b2_on")) 
     {
         duplicate_file();
@@ -1176,22 +1176,22 @@ welcome_prints()
 
     wait 0.75;
 #if PLUTO == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
-    self iPrintLn(" Detected Plutonium version: ^1" + get_plutonium_version());
+    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
+    self iprintln(" Detected Plutonium version: ^1" + get_plutonium_version());
 #elif REDACTED == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
+    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
     if (is_online_game())
-        self iPrintLn(" ^2ONLINE ^7MODE");
+        self iprintln(" ^2ONLINE ^7MODE");
     else
-        self iPrintLn(" ^3OFFLINE ^7MODE");
+        self iprintln(" ^3OFFLINE ^7MODE");
 #elif ANCIENT == 1
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
-    // self iPrintLn("Detected Plutonium version: ^1" + get_plutonium_version());
+    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
+    // self iprintln("Detected Plutonium version: ^1" + get_plutonium_version());
 #else
-    self iPrintLn("B2^1OP^7 PATCH ^1V" + B2OP_VER);
+    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER);
 #endif
     wait 0.75;
-    self iPrintLn("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
+    self iprintln("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 
 #if REDACTED == 1
     level waittill("end_of_round");
@@ -1212,11 +1212,11 @@ print_checksums()
     print_scheduler("Showing patch checksums", maps\mp\_utility::gethostplayer());
     cmdexec("flashScriptHashes");
 
-    if (getDvar("cg_drawChecksums") != "1")
+    if (getdvar("cg_drawChecksums") != "1")
     {
-        setDvar("cg_drawChecksums", 1);
+        setdvar("cg_drawChecksums", 1);
         wait 3;
-        setDvar("cg_drawChecksums", 0);
+        setdvar("cg_drawChecksums", 0);
     }
 }
 
@@ -1251,7 +1251,7 @@ should_print_checksum()
 
 set_dvar_internal(dvar)
 {
-    if (!isDefined(dvar))
+    if (!isdefined(dvar))
         return;
     if (dvar.init_only && getdvar(dvar.name) != "")
         return;
@@ -1260,7 +1260,7 @@ set_dvar_internal(dvar)
 
 register_dvar(dvar, set_value, b2_protect, init_only, closure)
 {
-    if (isDefined(closure))
+    if (isdefined(closure))
     {
         if (isarray(closure) && !call_func_with_variadic_args(closure[0], array_shift(closure)))
             return undefined;
@@ -1287,18 +1287,18 @@ dvar_protection(dvars)
     flag_wait("initial_blackscreen_passed");
 
     /* We're setting them once again, to ensure lack of accidental detections */
-    foreach (name in getArrayKeys(dvars))
+    foreach (name in getarraykeys(dvars))
     {
-        if (isDefined(dvars[name]))
+        if (isdefined(dvars[name]))
             setdvar(name, dvars[name]);
     }
 
     while (true)
     {
-        foreach (name in getArrayKeys(dvars))
+        foreach (name in getarraykeys(dvars))
         {
             value = dvars[name];
-            if (getDvar(name) != value)
+            if (getdvar(name) != value)
             {
                 /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
                 generate_watermark("DVAR " + ToUpper(name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
@@ -1342,9 +1342,9 @@ evaluate_network_frame()
 
     flag_wait("initial_blackscreen_passed");
 
-    start_time = getTime();
+    start_time = gettime();
     wait_network_frame();
-    network_frame_len = getTime() - start_time;
+    network_frame_len = gettime() - start_time;
 
     if ((level.players.size == 1 && network_frame_len == NET_FRAME_SOLO) || (level.players.size > 1 && network_frame_len == NET_FRAME_COOP))
     {
@@ -1398,15 +1398,15 @@ round_pulses()
 kill_hud()
 {
     flag_set("b2_killed_hud");
-    if (isDefined(level.timer_hud))
+    if (isdefined(level.timer_hud))
         level.timer_hud destroyelem();
-    if (isDefined(level.round_hud))
+    if (isdefined(level.round_hud))
         level.round_hud destroyelem();
-    if (isDefined(level.springpad_hud))
+    if (isdefined(level.springpad_hud))
         level.springpad_hud destroyelem();
-    if (isDefined(level.subwoofer_hud))
+    if (isdefined(level.subwoofer_hud))
         level.subwoofer_hud destroyelem();
-    if (isDefined(level.turbine_hud))
+    if (isdefined(level.turbine_hud))
         level.turbine_hud destroyelem();
 }
 
@@ -1415,19 +1415,19 @@ create_timers()
     level.timer_hud = createserverfontstring("big" , 1.6);
     level.timer_hud set_hud_properties("timer_hud", "TOPRIGHT", "TOPRIGHT", 60, -14);
     level.timer_hud.alpha = 1;
-    level.timer_hud setTimerUp(0);
+    level.timer_hud settimerup(0);
 
     level.round_hud = createserverfontstring("big" , 1.6);
     level.round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
     level.round_hud.alpha = 1;
-    level.round_hud setText("0:00");
+    level.round_hud settext("0:00");
 }
 
 timers_alpha(value)
 {
-    if (isDefined(level.timer_hud) && level.timer_hud.alpha != int(value))
+    if (isdefined(level.timer_hud) && level.timer_hud.alpha != int(value))
         level.timer_hud.alpha = int(value);
-    if (isDefined(level.round_hud) && level.round_hud.alpha != int(value))
+    if (isdefined(level.round_hud) && level.round_hud.alpha != int(value))
         level.round_hud.alpha = int(value);
 }
 
@@ -1438,7 +1438,7 @@ keep_displaying_old_time(time)
 
     while (true)
     {
-        self setTimer(MS_TO_SECONDS(time) - 0.1);
+        self settimer(MS_TO_SECONDS(time) - 0.1);
         wait 0.25;
     }
 }
@@ -1447,22 +1447,22 @@ show_split(start_time)
 {
     LEVEL_ENDON
 
-    if (getDvar("splits") == "0")
+    if (getdvar("splits") == "0")
         return;
 
-    if (isDefined(level.B2_SPLITS))
+    if (isdefined(level.B2_SPLITS))
         print("^1B2_SPLITS extension is deprecated and will be removed in a future release");
 
     /* B2 splits used, only use rounds specified */
-    if (isDefined(level.B2_SPLITS) && !IsInArray(level.B2_SPLITS, level.round_number))
+    if (isdefined(level.B2_SPLITS) && !IsInArray(level.B2_SPLITS, level.round_number))
         return;
     /* By default every 10 rounds + 255 */
-    if (!isDefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
+    if (!isdefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
         return;
 
     wait MS_TO_SECONDS(round_pulses());
 
-    timestamp = convert_time(MS_TO_SECONDS((getTime() - start_time)));
+    timestamp = convert_time(MS_TO_SECONDS((gettime() - start_time)));
     if (is_true(flag("FIRST BOX")))
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
     else
@@ -1475,7 +1475,7 @@ show_hordes()
 {
     LEVEL_ENDON
 
-    if (getDvar("hordes") == "0")
+    if (getdvar("hordes") == "0")
         return;
 
     wait 0.05;
@@ -1496,7 +1496,7 @@ buildable_hud()
         level.springpad_hud = createserverfontstring("objective", 1.3);
         level.springpad_hud set_hud_properties("springpad_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
         level.springpad_hud.label = &"SPRINGPADS: ^2";
-        level.springpad_hud setValue(0);
+        level.springpad_hud setvalue(0);
         level.springpad_hud.alpha = 1;
         y_pos += 17;
     }
@@ -1506,7 +1506,7 @@ buildable_hud()
         level.subwoofer_hud = createserverfontstring("objective", 1.3);
         level.subwoofer_hud set_hud_properties("subwoofer_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
         level.subwoofer_hud.label = &"SUBWOOFERS: ^3";
-        level.subwoofer_hud setValue(0);
+        level.subwoofer_hud setvalue(0);
         level.subwoofer_hud.alpha = 1;
         y_pos += 17;
     }
@@ -1516,7 +1516,7 @@ buildable_hud()
         level.turbine_hud = createserverfontstring("objective", 1.3);
         level.turbine_hud set_hud_properties("turbine_hud", "TOPLEFT", "TOPLEFT", -60, y_pos, (1, 1, 1));
         level.turbine_hud.label = &"TURBINES: ^1";
-        level.turbine_hud setValue(0);
+        level.turbine_hud setvalue(0);
         level.turbine_hud.alpha = 1;
         y_pos += 17;
     }
@@ -1537,21 +1537,21 @@ buildable_component()
     level.buildable_stats[STAT_TURBINE] = 0;
     level.buildable_stats[STAT_SUBWOOFER] = 0;
 
-    while (isDefined(level.buildable_stats))
+    while (isdefined(level.buildable_stats))
     {
-        if (isDefined(level.springpad_hud))
+        if (isdefined(level.springpad_hud))
         {
-            level.springpad_hud setValue(level.buildable_stats[STAT_SPRINGPAD]);
+            level.springpad_hud setvalue(level.buildable_stats[STAT_SPRINGPAD]);
         }
 
-        if (isDefined(level.subwoofer_hud))
+        if (isdefined(level.subwoofer_hud))
         {
-            level.subwoofer_hud setValue(level.buildable_stats[STAT_SUBWOOFER]);
+            level.subwoofer_hud setvalue(level.buildable_stats[STAT_SUBWOOFER]);
         }
 
-        if (isDefined(level.turbine_hud))
+        if (isdefined(level.turbine_hud))
         {
-            level.turbine_hud setValue(level.buildable_stats[STAT_TURBINE]);
+            level.turbine_hud setvalue(level.buildable_stats[STAT_TURBINE]);
         }
 
         wait 0.1;
@@ -1560,11 +1560,11 @@ buildable_component()
 
 buildables_alpha(value)
 {
-    if (isDefined(level.springpad_hud) && level.springpad_hud.alpha != int(value))
+    if (isdefined(level.springpad_hud) && level.springpad_hud.alpha != int(value))
         level.springpad_hud.alpha = int(value);
-    if (isDefined(level.subwoofer_hud) && level.subwoofer_hud.alpha != int(value))
+    if (isdefined(level.subwoofer_hud) && level.subwoofer_hud.alpha != int(value))
         level.subwoofer_hud.alpha = int(value);
-    if (isDefined(level.turbine_hud) && level.turbine_hud.alpha != int(value))
+    if (isdefined(level.turbine_hud) && level.turbine_hud.alpha != int(value))
         level.turbine_hud.alpha = int(value);
 }
 
@@ -1576,7 +1576,7 @@ watch_stat(stat)
     PLAYER_ENDON
     DEBUG_PRINT("Initializing stat watcher " + stat);
 
-    if (!isDefined(self.initial_stats[stat]))
+    if (!isdefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
 
     while (!flag("b2_hud_killed"))
@@ -1599,29 +1599,29 @@ watch_stat(stat)
 
 set_hud_properties(hud_key, alignment, relative, x_pos, y_pos, col)
 {
-    if (!isDefined(col))
+    if (!isdefined(col))
         col = (1, 1, 1);
 
-    if (isDefined(level.B2_HUD))
+    if (isdefined(level.B2_HUD))
     {
         print("^1B2_HUD extension is deprecated and will be removed in the future release");
         data = level.B2_HUD[hud_key];
-        if (isDefined(data))
+        if (isdefined(data))
         {
-            if (isDefined(data["x_align"]))
+            if (isdefined(data["x_align"]))
                 alignment = data["x_align"];
-            if (isDefined(data["y_align"]))
+            if (isdefined(data["y_align"]))
                 relative = data["y_align"];
-            if (isDefined(data["x_pos"]))
+            if (isdefined(data["x_pos"]))
                 x_pos = data["x_pos"];
-            if (isDefined(data["y_pos"]))
+            if (isdefined(data["y_pos"]))
                 y_pos = data["y_pos"];
-            if (isDefined(data["color"]))
+            if (isdefined(data["color"]))
                 col = data["color"];
         }
     }
 
-    res_components = strTok(getDvar("r_mode"), "x");
+    res_components = strtok(getdvar("r_mode"), "x");
     ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
     aspect_ratio = 1609;
     switch (ratio)
@@ -1657,7 +1657,7 @@ recalculate_x_for_aspect_ratio(alignment, xpos, aspect_ratio)
     if (level.players.size > 1)
         return xpos;
 
-    if (isSubStr(tolower(alignment), "left") && xpos < 0)
+    if (issubstr(tolower(alignment), "left") && xpos < 0)
     {
         if (aspect_ratio == 1610)
             return xpos + 6;
@@ -1667,7 +1667,7 @@ recalculate_x_for_aspect_ratio(alignment, xpos, aspect_ratio)
             return xpos - 21;
     }
 
-    else if (isSubStr(tolower(alignment), "right") && xpos > 0)
+    else if (issubstr(tolower(alignment), "right") && xpos > 0)
     {
         if (aspect_ratio == 1610)
             return xpos - 6;
@@ -1709,10 +1709,10 @@ perma_perks_setup()
 #if FEATURE_PERMAPERKS == 1
     flag_wait("initial_blackscreen_passed");
 
-    if (getDvar("award_perks") != "1")
+    if (getdvar("award_perks") != "1")
         return;
 
-    setDvar("award_perks", 0);
+    setdvar("award_perks", 0);
     thread watch_permaperk_award();
 
     foreach (player in level.players)
@@ -1723,10 +1723,10 @@ perma_perks_setup()
 /* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
 remove_permaperk_wrapper(perk_code, round)
 {
-    if (!isDefined(round))
+    if (!isdefined(round))
         round = 1;
 
-    if (is_round(round) && isSubStr(perk_code, "pers_"))
+    if (is_round(round) && issubstr(perk_code, "pers_"))
         self maps\mp\zombies\_zm_stats::zero_client_stat(perk_code, 0);
     else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
         self remove_permaperk(perk_code);
@@ -1756,7 +1756,7 @@ fix_persistent_jug()
 {
     LEVEL_ENDON
 
-    while (!isDefined(level.pers_upgrades["jugg"]))
+    while (!isdefined(level.pers_upgrades["jugg"]))
         wait 0.05;
 
     level.pers_upgrades["jugg"].upgrade_active_func = ::fixed_upgrade_jugg_active;
@@ -1813,7 +1813,7 @@ watch_permaperk_award()
         i = 0;
         foreach (player in level.players)
         {
-            if (!isDefined(player.awarding_permaperks_now))
+            if (!isdefined(player.awarding_permaperks_now))
                 i++;
         }
 
@@ -1837,18 +1837,18 @@ watch_permaperk_award()
 
     foreach (player in level.players)
     {
-        if (isDefined(player.awarding_permaperks_now))
+        if (isdefined(player.awarding_permaperks_now))
             CLEAR(player.awarding_permaperks_now)
     }
 }
 
 permaperk_array(code, maps_award, maps_take, to_round)
 {
-    if (!isDefined(maps_award))
+    if (!isdefined(maps_award))
         maps_award = array("zm_transit", "zm_highrise", "zm_buried");
-    if (!isDefined(maps_take))
+    if (!isdefined(maps_take))
         maps_take = [];
-    if (!isDefined(to_round))
+    if (!isdefined(to_round))
         to_round = 255;
 
     permaperk = [];
@@ -1957,10 +1957,10 @@ fridge_handler()
         {
             locker = player get_locker_stat();
             /* Save state of the locker, if it's any weapon */
-            if (!isDefined(player.fridge_state) && locker != "")
+            if (!isdefined(player.fridge_state) && locker != "")
                 player.fridge_state = locker;
             /* If locker is saved, but stat is cleared, break out */
-            else if (isDefined(player.fridge_state) && locker == "")
+            else if (isdefined(player.fridge_state) && locker == "")
                 flag_set("b2_fridge_locked");
         }
 
@@ -1974,7 +1974,7 @@ fridge_handler()
     /* Cleanup */
     foreach (player in level.players)
     {
-        if (isDefined(player.fridge_state))
+        if (isdefined(player.fridge_state))
             CLEAR(player.fridge_state)
     }
 }
@@ -1989,9 +1989,9 @@ fridge_input(value, key, player)
     set_all = false;
     if (isstrstart(value, "all "))
     {
-        value = getSubStr(value, 4);
+        value = getsubstr(value, 4);
         /* Dvar watcher won't provide player at all, that's how we identify it */
-        if (!isDefined(player) || (isDefined(player) && player ishost()))
+        if (!isdefined(player) || (isdefined(player) && player ishost()))
         {
             set_all = true;
         }
@@ -2001,7 +2001,7 @@ fridge_input(value, key, player)
     {
         rig_fridge(value);
     }
-    else if (isDefined(player) && player maps\mp\zombies\_zm_utility::is_player())
+    else if (isdefined(player) && player maps\mp\zombies\_zm_utility::is_player())
     {
         rig_fridge(value, player);
     }
@@ -2017,15 +2017,15 @@ rig_fridge(key, player)
 {
     // DEBUG_PRINT("rig_fridge(): key=" + key + "'");
 
-    if (isSubStr(key, "+"))
-        weapon = get_weapon_key(getSubStr(key, 1), ::fridge_pap_weapon_verification);
+    if (issubstr(key, "+"))
+        weapon = get_weapon_key(getsubstr(key, 1), ::fridge_pap_weapon_verification);
     else
         weapon = get_weapon_key(key, ::fridge_weapon_verification);
 
     if (weapon == "")
         return;
 
-    if (isDefined(player))
+    if (isdefined(player))
     {
         print_scheduler("You set your fridge weapon to: ^3" + weapon_display_wrapper(weapon), player);
         player player_rig_fridge(weapon);
@@ -2043,26 +2043,26 @@ player_rig_fridge(weapon)
     self maps\mp\zombies\_zm_stats::clear_stored_weapondata();
 
     wpn = [];
-    wpn["clip"] = weaponClipSize(weapon);
-    wpn["stock"] = weaponMaxAmmo(weapon);
+    wpn["clip"] = weaponclipsize(weapon);
+    wpn["stock"] = weaponmaxammo(weapon);
     wpn["dw_name"] = weapondualwieldweaponname(weapon);
     wpn["alt_name"] = weaponaltweaponname(weapon);
-    wpn["lh_clip"] = weaponClipSize(wpn["dw_name"]);
-    wpn["alt_clip"] = weaponClipSize(wpn["alt_name"]);
-    wpn["alt_stock"] = weaponMaxAmmo(wpn["alt_name"]);
+    wpn["lh_clip"] = weaponclipsize(wpn["dw_name"]);
+    wpn["alt_clip"] = weaponclipsize(wpn["alt_name"]);
+    wpn["alt_stock"] = weaponmaxammo(wpn["alt_name"]);
 
     self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "name", weapon);
     self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "clip", wpn["clip"]);
     self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "stock", wpn["stock"]);
 
-    if (isDefined(wpn["alt_name"]) && wpn["alt_name"] != "")
+    if (isdefined(wpn["alt_name"]) && wpn["alt_name"] != "")
     {
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_name", wpn["alt_name"]);
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_clip", wpn["alt_clip"]);
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_stock", wpn["alt_stock"]);
     }
 
-    if (isDefined(wpn["dw_name"]) && wpn["dw_name"] != "")
+    if (isdefined(wpn["dw_name"]) && wpn["dw_name"] != "")
     {
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "dw_name", wpn["dw_name"]);
         self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
@@ -2123,7 +2123,7 @@ watch_box_state()
 {
     LEVEL_ENDON
 
-    while (!isDefined(self.zbarrier))
+    while (!isdefined(self.zbarrier))
         wait 0.05;
 
     while (true)
@@ -2362,7 +2362,7 @@ get_weapon_key(weapon_str, verifier)
             key = weapon_str;
     }
 
-    if (!isDefined(verifier))
+    if (!isdefined(verifier))
         verifier = ::default_weapon_verification;
 
     key = [[verifier]](key);
@@ -2402,14 +2402,14 @@ setup_box_tracker()
 {
     PLAYER_ENDON
 
-    if (!isDefined(level.boxtracker_pulls) || !isDefined(level.boxtracker_cnt_to_avg))
+    if (!isdefined(level.boxtracker_pulls) || !isdefined(level.boxtracker_cnt_to_avg))
     {
         if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
         {
             level.boxtracker_pulls[BOXTRACKER_KEY_JOKER] = 0;
         }
 
-        foreach (wpn in getArrayKeys(level.zombie_weapons))
+        foreach (wpn in getarraykeys(level.zombie_weapons))
         {
             if (is_tracking_box_key(wpn))
             {
@@ -2419,13 +2419,13 @@ setup_box_tracker()
         }
     }
 
-    DEBUG_PRINT("created boxtracker pull array with keys " + array_implode(", ", getArrayKeys(level.boxtracker_pulls)));
+    DEBUG_PRINT("created boxtracker pull array with keys " + array_implode(", ", getarraykeys(level.boxtracker_pulls)));
 
     flag_wait("initial_blackscreen_passed");
 
-    foreach (key in getArrayKeys(level.boxtracker_pulls))
+    foreach (key in getarraykeys(level.boxtracker_pulls))
     {
-        if (!isDefined(level.boxtracker_pulls[key][self.name]))
+        if (!isdefined(level.boxtracker_pulls[key][self.name]))
         {
             level.boxtracker_pulls[key][self.name] = 0;
             DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
@@ -2439,7 +2439,7 @@ boxtracker_watchweapon(player)
     LEVEL_ENDON
     self endon("kill_boxtracker_watchweapon");
 
-    if (!isDefined(player) || !isPlayer(player))
+    if (!isdefined(player) || !isplayer(player))
     {
         DEBUG_PRINT("boxtracker_watchweapon missing player!");
         return;
@@ -2448,7 +2448,7 @@ boxtracker_watchweapon(player)
     self waittill("randomization_done");
     DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
 
-    if (!isDefined(self.weapon_string))
+    if (!isdefined(self.weapon_string))
     {
         level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
         return;
@@ -2470,7 +2470,7 @@ boxtracker_watchweapon(player)
         return;
     }
 
-    if (!isDefined(level.boxtracker_pulls[key]) || !isDefined(level.boxtracker_pulls[key][player.name]))
+    if (!isdefined(level.boxtracker_pulls[key]) || !isdefined(level.boxtracker_pulls[key][player.name]))
     {
         DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
         return;
@@ -2527,7 +2527,7 @@ print_box_stats(value, key, player)
 get_total_pulls(key)
 {
     value = 0;
-    if (!isDefined(level.boxtracker_pulls[key]))
+    if (!isdefined(level.boxtracker_pulls[key]))
         return value;
 
     foreach (pull in level.boxtracker_pulls[key])
@@ -2575,10 +2575,10 @@ first_box()
 firstbox_input(value, key, player)
 {
     /* Additional check, prevents rigging past RNG_ROUND */
-    if (!isDefined(level.rigged_hits))
+    if (!isdefined(level.rigged_hits))
         return true;
 
-    if (!isDefined(player))
+    if (!isdefined(player))
         player = gethostplayer();
     thread rig_box(strtok(value, "|"), player);
 
@@ -2601,7 +2601,7 @@ rig_box(guns, player)
     if (weapon_key == "")
     {
         print_scheduler("Wrong weapon key: ^1" + guns[0]);
-        if (guns.size > 1 && isDefined(level.total_box_hits))
+        if (guns.size > 1 && isdefined(level.total_box_hits))
         {
             rig_box(array_shift(guns), player);
         }
@@ -2658,7 +2658,7 @@ rig_box(guns, player)
     }
 
     /* Handle gun chaining recursively */
-    if (guns.size > 1 && isDefined(level.total_box_hits))
+    if (guns.size > 1 && isdefined(level.total_box_hits))
     {
         rig_box(array_shift(guns), player);
     }
@@ -2753,7 +2753,7 @@ move_chest(box)
 {
     LEVEL_ENDON
 
-    if (isDefined(level._zombiemode_custom_box_move_logic))
+    if (isdefined(level._zombiemode_custom_box_move_logic))
         kept_move_logic = level._zombiemode_custom_box_move_logic;
 
     level._zombiemode_custom_box_move_logic = ::force_next_location;
@@ -2762,7 +2762,7 @@ move_chest(box)
         if (!chest.hidden && chest.script_noteworthy == box)
         {
             print_scheduler("Box already in selected location");
-            if (isDefined(kept_move_logic))
+            if (isdefined(kept_move_logic))
             {
                 level._zombiemode_custom_box_move_logic = kept_move_logic;
             }
@@ -2789,11 +2789,11 @@ move_chest(box)
     while (flag("moving_chest_now"))
         wait 0.05;
 
-    if (isDefined(kept_move_logic))
+    if (isdefined(kept_move_logic))
         level._zombiemode_custom_box_move_logic = kept_move_logic;
 
     /* Prevents firesale to be included in origins dig cycle */
-    if (isDefined(level.chest_name) && isDefined(level.dig_magic_box_moved))
+    if (isdefined(level.chest_name) && isdefined(level.dig_magic_box_moved))
     {
         level.dig_magic_box_moved = 0;
     }
@@ -2883,7 +2883,7 @@ hijack_personality_character()
 {
     LEVEL_ENDON
 
-    while (!isDefined(level.givecustomcharacters))
+    while (!isdefined(level.givecustomcharacters))
         wait 0.05;
     if (is_survival_map())
     {
@@ -2946,7 +2946,7 @@ parse_preset(stat, allowed_presets)
     }
     else
     {
-        preset = getDvarInt("set_character");
+        preset = getdvarint("set_character");
     }
 
     /* Validation */
@@ -3152,7 +3152,7 @@ check_whoami(value, key, player)
 #if DEBUG == 1
 _dvar_reader(dvar)
 {
-    DEBUG_PRINT("DVAR " + dvar + " => " + getDvar(dvar));
+    DEBUG_PRINT("DVAR " + dvar + " => " + getdvar(dvar));
     return true;
 }
 
@@ -3165,10 +3165,10 @@ _network_frame_hud()
     netframe_hud.alpha = 1;
     while (true)
     {
-        start_time = getTime();
+        start_time = gettime();
         wait_network_frame();
-        end_time = getTime();
-        netframe_hud setValue(end_time - start_time);
+        end_time = gettime();
+        netframe_hud setvalue(end_time - start_time);
     }
 }
 
@@ -3191,7 +3191,7 @@ _zone_hud()
     {
         wait 0.05;
 
-        if (!isAlive(self))
+        if (!isalive(self))
             continue;
 
         new_zonename = self get_current_zone();
@@ -3215,19 +3215,19 @@ _show_zone(zone, hud)
 
     if (hud.alpha != 0)
     {
-        hud fadeOverTime(0.5);
+        hud fadeovertime(0.5);
         hud.alpha = 0;
         wait 0.5;
     }
 
-    hud setText(zone);
+    hud settext(zone);
 
-    hud fadeOverTime(0.5);
+    hud fadeovertime(0.5);
     hud.alpha = 0.8;
 
     wait 3;
 
-    hud fadeOverTime(0.5);
+    hud fadeovertime(0.5);
     hud.alpha = 0;
 }
 
@@ -3253,9 +3253,9 @@ _get_my_coordinates()
 
     while (true)
     {
-        self.coordinates_x_hud setValue(naive_round(self.origin[0]));
-        self.coordinates_y_hud setValue(naive_round(self.origin[1]));
-        self.coordinates_z_hud setValue(naive_round(self.origin[2]));
+        self.coordinates_x_hud setvalue(naive_round(self.origin[0]));
+        self.coordinates_y_hud setvalue(naive_round(self.origin[1]));
+        self.coordinates_z_hud setvalue(naive_round(self.origin[2]));
 
         wait 0.05;
     }
