@@ -32,6 +32,16 @@
 #define WEAPON_NAME_MONK "cymbal_monkey_zm"
 #define WEAPON_NAME_EMP "emp_grenade_zm"
 #define RNG_ROUND 11
+#define COL_BLACK "^0"
+#define COL_RED "^1"
+#define COL_GREEN "^2"
+#define COL_YELLOW "^3"
+#define COL_BLUE "^4"
+#define COL_LIGHT_BLUE "^5"
+#define COL_PURPLE "^6"
+#define COL_WHITE "^7"
+#define COL_VARIABLE "^8"
+#define COL_GREY "^9"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -62,6 +72,7 @@
 #endif
 #define CLEAR(__var) __var = undefined;
 #define MS_TO_SECONDS(__ms) int(__ms / 1000)
+#define COLOR_TXT(__txt, __color) __color + __txt + COL_WHITE
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
