@@ -1076,7 +1076,7 @@ protect_file()
 #endif
 }
 
-dvar_watcher(dvars)
+dvar_protector(dvars)
 {
     LEVEL_ENDON
 
