@@ -1191,9 +1191,13 @@ welcome_prints()
     PLAYER_ENDON
 
     wait 0.75;
-    self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED) + " [" + get_launcher_as_txt() + " " + get_connection_status_as_txt() + "]");
+    self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
+
+    wait 0.75;
 #if PLUTO == 1
-    self iprintln(" Detected Plutonium version: ^1" + get_plutonium_version());
+    self iprintln(get_launcher_as_txt() + " " + COLOR_TXT(get_plutonium_version(), COL_RED) + " | " + get_session_status_as_txt() + " | " + get_connection_status_as_txt());
+#else
+    self iprintln(get_launcher_as_txt() + " | " + get_session_status_as_txt() + " | " + get_connection_status_as_txt());
 #endif
 
     wait 0.75;
@@ -1406,6 +1410,13 @@ get_launcher_as_txt()
 #elif ANCIENT == 1
     return "ANCIENT";
 #endif
+}
+
+get_session_status_as_txt()
+{
+    if (sessionmodeisprivate())
+        return COLOR_TXT("PRIVATE", COL_GREEN);
+    return COLOR_TXT("SOLO", COL_YELLOW);
 }
 
 /*
