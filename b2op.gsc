@@ -1186,32 +1186,18 @@ welcome_prints()
     PLAYER_ENDON
 
     wait 0.75;
+    self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED) + " [" + get_launcher_as_txt() + " " + get_connection_status_as_txt() + "]");
 #if PLUTO == 1
-    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[PLUTONIUM]");
     self iprintln(" Detected Plutonium version: ^1" + get_plutonium_version());
-#elif REDACTED == 1
-    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[REDACTED]");
-    if (is_online_game())
-        self iprintln(" ^2ONLINE ^7MODE");
-    else
-        self iprintln(" ^3OFFLINE ^7MODE");
-#elif ANCIENT == 1
-    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER + " ^7[ANCIENT]");
-    // self iprintln("Detected Plutonium version: ^1" + get_plutonium_version());
-#else
-    self iprintln("B2^1OP^7 PATCH ^1V" + B2OP_VER);
 #endif
+
     wait 0.75;
     self iprintln("Source: ^1github.com/B2ORG/T6-B2OP-PATCH");
 
-#if REDACTED == 1
+#if PLUTO == 0
     level waittill("end_of_round");
-    print_scheduler("^1DEPRECATION NOTICE", self);
-    print_scheduler("Version for ^1Redacted ^7is deprecated. Check ReadMe for more info!", self);
-#elif ANCIENT == 1
-    level waittill("end_of_round");
-    print_scheduler("^1DEPRECATION NOTICE", self);
-    print_scheduler("Version for ^1Ancient ^7is deprecated. Check ReadMe for more info!", self);
+    print_scheduler(COLOR_TXT("DEPRECATION NOTICE", COL_RED), self);
+    print_scheduler("Version for " + COLOR_TXT(get_launcher_as_txt(), COL_RED) + "is deprecated. Check ReadMe for more info!", self);
 #endif
 }
 
@@ -1397,6 +1383,24 @@ round_pulses()
     time += LUI_FIRST_ROUND_DURATION;
     DEBUG_PRINT("round pulse time: " + time + " (round_pulse_times => " + round_pulse_times + ")");
     return time;
+}
+
+get_connection_status_as_txt()
+{
+    if (is_online_game())
+        return COLOR_TXT("ONLINE", COL_GREEN);
+    return COLOR_TXT("OFFLINE", COL_YELLOW);
+}
+
+get_launcher_as_txt()
+{
+#if PLUTO == 1
+    return "PLUTONIUM";
+#elif REDACTED == 1
+    return "REDACTED";
+#elif ANCIENT == 1
+    return "ANCIENT";
+#endif
 }
 
 /*
