@@ -1277,11 +1277,8 @@ dvar_protection(dvars)
     /* We're setting them once again, to ensure lack of accidental detections */
     foreach (name in getArrayKeys(dvars))
     {
-        /* R4542 requires this */
-        if (get_plutonium_version() < 4542 || name != "sv_cheats")
-        {
+        if (isDefined(dvars[name]))
             setdvar(name, dvars[name]);
-        }
     }
 
     while (true)
