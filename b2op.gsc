@@ -12,6 +12,7 @@
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
+#define VER_3K 3042
 #define VER_4K 4516
 #define NET_FRAME_SOLO 100
 #define NET_FRAME_COOP 50
@@ -252,7 +253,7 @@ init_b2_dvars()
     /* 2 layers for Irony */
     if (is_tranzit() || is_die_rise() || is_mob() || is_buried())
     {
-        if (!is_4k())
+        if (!is_pluto_version(VER_4K))
         {
             level.round_start_custom_func = ::trap_fix;
         }
@@ -305,13 +306,13 @@ init_b2_dvars()
     /* Remove Depth of Field */
     dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);
     /* Fix for devblocks in r3903/3904 */
-    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      ::is_3k);
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      array(::is_pluto_version, VER_3K));
     /* Use native health fix, r4516+ */
-    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       ::is_4k);
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       array(::is_pluto_version, VER_4K));
     /* Defines if Pluto error fixes are applied, r4516+ */
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      ::is_4k);
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      array(::is_pluto_version, VER_4K));
     /* Enables flashing hashes of individual scripts */
-    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      ::is_4k);
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_pluto_version, VER_4K));
     /* Offsets for pluto draws compatibile with b2 timers */
     dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
 
@@ -911,7 +912,7 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
-    return (getDvar("cg_debugInfoCornerOffset") == "40 0" && is_4k());
+    return (getDvar("cg_debugInfoCornerOffset") == "40 0" && is_pluto_version(VER_4K));
 }
 
 is_redacted()
@@ -924,29 +925,9 @@ is_plutonium()
     return !is_redacted();
 }
 
-is_ancient()
+is_pluto_version(version)
 {
-    return get_plutonium_version() > 0 && get_plutonium_version() <= VER_ANCIENT;
-}
-
-is_2k()
-{
-    return get_plutonium_version() > VER_ANCIENT && get_plutonium_version() <= VER_2905;
-}
-
-is_2905()
-{
-    return get_plutonium_version() == VER_2905;
-}
-
-is_3k()
-{
-    return get_plutonium_version() > VER_2905 && get_plutonium_version() < VER_4K;
-}
-
-is_4k()
-{
-    return get_plutonium_version() >= VER_4K;
+    return get_plutonium_version() >= version;
 }
 
 has_magic()
