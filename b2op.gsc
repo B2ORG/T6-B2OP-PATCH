@@ -965,7 +965,7 @@ is_plutonium()
 
 is_pluto_version(version, negate)
 {
-    if (negate)
+    if (is_true(negate))
         return get_plutonium_version() < version;
     return get_plutonium_version() >= version;
 }
