@@ -298,7 +298,7 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
-    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    true,   false);
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "8",                    true,   false,      array(::is_pluto_version, 4837, true));
     /* Prevent host migration (redundant nowadays) */
     dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
     /* Force post dlc1 patch on recoil */
@@ -950,8 +950,10 @@ is_plutonium()
     return !is_redacted();
 }
 
-is_pluto_version(version)
+is_pluto_version(version, negate)
 {
+    if (negate)
+        return get_plutonium_version() < version;
     return get_plutonium_version() >= version;
 }
 
