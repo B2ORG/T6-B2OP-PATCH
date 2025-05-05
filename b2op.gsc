@@ -728,6 +728,31 @@ array_shift(arr)
     return new_arr;
 }
 
+call_func_with_variadic_args(callback, arg_array)
+{
+    if (isdefined(arg_array[9]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4], arg_array[5], arg_array[6], arg_array[7], arg_array[8], arg_array[9]);
+    if (isdefined(arg_array[8]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4], arg_array[5], arg_array[6], arg_array[7], arg_array[8]);
+    if (isdefined(arg_array[7]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4], arg_array[5], arg_array[6], arg_array[7]);
+    if (isdefined(arg_array[6]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4], arg_array[5], arg_array[6]);
+    if (isdefined(arg_array[5]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4], arg_array[5]);
+    if (isdefined(arg_array[4]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3], arg_array[4]);
+    if (isdefined(arg_array[3]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2], arg_array[3]);
+    if (isdefined(arg_array[2]))
+        return [[callback]](arg_array[0], arg_array[1], arg_array[2]);
+    if (isdefined(arg_array[1]))
+        return [[callback]](arg_array[0], arg_array[1]);
+    if (isdefined(arg_array[0]))
+        return [[callback]](arg_array[0]);
+    return [[callback]]();
+}
+
 sstr(value)
 {
     if (!isDefined(value))
