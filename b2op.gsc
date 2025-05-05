@@ -1419,6 +1419,62 @@ get_session_status_as_txt()
     return COLOR_TXT("SOLO", COL_YELLOW);
 }
 
+load_b2_splits()
+{
+    splits = [];
+#if PLUTO == 1
+    if (is_pluto_version(VER_4K) && fs_testfile("splits.txt"))
+    {
+        // DEBUG_PRINT("splits init");
+        f = fs_fopen("splits.txt", "read");
+        contents = fs_read(f);
+        fs_fclose(f);
+
+        // DEBUG_PRINT("splits loaded: " + sstr(contents));
+        foreach (val in strtok(contents, "\n"))
+        {
+            // DEBUG_PRINT("split candidate from IO: " + sstr(val));
+            number = int(val);
+            if (isint(number) && number)
+                splits[splits.size] = number;
+        }
+        DEBUG_PRINT("splits loaded from IO: " + sstr(splits));
+    }
+#endif
+    return splits;
+}
+
+/*
+ ************************************************************************************************************
+ ************************************************** STUBS ***************************************************
+ ************************************************************************************************************
+*/
+
+fs_testfile(arg)
+{
+
+}
+
+fs_fopen(arg1, arg2)
+{
+
+}
+
+fs_read(arg)
+{
+
+}
+
+fs_write(arg)
+{
+    
+}
+
+fs_fclose(arg)
+{
+
+}
+
 /*
  ************************************************************************************************************
  *************************************************** HUD ****************************************************
@@ -1481,14 +1537,12 @@ show_split(start_time)
     if (getdvar("splits") == "0")
         return;
 
-    if (isdefined(level.B2_SPLITS))
-        print("^1B2_SPLITS extension is deprecated and will be removed in a future release");
-
-    /* B2 splits used, only use rounds specified */
-    if (isdefined(level.B2_SPLITS) && !IsInArray(level.B2_SPLITS, level.round_number))
+    b2_splits = load_b2_splits();
+    /* Allow loading splits from IO */
+    if (b2_splits.size && !isinarray(b2_splits, level.round_number))
         return;
     /* By default every 10 rounds + 255 */
-    if (!isdefined(level.B2_SPLITS) && level.round_number % 10 && level.round_number != 255)
+    if (!b2_splits.size && level.round_number % 10 && level.round_number != 255)
         return;
 
     wait MS_TO_SECONDS(round_pulses());
@@ -3290,6 +3344,13 @@ _get_my_coordinates()
 
         wait 0.05;
     }
+}
+
+_create_file(path)
+{
+    f = fs_fopen(path, "write");
+    fs_write("test");
+    fs_fclose(f);
 }
 #endif
 
