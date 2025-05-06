@@ -212,6 +212,8 @@ def file_rename(old: str, new: str) -> None:
 
 
 def clear_files(dir: str, pattern: str) -> None:
+    if not os.path.isdir(dir):
+        return
     file_list: list[str] = os.listdir(dir)
     if STRICT_FILE_RM_CHECK or len(file_list) >= 16:
         input(f"You're about to remove {len(file_list)} files. Press ENTER to continue, or abord the program\n\t{"\n\t".join([os.path.basename(f) for f in file_list])}")
