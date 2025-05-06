@@ -8,7 +8,7 @@ from typing import Callable
 CWD = os.path.dirname(os.path.abspath(__file__))
 B2OP = "b2op.gsc"
 B2OP_TOMB = "b2op_tomb.gsc"
-GAME_PARSE = "iw5"      # Change later once it's actually implemented for t6
+GAME_PARSE = "t6"
 GAME_COMP = "t6"
 MODE_PARSE = "parse"
 MODE_COMP = "comp"
