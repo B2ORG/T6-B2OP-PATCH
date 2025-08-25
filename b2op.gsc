@@ -1217,10 +1217,14 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure, on_change)
 {
     if (isdefined(closure))
     {
-        if (isarray(closure) && !call_func_with_variadic_args(closure[0], array_shift(closure)))
+        if (isarray(closure) && is_false(call_func_with_variadic_args(closure[0], array_shift(closure))))
+        {
             return undefined;
-        else if (![[closure]]())
+        }
+        else if (!isarray(closure) && ![[closure]]())
+        {
             return undefined;
+        }
     }
 
     dvar_data = SpawnStruct();
