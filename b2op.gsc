@@ -1308,7 +1308,7 @@ dvar_protection(dvars)
             {
                 /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
                 generate_watermark("DVAR " + ToUpper(name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
-                ArrayRemoveIndex(dvars, name, true);
+                arrayremoveindex(dvars, name, true);
             }
         }
 
