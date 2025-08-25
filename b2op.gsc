@@ -1438,12 +1438,17 @@ load_b2_splits()
         fs_fclose(f);
 
         // DEBUG_PRINT("splits loaded: " + sstr(contents));
+        i = 0;
         foreach (val in strtok(contents, "\n"))
         {
+            if (i > 255) {
+                break;
+            }
             // DEBUG_PRINT("split candidate from IO: " + sstr(val));
             number = int(val);
             if (isint(number) && number)
                 splits[splits.size] = number;
+            i++;
         }
         DEBUG_PRINT("splits loaded from IO: " + sstr(splits));
     }
