@@ -1519,6 +1519,7 @@ kill_hud()
         level.subwoofer_hud destroyelem();
     if (isdefined(level.turbine_hud))
         level.turbine_hud destroyelem();
+    return true;
 }
 
 create_timers()
@@ -1532,6 +1533,8 @@ create_timers()
     level.round_hud set_hud_properties("round_hud", "TOPRIGHT", "TOPRIGHT", 60, 3);
     level.round_hud.alpha = 1;
     level.round_hud settext("0:00");
+
+    timers_alpha(getdvar("timers"));
 }
 
 timers_alpha(value)
@@ -1540,6 +1543,7 @@ timers_alpha(value)
         level.timer_hud.alpha = int(value);
     if (isdefined(level.round_hud) && level.round_hud.alpha != int(value))
         level.round_hud.alpha = int(value);
+    return false;
 }
 
 keep_displaying_old_time(time)
@@ -1632,6 +1636,8 @@ buildable_hud()
         level.turbine_hud.alpha = 1;
         y_pos += 17;
     }
+
+    buildables_alpha(getdvar("buildables"));
 }
 
 buildable_component()
@@ -1678,6 +1684,7 @@ buildables_alpha(value)
         level.subwoofer_hud.alpha = int(value);
     if (isdefined(level.turbine_hud) && level.turbine_hud.alpha != int(value))
         level.turbine_hud.alpha = int(value);
+    return false;
 }
 
 watch_stat(stat)
@@ -2653,6 +2660,8 @@ kill_box_tracker()
     }
     CLEAR(level.boxtracker_pulls);
     CLEAR(level.boxtracker_cnt_to_avg);
+    DEBUG_PRINT("killed box tracker");
+    return true;
 }
 #endif
 
