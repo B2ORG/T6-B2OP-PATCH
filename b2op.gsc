@@ -42,6 +42,8 @@
 #define COL_WHITE "^7"
 #define COL_VARIABLE "^8"
 #define COL_GREY "^9"
+#define TXT_AVAILABLE COL_GREEN + "AVAILABLE" + COL_WHITE
+#define TXT_DISABLED COL_RED + "DISABLED" + COL_WHITE
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -1566,12 +1568,12 @@ show_split(start_time)
 
     timestamp = convert_time(MS_TO_SECONDS((gettime() - start_time)));
     if (is_true(flag("FIRST BOX")))
-        print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
+        print_scheduler("Round " + level.round_number + " time: " + COLOR_TXT(timestamp, COL_RED) + " [FIRST BOX]");
     else
-        print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
+        print_scheduler("Round " + level.round_number + " time: " + COLOR_TXT(timestamp, COL_RED));
 
     if (!is_plutonium_version(4837)) {
-        print_scheduler("UTC: ^3" + getutc());
+        print_scheduler("UTC: " + COLOR_TXT(getutc(), COL_RED));
     }
 }
 
@@ -1588,7 +1590,7 @@ show_hordes()
     if (!is_special_round() && is_round(50))
     {
         zombies_value = get_hordes_left();
-        print_scheduler("HORDES ON " + level.round_number + ": ^3" + zombies_value);
+        print_scheduler("HORDES ON " + level.round_number + ": " + COLOR_TXT(zombies_value, COL_YELLOW));
     }
 }
 #endif
@@ -2036,7 +2038,7 @@ fridge_handler()
 
     // DEBUG_PRINT("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 
-    print_scheduler("Fridge module: ^2AVAILABLE");
+    print_scheduler("Fridge module: " + TXT_AVAILABLE);
     while (!flag("b2_fridge_locked"))
     {
         foreach (player in level.players)
@@ -2055,7 +2057,7 @@ fridge_handler()
 
         wait 0.1;
     }
-    print_scheduler("Fridge module: ^1DISABLED");
+    print_scheduler("Fridge module: " + TXT_DISABLED);
 
     /* Cleanup */
     foreach (player in level.players)
@@ -2113,12 +2115,12 @@ rig_fridge(key, player)
 
     if (isdefined(player))
     {
-        print_scheduler("You set your fridge weapon to: ^3" + weapon_display_wrapper(weapon), player);
+        print_scheduler("You set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW), player);
         player player_rig_fridge(weapon);
     }
     else
     {
-        print_scheduler(level.players[0].name + "^7 set your fridge weapon to: ^3" + weapon_display_wrapper(weapon));
+        print_scheduler(COLOR_TXT(level.players[0].name, COL_YELLOW) + " set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW));
         foreach (player in level.players)
             player player_rig_fridge(weapon);
     }
@@ -2590,21 +2592,21 @@ print_box_stats(value, key, player)
     switch (weapon)
     {
         case WEAPON_NAME_MK1:
-            print_scheduler("Hits total: ^1" + level.total_box_hits 
-                + "^7 MK1 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK1) 
-                + "^7 MK1 avg: ^1" + get_average(WEAPON_NAME_MK1)
+            print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
+                + " MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED)
+                + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED)
             );
             break;
         case WEAPON_NAME_MK2:
-            print_scheduler("Hits total: ^1" + level.total_box_hits 
-                + "^7 MK2 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK2) 
-                + "^7 MK2 avg: ^1" + get_average(WEAPON_NAME_MK2)
+            print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
+                + " MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED)
+                + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED)
             );
             break;
         default:
-            print_scheduler("Hits total: ^1" + level.total_box_hits + "^7 Jokers: ^1" + level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]);
-            print_scheduler("^7 MK1 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK1) + "^7 MK1 avg: ^1" + get_average(WEAPON_NAME_MK1));
-            print_scheduler("^7 MK2 pulls: ^1" + get_total_pulls(WEAPON_NAME_MK2) + "^7 MK2 avg: ^1" + get_average(WEAPON_NAME_MK2));
+            print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(level.boxtracker_pulls[BOXTRACKER_KEY_JOKER], COL_RED));
+            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED));
+            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED));
     }
 
     return true;
@@ -2644,14 +2646,14 @@ first_box()
     LEVEL_ENDON
 
     level.rigged_hits = 0;
-    print_scheduler("First Box module: ^2AVAILABLE");
+    print_scheduler("First Box module: " + TXT_AVAILABLE);
 
     while (!is_round(RNG_ROUND) && !is_true(level.zombie_vars["zombie_powerup_fire_sale_on"]))
         wait 0.1;
 
-    print_scheduler("First Box module: ^1" + "DISABLED");
+    print_scheduler("First Box module: " + TXT_DISABLED);
     if (level.rigged_hits)
-        print_scheduler("First box used: ^3" + level.rigged_hits + " ^7times");
+        print_scheduler("First box used: " + COLOR_TXT(level.rigged_hits, COL_YELLOW) + " times");
     level notify("b2_box_restore");
     flag_set("b2_first_box_terminated");
 
@@ -2686,7 +2688,7 @@ rig_box(guns, player)
 
     if (weapon_key == "")
     {
-        print_scheduler("Wrong weapon key: ^1" + guns[0]);
+        print_scheduler("Wrong weapon key: " + COLOR_TXT(guns[0], COL_RED));
         if (guns.size > 1 && isdefined(level.total_box_hits))
         {
             rig_box(array_shift(guns), player);
@@ -2695,9 +2697,9 @@ rig_box(guns, player)
     }
 
     // weapon_name = level.zombie_weapons[weapon_key].name;
-    print_scheduler(player.name + "^7 set box weapon to: ^3" + weapon_display_wrapper(weapon_key));
+    print_scheduler(COLOR_TXT(player.name, COL_YELLOW) + " set box weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon_key), COL_YELLOW));
     if (guns.size > 1)
-        print_scheduler("^1" + (guns.size - 1) + "^7 more gun codes in the queue");
+        print_scheduler(COLOR_TXT((guns.size - 1), COL_RED) + " more gun codes in the queue");
     thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
     level.rigged_hits++;
 
@@ -2812,7 +2814,7 @@ box_location_input(value, key, player)
     /* Initial afterlife - logic not ready */
     if (is_mob() && !flag("afterlife_start_over"))
     {
-        print_scheduler("^3Players must leave initial afterlife mode first!", level.players[0]);
+        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), level.players[0]);
         return true;
     }
 
@@ -2820,7 +2822,7 @@ box_location_input(value, key, player)
 
     if (process_selection == "no box selected")
     {
-        print_scheduler("Incorrect selection: ^1" + value, level.players[0]);
+        print_scheduler("Incorrect selection: " + COLOR_TXT(value, COL_RED), level.players[0]);
         return true;
     }
 
@@ -2929,31 +2931,31 @@ print_box_location(loc)
     switch (loc)
     {
         case "town_chest_2":
-            print_scheduler("Box moving to: ^3Double Tap Cage");
+            print_scheduler("Box moving to: " + COLOR_TXT("Double Tap Cage", COL_YELLOW));
             break;
         case "town_chest":
-            print_scheduler("Box moving to: ^3Quick Revive Room");
+            print_scheduler("Box moving to: " + COLOR_TXT("Quick Revive Room", COL_YELLOW));
             break;
         case "cafe_chest":
-            print_scheduler("Box moving to: ^3Cafeteria");
+            print_scheduler("Box moving to: " + COLOR_TXT("Cafeteria", COL_YELLOW));
             break;
         case "start_chest":
-            print_scheduler("Box moving to: ^3Warden's Office");
+            print_scheduler("Box moving to: " + COLOR_TXT("Warden's Office", COL_YELLOW));
             break;
         case "start_chest2":
-            print_scheduler("Box moving to: ^3Yellow House");
+            print_scheduler("Box moving to: " + COLOR_TXT("Yellow House", COL_YELLOW));
             break;
         case "start_chest1":
-            print_scheduler("Box moving to: ^3Green House");
+            print_scheduler("Box moving to: " + COLOR_TXT("Green House", COL_YELLOW));
             break;
         case "bunker_tank_chest":
-            print_scheduler("Box moving to: ^3Generator 2");
+            print_scheduler("Box moving to: " + COLOR_TXT("Generator 2", COL_YELLOW));
             break;
         case "bunker_cp_chest":
-            print_scheduler("Box moving to: ^3Generator 3");
+            print_scheduler("Box moving to: " + COLOR_TXT("Generator 3", COL_YELLOW));
             break;
         default:
-            print_scheduler("Box moving to: ^2" + loc);
+            print_scheduler("Box moving to: " + COLOR_TXT(loc, COL_GREEN));
     }
 }
 #endif
@@ -3096,72 +3098,72 @@ characters_input(value, key, player)
         case "russman":
         case "oldman":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Russman", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Russman", COL_YELLOW), player);
             break;
         case "marlton":
         case "reporter":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Stuhlinger", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
             break;
         case "misty":
         case "farmgirl":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Misty", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Misty", COL_YELLOW), player);
             break;
         case "stuhlinger":
         case "engineer":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Marlton", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Marlton", COL_YELLOW), player);
             break;
 
         case "finn":
         case "oleary":
         case "shortsleeve":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Finn", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Finn", COL_YELLOW), player);
             break;
         case "sal":
         case "deluca":
         case "longsleeve":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Sal", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Sal", COL_YELLOW), player);
             break;
         case "billy":
         case "handsome":
         case "sleeveless":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Billy", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Billy", COL_YELLOW), player);
             break;
         case "weasel":
         case "arlington":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Weasel", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Weasel", COL_YELLOW), player);
             break;
 
         case "dempsey":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Dempsey", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Dempsey", COL_YELLOW), player);
             break;
         case "nikolai":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Nikolai", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Nikolai", COL_YELLOW), player);
             break;
         case "richtofen":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Richtofen", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Richtofen", COL_YELLOW), player);
             break;
         case "takeo":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3Takeo", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Takeo", COL_YELLOW), player);
             break;
 
         case "cdc":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3CDC", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("CDC", COL_YELLOW), player);
             break;
         case "cia":
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: ^3CIA", player);
+            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("CIA", COL_YELLOW), player);
             break;
 
         case "reset":
@@ -3180,41 +3182,41 @@ check_whoami(value, key, player)
     {
         case 1:
             if (is_victis_map())
-                print_scheduler("Your preset is: ^3Russman", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Russman", COL_YELLOW), player);
             else if (is_mob())
-                print_scheduler("Your preset is: ^3Finn", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Finn", COL_YELLOW), player);
             else if (is_origins())
-                print_scheduler("Your preset is: ^3Dempsey", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Dempsey", COL_YELLOW), player);
             else
-                print_scheduler("Your preset is: ^3CDC", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("CDC", COL_YELLOW), player);
             break;
         case 2:
             if (is_victis_map())
-                print_scheduler("Your preset is: ^3Stuhlinger", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
             else if (is_mob())
-                print_scheduler("Your preset is: ^3Sal", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Sal", COL_YELLOW), player);
             else if (is_origins())
-                print_scheduler("Your preset is: ^3Nikolai", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Nikolai", COL_YELLOW), player);
             else
-                print_scheduler("Your preset is: ^3CIA", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("CIA", COL_YELLOW), player);
             break;
         case 3:
             if (is_victis_map())
-                print_scheduler("Your preset is: ^3Misty", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Misty", COL_YELLOW), player);
             else if (is_mob())
-                print_scheduler("Your preset is: ^3Billy", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Billy", COL_YELLOW), player);
             else if (is_origins())
-                print_scheduler("Your preset is: ^3Richtofen", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Richtofen", COL_YELLOW), player);
             else
                 print_scheduler("You don't currently have any character preset", player);
             break;
         case 4:
             if (is_victis_map())
-                print_scheduler("Your preset is: ^3Marlton", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Marlton", COL_YELLOW), player);
             else if (is_mob())
-                print_scheduler("Your preset is: ^3Weasel", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Weasel", COL_YELLOW), player);
             else if (is_origins())
-                print_scheduler("Your preset is: ^3Takeo", player);
+                print_scheduler("Your preset is: " + COLOR_TXT("Takeo", COL_YELLOW), player);
             else
                 print_scheduler("You don't currently have any character preset", player);
             break;
