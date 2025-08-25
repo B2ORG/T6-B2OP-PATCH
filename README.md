@@ -44,8 +44,8 @@ Since version 2.0, all scripts that are meant to be used by players are availabl
 > I've created a video on [how to install these patches](https://youtu.be/yjNbmlya6ik) in case instructions here are unclear
 
 > [!WARNING]
-> Redacted and Ancient Plutonium versions are now DEPRECATED. It means they're no longer guaranteed to receive new features and in the future I'll stop supporting them completely. Black Ops II is at the stage where by using older launchers the competitive scene is only hurting, and maintaining the patch for 4 versions (realistically 2905 is already quite different from live) is an extra overhead.
-> End of life time for these versions is a subject to change, should there be any new community votes. It is currently planned for next major release (5.0)
+> Redacted and Ancient Plutonium versions are now DEPRECATED. It means they're no longer guaranteed to receive new features and in the future I'll stop supporting them completely. Black Ops II is at the stage where by using older launchers for record games is pointless and is reducing the competitive integrity of the community, and maintaining the patch for 4 versions (realistically 2905 is already quite different from live) is an extra overhead.
+> End of life time for these versions is a subject to change, should there be any new community votes. It is currently planned for next major release.
 
 ## Plutonium
 
