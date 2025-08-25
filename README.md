@@ -4,12 +4,13 @@ Patch for playing world record games in Black Ops II Zombies. Made based on comm
 
 Patch has already proved itself in multiple top games, including, but not limited to:
 - Town [100](https://x.com/Slewya/status/1837385114940022888) No Jug WR by Slewya
-- Die Rise [117](https://www.twitch.tv/videos/2185581866) coop WR by Issuez & NoMoleMan
+- Town [29:14](https://youtu.be/jkJhQG_dsK0) 30sr WR by TheBrokenHead115
+- Die Rise [120](https://youtu.be/N0D1UieRNgM) coop WR by Issuez & NoMoleMan
 - Mob of the Dead [31:09](https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
 - Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
 - Buried [210](https://www.twitch.tv/videos/2241796423) coop WR by Blasteress & notway
 - Buried [150](https://www.twitch.tv/videos/1866405878) No Power coop WR by Astrox & Nessquik
-- Origins [164](https://www.twitch.tv/videos/2007798756) WR by Dxruma
+- Origins [173](https://www.twitch.tv/videos/2546264620) WR by Vengiix
 - Origins [131](https://youtu.be/w2_WvEB6KSs) coop WR by DestroyeR and NoMoleMan
 
 # Informations
@@ -19,6 +20,8 @@ Please inform me about any issues you may encounter with the patch, so they can 
 I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2 section
 
 Before reporting a problem, please check out the FAQ section down below, you may find answers you're looking for there
+
+[Also check out a B2 website with useful tools and data](https://b2.wtf/)
 
 # Categories
 
@@ -45,7 +48,10 @@ Since version 2.0, all scripts that are meant to be used by players are availabl
 
 > [!WARNING]
 > Redacted and Ancient Plutonium versions are now DEPRECATED. It means they're no longer guaranteed to receive new features and in the future I'll stop supporting them completely. Black Ops II is at the stage where by using older launchers for record games is pointless and is reducing the competitive integrity of the community, and maintaining the patch for 4 versions (realistically 2905 is already quite different from live) is an extra overhead.
-> End of life time for these versions is a subject to change, should there be any new community votes. It is currently planned for next major release.
+> End of life time for these versions isn't currently set in stone, from my perspective the sooner the better. Currently planning it for the next major release.
+
+> [!CAUTION]
+> Whenever there's a new major patch release (eg. 2.* to 3.0 or 3.* to 4.0), please note that a lot of internal logic changes, therefore stability may not be up to the full standard. While we recommend you update your patch as we fix issues and add new features, we acknowledge increased risk with new major versions, which is why we usually leave most recent release of last major version in releases for some time, so players can access it until new version was battletested and issues have been fixed. We appreciate early adopters, who by reporting any problems help us provide the stable experience.
 
 ## Plutonium
 
@@ -101,9 +107,9 @@ Again, i use this term to help people understand the concept, please do not get 
 
 Checksum of each new B2 patch version will be attached to the release, which will allow you to verify whether a valid patch is used yourself. In terms of what the patch do, it force enables displaying those checksums certain rounds (details on that below). They are only shown for few seconds and not on milestone rounds (to not ruin screenshots etc.)
 
-## There are no linked resources or tools in this section
+## How can i use checksums to validate patch in my own or someone elses game
 
-Yes, I'm currently deep into the process of the development of a tool that'll make managing this whole new concept simpler for both players and patch creators. It should be out in Q1 of 2025 (really depends how much time i have to work on it) and I'll be notifying people on B2 Discord so make sure to join (you'll find the invitation above), so this notice will be replaces with links to access the tools at that time.
+I've [created a tool](https://b2.wtf/gsc/hash) for doing just that, type in the checksum (one highlighted on the screenshot above) and press `Check`. If checksum is registered in the system, you'll see all the relevant details about the file. Altenatively, you can drag the file itself into the page to see it's checksum (and details if the system has them).
 
 ## For game verificators
 
@@ -158,6 +164,10 @@ steam_backspeed 1
 
 - As it's not something i naturally expect players to use (B2OP includes that fix), i moved this file from this repository to [this gist](https://gist.github.com/Zi0MIX/2b9fb6c049111c72d3f9945a45b4c2b1), so you can still use it if you for example develop your own BO2 script
 
+9) There is a bunch of text showing up on my screen while playing on Plutonium with this patch
+
+- Yes, most of it is either Plutonium anticheat stuff that the patch triggers, or data about the game that is useful for both you the player and also people who watch/validate your game. Even tho it may look like a lot, the patch was built to show as little as possible while providing all important info.
+
 # Steps for basic troubleshooting
 
 - Make sure you're using correct and up to date version downloaded from releases section on this page.
@@ -167,6 +177,7 @@ steam_backspeed 1
 # B2OP Features
 
 - Basic anticheat capabilities (DVARs, Box etc.)
+- Full integration with Plutonium anticheat measures
 - Fixed network frame (you may know it as a Tickrate issue)
 - Automatic permaperks assignment (consistent with in-game logic)
 - Full bank
@@ -178,7 +189,9 @@ steam_backspeed 1
 - Optional box override (First Box patch)
 - Optional fridge override
 - Optional character setting
+- Simple trade tracking on survival maps (print based)
 - Disabled DOF (Depth of Field)
+- Limited FPS accordingly with the ruleset
 
 # HUD
 
@@ -383,6 +396,18 @@ Example of player setting upgraded weapons for everyone (host only):
 ```
 fridge all +m16
 ```
+
+# Basic trade tracker
+
+Basic trade tracker is a small utility available in survival maps, it prints stats as players pick up RayGuns, and can also be triggered by chat commands.
+
+## Chat commands
+
+- Use `box {weapon}` chat command to display current stats about a weapon (Plutonium only)
+
+## Stop trade tracker
+
+- If you wish to stop the tracker (you don't like it / for allocation purposes), you can use DVAR `kill_box_tracker 1`, this will permanently clear all the logic from the tracker from the game. WARNING! Once disabled, it won't work again in that game.
 
 # Permaperks
 
@@ -617,6 +642,3 @@ After applying desired changes, run script `compile.py` while in the patch main 
 > [!NOTE]
 > Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
 
-# B2 Extensions
-
-THIS IS FOR ADVANCED USERS ONLY. The patch has few handles for external GSC scripts than can be used to modify certain behaviours in a controlled environment. Examples of such modification can be found in the [B2 Extensions repository](https://github.com/B2ORG/T6-B2EXTENSIONS) alongside further instructions

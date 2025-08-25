@@ -1,3 +1,17 @@
+# Version 4.0
+
+- Added system for tracking trades on survival maps
+- Added UTC timestamp to split print for versions that don't have game identifier
+- Added link to WaW communtiy patch to the readme
+- Fixed first box module race condition that could cause incorrect behavior
+- Fixed first box queue breaking when one of the codes isn't correct
+- Deprecated Redacted and Ancient versions
+- Changed structure of welcome prints and added bunch of info about game state
+- Locked client FPS to 250
+- Anticheat now triggers Plutos cheat state (star) as well as the watermark
+- Removed all remaining hooks for B2 extensions
+- Added option to define custom splits via text file
+
 # Version 3.8
 
 - Add enabling `cg_drawIdentifier` dvar for future Pluto update
