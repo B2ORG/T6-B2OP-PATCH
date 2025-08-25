@@ -1486,10 +1486,15 @@ fs_read(arg)
 
 fs_write(arg)
 {
-    
+
 }
 
 fs_fclose(arg)
+{
+
+}
+
+setcheatstate()
 {
 
 }
