@@ -3,7 +3,7 @@
 #define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_HUD 1
 #define BETA 0
 
