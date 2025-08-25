@@ -53,7 +53,6 @@
 #define FEATURE_FRIDGE 1
 #define FEATURE_HORDES 0
 #define FEATURE_SPH 0
-#define FEATURE_LIVE_PROTECTION 1
 #define FEATURE_CHARACTERS 1
 #define FEATURE_BOXTRACKER 1
 
@@ -135,7 +134,7 @@ post_init()
 
     thread init_b2_hud();
     init_b2_box();
-    init_b2_watchers();
+    init_b2_chat_watcher();
     thread b2op_main_loop();
 
 #if DEBUG == 1
@@ -280,14 +279,14 @@ init_b2_dvars()
 #endif
 
     dvars = [];
-    /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                    */
+    /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
     dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
-    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true);
-    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true,       undefined,                                          ::timers_alpha);
+    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true,       undefined,                                          ::buildables_alpha);
     dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
-    dvars[dvars.size] = register_dvar("box_tracker",                    "1",                    false,  true);
-    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false);
+    dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,  true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
+    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false,      undefined,                                          ::kill_hud);
     dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
 
 #if FEATURE_HORDES == 1
@@ -296,6 +295,22 @@ init_b2_dvars()
 
 #if FEATURE_CHARACTERS == 1 && REDACTED == 1
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
+#endif
+
+#if FEATURE_FRIDGE == 1
+    dvars[dvars.size] = register_dvar("fridge",                         "",                     false,  false,      ::has_permaperks_system,                            ::fridge_input);
+#endif
+
+#if FEATURE_FIRSTBOX == 1
+    dvars[dvars.size] = register_dvar("fb",                             "",                     false,  false,      ::has_magic,                                        ::firstbox_input);
+#endif
+
+#if FEATURE_BOX_LOCATION == 1
+    dvars[dvars.size] = register_dvar("lb",                             "",                     false,  false,      undefined,                                          ::box_location_input);
+#endif
+
+#if DEBUG == 1
+    dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,  false,      undefined,                                          ::_dvar_reader);
 #endif
 
     if (getdvar("steam_backspeed") == "1")
@@ -331,50 +346,17 @@ init_b2_dvars()
     /* Displays the game status ID */
     dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
 
-    protected = [];
-    foreach (dvar in dvars)
+    for (i = 0; i < dvars.size; i++)
     {
-        set_dvar_internal(dvar);
-        if (is_true(dvar.protected))
-            protected[dvar.name] = dvar.value;
+        set_dvar_internal(dvars[i]);
+        dvars[i].state = getdvar(dvars[i].name);
     }
 
-    CLEAR(dvars)
-
-    level thread dvar_protection(protected);
+    level thread dvar_scanner(dvars);
 }
 
-init_b2_watchers()
+init_b2_chat_watcher()
 {
-    dvars = [];
-#if FEATURE_HUD == 1
-    dvars["timers"] = ::timers_alpha;
-    dvars["buildables"] = ::buildables_alpha;
-    dvars["kill_hud"] = ::kill_hud;
-#endif
-
-#if FEATURE_BOXTRACKER == 1
-    dvars["box"] = ::print_box_stats;
-#endif
-
-#if FEATURE_FRIDGE == 1
-    dvars["fridge"] = ::fridge_input;
-#endif
-
-#if FEATURE_FIRSTBOX == 1
-    dvars["fb"] = ::firstbox_input;
-#endif
-
-#if FEATURE_BOX_LOCATION == 1
-    dvars["lb"] = ::box_location_input;
-#endif
-
-#if DEBUG == 1
-    dvars["getdvarValue"] = ::_dvar_reader;
-#endif
-
-    thread dvar_watcher(dvars);
-
 #if PLUTO == 1
     chat = [];
 #if FEATURE_FRIDGE == 1
@@ -1091,41 +1073,6 @@ protect_file()
 #endif
 }
 
-dvar_protector(dvars)
-{
-    LEVEL_ENDON
-
-    keys = getarraykeys(dvars);
-    foreach (key in keys)
-    {
-        setdvar(key, "");
-    }
-
-    while (true)
-    {
-        foreach (dvar in keys)
-        {
-            value = getdvar(dvar);
-            if (!flag("b2_" + dvar + "_locked") && value != "")
-            {
-                DEBUG_PRINT("dvar_callback('" + value + "', '" + dvar + "')");
-                reset = [[dvars[dvar]]](value, dvar);
-                if (is_true(reset))
-                {
-                    setdvar(dvar, "");
-                }
-            }
-        }
-
-        wait 0.05;
-    }
-}
-
-dvar_watcher(dvars)
-{
-
-}
-
 #if PLUTO == 1
 chat_watcher(lookups)
 {
@@ -1266,7 +1213,7 @@ set_dvar_internal(dvar)
     setdvar(dvar.name, dvar.value);
 }
 
-register_dvar(dvar, set_value, b2_protect, init_only, closure)
+register_dvar(dvar, set_value, b2_protect, init_only, closure, on_change)
 {
     if (isdefined(closure))
     {
@@ -1281,42 +1228,70 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure)
     dvar_data.value = set_value;
     dvar_data.protected = b2_protect;
     dvar_data.init_only = init_only;
+    dvar_data.on_change = on_change;
+    dvar_data.state = undefined;
 
     DEBUG_PRINT("registered dvar " + dvar);
 
     return dvar_data;
 }
 
-dvar_protection(dvars)
+dvar_scanner(dvars)
 {
-#if FEATURE_LIVE_PROTECTION == 1
     LEVEL_ENDON
 
     flag_wait("initial_blackscreen_passed");
 
     /* We're setting them once again, to ensure lack of accidental detections */
-    foreach (name in getarraykeys(dvars))
+    for (i = 0; i < dvars.size; i++)
     {
-        if (isdefined(dvars[name]))
-            setdvar(name, dvars[name]);
+        if (dvars[i].protected)
+        {
+            dvars[i].state = dvars[i].value;
+            setdvar(dvars[i].name, dvars[i].state);
+        }
     }
 
     while (true)
     {
-        foreach (name in getarraykeys(dvars))
+        for (i = 0; i < dvars.size; i++)
         {
-            value = dvars[name];
-            if (getdvar(name) != value)
+            current_state = undefined;
+            if (dvars[i].protected || isdefined(dvars[i].on_change))
+                current_state = getdvar(dvars[i].name);
+
+            if (isdefined(current_state))
             {
-                /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
-                generate_watermark("DVAR " + ToUpper(name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
-                arrayremoveindex(dvars, name, true);
+                if (dvars[i].protected)
+                {
+                    if (current_state != dvars[i].value)
+                    {
+                        /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
+                        generate_watermark("DVAR " + toupper(dvars[i].name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
+                        setcheatstate();
+                        dvars[i].protected = false;
+                    }
+                }
+
+                if (isdefined(dvars[i].on_change) && dvars[i].state != current_state)
+                {
+                    DEBUG_PRINT("dvar onchange " + sstr(dvars[i].name) + ": " + sstr(dvars[i].state) + " != " + sstr(current_state));
+                    if (!flag("b2_" + dvars[i].name + "_locked"))
+                    {
+                        reset = [[dvars[i].on_change]](current_state, dvars[i].name, maps\mp\_utility::gethostplayer());
+                        if (reset)
+                        {
+                            setdvar(dvars[i].name, dvars[i].value);
+                            current_state = dvars[i].value;
+                        }
+                    }
+                }
+                dvars[i].state = current_state;
             }
         }
 
         wait 0.1;
     }
-#endif
 }
 
 award_points(amount)
