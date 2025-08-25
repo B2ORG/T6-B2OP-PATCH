@@ -1564,7 +1564,10 @@ show_split(start_time)
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp + "^7 [FIRST BOX]");
     else
         print_scheduler("Round " + level.round_number + " time: ^1" + timestamp);
-    print_scheduler("UTC: ^3" + getutc());
+
+    if (!is_plutonium_version(4837)) {
+        print_scheduler("UTC: ^3" + getutc());
+    }
 }
 
 #if FEATURE_HORDES == 1
