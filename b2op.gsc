@@ -2223,7 +2223,7 @@ watch_box_state()
         self.zbarrier thread scan_in_box();
 
 #if FEATURE_BOXTRACKER == 1
-        if (is_survival_map())
+        if (is_survival_map() && isdefined(level.boxtracker_pulls))
         {
             self.zbarrier thread boxtracker_watchweapon(self.chest_user);
         }
@@ -2585,6 +2585,10 @@ is_tracking_box_key(key)
 
 print_box_stats(value, key, player)
 {
+    if (!isdefined(level.boxtracker_pulls))
+    {
+        return;
+    }
     DEBUG_PRINT("print_box_stats('" + value + "')");
 
     weapon = get_weapon_key(value);
@@ -2631,6 +2635,19 @@ get_average(key)
         return 0;
 
     return number_round(no_joker_pulls / key_pulls, 3, true);
+}
+
+kill_box_tracker()
+{
+    if (isdefined(level.chests))
+    {
+        foreach (chest in level.chests)
+        {
+            chest.zbarrier notify("kill_boxtracker_watchweapon");
+        }
+    }
+    CLEAR(level.boxtracker_pulls);
+    CLEAR(level.boxtracker_cnt_to_avg);
 }
 #endif
 
