@@ -1707,25 +1707,6 @@ set_hud_properties(hud_key, alignment, relative, x_pos, y_pos, col)
     if (!isdefined(col))
         col = (1, 1, 1);
 
-    if (isdefined(level.B2_HUD))
-    {
-        print("^1B2_HUD extension is deprecated and will be removed in the future release");
-        data = level.B2_HUD[hud_key];
-        if (isdefined(data))
-        {
-            if (isdefined(data["x_align"]))
-                alignment = data["x_align"];
-            if (isdefined(data["y_align"]))
-                relative = data["y_align"];
-            if (isdefined(data["x_pos"]))
-                x_pos = data["x_pos"];
-            if (isdefined(data["y_pos"]))
-                y_pos = data["y_pos"];
-            if (isdefined(data["color"]))
-                col = data["color"];
-        }
-    }
-
     res_components = strtok(getdvar("r_mode"), "x");
     ratio = int((int(res_components[0]) / int(res_components[1])) * 100);
     aspect_ratio = 1609;
