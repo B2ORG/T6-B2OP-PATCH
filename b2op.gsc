@@ -55,6 +55,7 @@
 #define FEATURE_SPH 0
 #define FEATURE_CHARACTERS 1
 #define FEATURE_BOXTRACKER 1
+#define FEATURE_CONNECTOR 0
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -1032,6 +1033,17 @@ emulate_menu_call(content, ent)
         ent = level.players[0];
 
     ent notify ("menuresponse", "", content);
+}
+
+b2_signal(message, ctx, array_keys)
+{
+#if PLUTO == 1 && FEATURE_CONNECTOR == 1
+    if (isarray(ctx) && is_array(array_keys))
+    {
+        ctx = array_create(ctx, array_keys);
+    }
+    level notify("b2_sig_out", message, ctx);
+#endif
 }
 
 /*
@@ -2532,6 +2544,7 @@ boxtracker_watchweapon(player)
     if (!isdefined(self.weapon_string))
     {
         level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
+        b2_signal("BOX_WEAPON", array(BOXTRACKER_KEY_JOKER, player.name, gettime()), array("weapon", "player", "time"));
         return;
     }
 
@@ -2545,6 +2558,8 @@ boxtracker_watchweapon(player)
             DEBUG_PRINT("Adding '" + wpn_to_avg + "' to available_but_did_not_get");
         }
     }
+
+    b2_signal("BOX_WEAPON", array(key, player.name, gettime()), array("weapon", "player", "time"));
 
     if (!is_tracking_box_key(key))
     {
