@@ -4,7 +4,7 @@
 #define REDACTED 0
 #define PLUTO 0
 #define DEBUG 0
-#define DEBUG_HUD 1
+#define DEBUG_HUD 0
 #define BETA 0
 
 /* Const macros */
@@ -78,9 +78,9 @@
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\zombies\_zm_utility;
+#include maps\mp\_utility;
 
 #if ANCIENT == 1
-#include maps\mp\_utility;
 // #include common_scripts\utility;
 #include maps\mp\animscripts\zm_run;
 #include maps\mp\animscripts\zm_utility;
@@ -1151,7 +1151,7 @@ welcome_prints()
 #if PLUTO == 0
     level waittill("end_of_round");
     print_scheduler(COLOR_TXT("DEPRECATION NOTICE", COL_RED), self);
-    print_scheduler("Version for " + COLOR_TXT(get_launcher_as_txt(), COL_RED) + "is deprecated. Check ReadMe for more info!", self);
+    print_scheduler("Version for " + COLOR_TXT(get_launcher_as_txt(), COL_RED) + " is deprecated. Check ReadMe for more info!", self);
 #endif
 }
 
@@ -1172,7 +1172,7 @@ print_checksums()
 {
     LEVEL_ENDON
 
-    print_scheduler("Showing patch checksums", maps\mp\_utility::gethostplayer());
+    print_scheduler("Showing patch checksums", gethostplayer());
     cmdexec("flashScriptHashes");
 
     if (getdvar("cg_drawChecksums") != "1")
@@ -1284,7 +1284,7 @@ dvar_scanner(dvars)
                     DEBUG_PRINT("dvar onchange " + sstr(dvars[i].name) + ": " + sstr(dvars[i].state) + " != " + sstr(current_state));
                     if (!flag("b2_" + dvars[i].name + "_locked"))
                     {
-                        reset = [[dvars[i].on_change]](current_state, dvars[i].name, maps\mp\_utility::gethostplayer());
+                        reset = [[dvars[i].on_change]](current_state, dvars[i].name, gethostplayer());
                         if (reset)
                         {
                             setdvar(dvars[i].name, dvars[i].value);
@@ -2072,7 +2072,7 @@ fridge_input(value, key, player)
     {
         value = getsubstr(value, 4);
         /* Dvar watcher won't provide player at all, that's how we identify it */
-        if (!isdefined(player) || (isdefined(player) && player ishost()))
+        if (!isdefined(player) || player ishost())
         {
             set_all = true;
         }
@@ -2088,7 +2088,7 @@ fridge_input(value, key, player)
     }
     else
     {
-        rig_fridge(value, maps\mp\_utility::gethostplayer());
+        rig_fridge(value, gethostplayer());
     }
 
     return true;
@@ -3028,7 +3028,7 @@ override_team_character()
 
     if (!flag("b2_char_taken_0") && !flag("b2_char_taken_1"))
     {
-        preset = maps\mp\_utility::gethostplayer() parse_preset(get_stat_for_map(), array(1, 2));
+        preset = gethostplayer() parse_preset(get_stat_for_map(), array(1, 2));
         charindex = preset - 1;
         flag_set("b2_char_taken_" + charindex);
         level.should_use_cia = charindex;
