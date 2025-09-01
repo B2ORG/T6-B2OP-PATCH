@@ -1038,7 +1038,7 @@ emulate_menu_call(content, ent)
 b2_signal(message, ctx, array_keys)
 {
 #if PLUTO == 1 && FEATURE_CONNECTOR == 1
-    if (isarray(ctx) && is_array(array_keys))
+    if (isarray(ctx) && isarray(array_keys))
     {
         ctx = array_create(ctx, array_keys);
     }
