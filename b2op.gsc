@@ -913,6 +913,10 @@ try_parse_pluto_version()
     if (!issubstr(dvar, "Plutonium"))
         return 0;
 
+    /* Future proof for potential version 10k+ */
+    parsed = getsubstr(dvar, 23, 28);
+    if (int(parsed))
+        return int(parsed);
     parsed = getsubstr(dvar, 23, 27);
     return int(parsed);
 }
