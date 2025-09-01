@@ -868,6 +868,21 @@ is_origins()
     return level.script == "zm_tomb";
 }
 
+is_vanilla_map()
+{
+    switch (level.script)
+    {
+        case "zm_transit":
+        case "zm_nuked":
+        case "zm_highrise":
+        case "zm_prison":
+        case "zm_buried":
+        case "zm_origins":
+            return true;
+    }
+    return false;
+}
+
 is_survival_map()
 {
     return level.scr_zm_ui_gametype_group == "zsurvival";
@@ -1189,7 +1204,10 @@ print_checksums()
     LEVEL_ENDON
 
     print_scheduler("Showing patch checksums", gethostplayer());
-    cmdexec("flashScriptHashes");
+    if (is_vanilla_map())
+    {
+        cmdexec("flashScriptHashes");
+    }
 
     if (getdvar("cg_drawChecksums") != "1")
     {
