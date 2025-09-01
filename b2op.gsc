@@ -877,7 +877,7 @@ is_vanilla_map()
         case "zm_highrise":
         case "zm_prison":
         case "zm_buried":
-        case "zm_origins":
+        case "zm_tomb":
             return true;
     }
     return false;
@@ -1203,9 +1203,9 @@ print_checksums()
 {
     LEVEL_ENDON
 
-    print_scheduler("Showing patch checksums", gethostplayer());
     if (is_vanilla_map())
     {
+        print_scheduler("Showing patch checksums", gethostplayer());
         cmdexec("flashScriptHashes");
     }
 
@@ -1387,10 +1387,12 @@ trap_fix()
 
     level.zombie_health = MAX_VALID_HEALTH;
 
+    /* This safety loop was broken basically since that code was written, and it never changed the outcome,
+       so i reckon it is redundant. However since it does not cause any allocations i'm leaving it in */
     foreach (zombie in get_round_enemy_array())
     {
         if (zombie.health > MAX_VALID_HEALTH)
-            zombie.heath = MAX_VALID_HEALTH;
+            zombie.health = MAX_VALID_HEALTH;
     }
 }
 
