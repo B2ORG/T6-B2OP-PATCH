@@ -112,6 +112,7 @@ A high level overview what features are available in each of the versions.
 | Characters & Viewmodels (configurable) | ✓ | ✓ | ✓ | ✓ |
 | Simple trade tracker | ✓ | ✓ | ✓ | ✓ |
 | FPS Limiter | ✓ | ✓ | ✓ | ✓ |
+| DOF Disabled | ✓ | ✓ | ✓ | ✓ |
 
 1. Configuration only as host
 
@@ -207,25 +208,6 @@ steam_backspeed 1
 - Make sure you're using correct and up to date version downloaded from releases section on this page.
 - Remove other patches. B2 Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
 - Check if the directory the patch is in is correct. Perhaps you have multiple instances of Plutonium or Redacted and you put it in the directory belonging to another instance.
-
-# B2OP Features
-
-- Basic anticheat capabilities (DVARs, Box etc.)
-- Full integration with Plutonium anticheat measures
-- Fixed network frame (you may know it as a Tickrate issue)
-- Automatic permaperks assignment (consistent with in-game logic)
-- Full bank
-- Fixed strafe & backwards speed (but can be reverted by setting `steam_backspeed` to 1 and restarting)
-- Fixed traps & JetGun (disabled for maps that don't need it)
-- Toogleable game / round timers
-- Toogleable hud counting buildables
-- Toogleable prints with time splits for key rounds
-- Optional box override (First Box patch)
-- Optional fridge override
-- Optional character setting
-- Simple trade tracking on survival maps (print based)
-- Disabled DOF (Depth of Field)
-- Limited FPS accordingly with the ruleset
 
 # HUD
 
