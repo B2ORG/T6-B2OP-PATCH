@@ -58,11 +58,14 @@ Since version 2.0, all scripts that are meant to be used by players are availabl
 Download script `b2op-plutonium.gsc` from releases section, and put it in your Plutonium folder, by default it's located in:
 
 ```
-%LOCALAPPDATA%\Plutonium\storage\t6\scripts\zm
+%LOCALAPPDATA%\Plutonium\storage\t6\raw\scripts\zm
 ```
 
 > [!TIP]
 > You can press CTRL + R on your keyboard and paste this string there. Assuming you haven't changed any Plutonium paths, directory with scripts should open right away.
+
+> [!WARNING]
+> Prior to patch version 4.0, the directory we recommended here was `Plutonium\storage\t6\scripts\zm` (the only difference is that `raw` folder in the middle), you should still use that directory if you want to use the patch in 2905. On modern Plutonium, it is recommended to start using the new location (remove the patch you currently have in the old location and place the updated version in the new directory specified above)
 
 For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted or Ancient on Plutonium)
 
@@ -167,6 +170,12 @@ steam_backspeed 1
 9) There is a bunch of text showing up on my screen while playing on Plutonium with this patch
 
 - Yes, most of it is either Plutonium anticheat stuff that the patch triggers, or data about the game that is useful for both you the player and also people who watch/validate your game. Even tho it may look like a lot, the patch was built to show as little as possible while providing all important info.
+
+10) I'm getting an error about having 2 patches loaded at the same time.
+
+- Plutonium have changed their go-to directory for scripts, but they maintain them for backwards compatibility. Try the following
+    - Check if you still have a `t6r` folder in your Plutonium directory, if so, just remove it (it's a leftover from earliest versions of Plutonium)
+    - Check if you have anything in `Plutonium\storage\t6\scripts\zm`, if so, just remove it. The patch should be in `Plutonium\storage\t6\raw\scripts\zm` alongside `ranked.gsc` file according to current Plutonium guidelines.
 
 # Steps for basic troubleshooting
 
