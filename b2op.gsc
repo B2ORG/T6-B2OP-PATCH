@@ -349,8 +349,8 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
     /* Displays the game status ID */
     dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
-    /* Locks fps for all clients */
-    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "250",                  true,   false);
+    /* Locks fps for all clients - Set it higher due to engine limiter being dogfood, this allows ppl to go constant 250 if they want to */
+    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "332",                  true,   false);
 
     for (i = 0; i < dvars.size; i++)
     {
