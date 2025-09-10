@@ -90,6 +90,31 @@ To install, download `b2op-ancient.zip` from releases section, and inject it the
 > [!TIP]
 > Ancient Plutonium injection oftentimes fail, it can sometimes take multiple attempts to successfully inject. A good indicator is, after an injection try to open the console, if it opens the patch has been injected.
 
+## B2OP Features
+
+A high level overview what features are available in each of the versions.
+
+| Feature | Plutonium | Plutonium (2905) | Redacted | Ancient |
+| :--- | :---: | :---: | :---: | :---: |
+| Plutonium anticheat integration | ✓ | ✗ | ✗ | ✗ |
+| Basic anticheat | ✓ | ✓ | ✓ | ✓ |
+| Network frame fix | ✓ | ✓ | ✗ | ✓ |
+| Automatic Permaperks & Bank | ✓ | ✓ | ✓ | ✓ |
+| Backspeed (with option to disable) | ✓ | ✓ | ✓ | ✓ |
+| Trap / JetGun fix | ✗ | ✓ | ✓ | ✓ |
+| HUD timers | ✓ | ✓ | ✓ | ✓ |
+| HUD buildable counter | ✓ | ✓ | ✓ | ✓ |
+| HUD visibility toggling | ✓¹ | ✓¹ | ✓¹ | ✓¹ |
+| Showing time splits on key rounds | ✓ | ✓ | ✓ | ✓ |
+| Customizing key rounds for time splits | ✓¹ | ✗ | ✗ | ✗ |
+| First Box (configurable) | ✓ | ✓ | ✓¹ | ✓¹ |
+| Fridge weapon (configurable) | ✓ | ✓ | ✓¹ | ✓¹ |
+| Characters & Viewmodels (configurable) | ✓ | ✓ | ✓ | ✓ |
+| Simple trade tracker | ✓ | ✓ | ✓ | ✓ |
+| FPS Limiter | ✓ | ✓ | ✓ | ✓ |
+
+1. Configuration only as host
+
 # Patch checksum
 
 Starting on Plutonium version R4516, the launcher is able to show checksum of each of the patches you have as well as the entire game memory (i'm massively oversimplifying here, geeks give me a break). [Here as an article about what a checksum is](https://www.howtogeek.com/363735/what-is-a-checksum-and-why-should-you-care/). Every file has a different signature, and changing as much as a single letter in the patch changes it's signature entirely.
@@ -634,6 +659,22 @@ set_character 4
 ```
 set_character 0
 ```
+
+## Viewmodel swapping
+
+As a response to drawbacks in the character system, we added additional functionaltiy that allows you to swap only the viewmodel (hands in first person), as oppose to the entire character. Changes here will apply instantly and have no effect to any game logic (as far as the game is concerned, the character has not been changed). You may swap viewmodels either by using `view` chat message or `viewmodel` dvar, followed by one of these values
+
+```
+misty russman stuhlinger marlton weasel billy sal finn dempsey nikolai takeo richtofen cia cdc
+```
+
+or
+
+```
+reset
+```
+
+to set viewmodel back to what it should be with your original character.
 
 # Contributions
 

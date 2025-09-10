@@ -296,7 +296,8 @@ init_b2_dvars()
 
 #if FEATURE_CHARACTERS == 1 && REDACTED == 1
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
-#elif FEATURE_CHARACTERS == 1
+#endif
+#if FEATURE_CHARACTERS == 1
     dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,  false,      undefined,                                          ::viewmodel_input);
 #endif
 
@@ -3236,6 +3237,7 @@ characters_input(value, key, player)
 
 viewmodel_input(value, key, player)
 {
+    DEBUG_PRINT("viewmodel_input: '" + sstr(value) + "' for " + player.name);
     switch (value)
     {
         case "russman":
@@ -3356,6 +3358,8 @@ viewmodel_input(value, key, player)
             }
             break;
 
+#if PLUTO == 1
+        /* Reset doesn't seem to work on Ancient, cba to debug that rn so disabling it, also indented switch on Irony breaks */
         case "reset":
             to_reset = undefined;
             switch (player.characterindex)
@@ -3448,7 +3452,10 @@ viewmodel_input(value, key, player)
                 print_scheduler("Viewmodel has been reset", player);
             }
             break;
+#endif
     }
+
+    return true;
 }
 
 check_whoami(value, key, player)
