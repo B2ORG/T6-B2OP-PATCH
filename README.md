@@ -578,7 +578,7 @@ statwriteddl playerstatsbymap zm_highrise weaponlocker alt_clip 0;uploadstats
 
 ## Chat commands on Plutonium
 
-On Plutonium 2905 and Live, you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect (that's the recommended way to change characters in game, as stat command may not always work). The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
+On Plutonium you can use chat commands to manage characters. After changing the settings, the game will have to be restarted to take effect (that's the recommended way to change characters in game, as stat command may not always work). The patch will only listen for the chat messages about characters for first two rounds. Enter following message into the chat:
 
 ```
 char <name>
@@ -650,4 +650,3 @@ After applying desired changes, run script `compile.py` while in the patch main 
 
 > [!NOTE]
 > Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
-
