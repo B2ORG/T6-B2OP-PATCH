@@ -296,6 +296,8 @@ init_b2_dvars()
 
 #if FEATURE_CHARACTERS == 1 && REDACTED == 1
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
+#elif FEATURE_CHARACTERS == 1
+    dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,  false,      undefined,                                          ::viewmodel_input);
 #endif
 
 #if FEATURE_FRIDGE == 1
@@ -377,6 +379,7 @@ init_b2_chat_watcher()
 #if FEATURE_CHARACTERS == 1
     chat["char"] = ::characters_input;
     chat["whoami"] = ::check_whoami;
+    chat["view"] = ::viewmodel_input;
 #endif
 
 #if FEATURE_BOXTRACKER == 1
@@ -3017,6 +3020,10 @@ print_box_location(loc)
  ************************************************************************************************************
 */
 
+/* TODO
+    Add a way for ppl to change just the viewmodel, which would work without having to restart etc 
+*/
+
 #if FEATURE_CHARACTERS == 1
 hijack_personality_character()
 {
@@ -3223,6 +3230,223 @@ characters_input(value, key, player)
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 0, "zm_highrise");
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 0, "zm_highrise");
             print_scheduler("Character settings have been reset", player);
+            break;
+    }
+}
+
+viewmodel_input(value, key, player)
+{
+    switch (value)
+    {
+        case "russman":
+        case "oldman":
+            if (is_victis_map())
+            {
+                player setviewmodel("c_zom_oldman_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Russman", COL_YELLOW), player);
+            }
+            break;
+        case "marlton":
+        case "reporter":
+            if (is_victis_map())
+            {
+                player setviewmodel("c_zom_reporter_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
+            }
+            break;
+        case "misty":
+        case "farmgirl":
+            if (is_victis_map())
+            {
+                player setviewmodel("c_zom_farmgirl_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Misty", COL_YELLOW), player);
+            }
+            break;
+        case "stuhlinger":
+        case "engineer":
+            if (is_victis_map())
+            {
+                player setviewmodel("c_zom_engineer_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Marlton", COL_YELLOW), player);
+            }
+            break;
+
+        case "finn":
+        case "oleary":
+        case "shortsleeve":
+            if (is_mob())
+            {
+                player setviewmodel("c_zom_oleary_shortsleeve_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Finn", COL_YELLOW), player);
+            }
+            break;
+        case "sal":
+        case "deluca":
+        case "longsleeve":
+            if (is_mob())
+            {
+                player setviewmodel("c_zom_deluca_longsleeve_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Sal", COL_YELLOW), player);
+            }
+            break;
+        case "billy":
+        case "handsome":
+        case "sleeveless":
+            if (is_mob())
+            {
+                player setviewmodel("c_zom_handsome_sleeveless_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Billy", COL_YELLOW), player);
+            }
+            break;
+        case "weasel":
+        case "arlington":
+            if (is_mob())
+            {
+                player setviewmodel("c_zom_arlington_coat_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Weasel", COL_YELLOW), player);
+            }
+            break;
+
+        case "dempsey":
+            if (is_origins())
+            {
+                player setviewmodel("c_zom_dempsey_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Dempsey", COL_YELLOW), player);
+            }
+            break;
+        case "nikolai":
+            if (is_origins())
+            {
+                player setviewmodel("c_zom_nikolai_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Nikolai", COL_YELLOW), player);
+            }
+            break;
+        case "richtofen":
+            if (is_origins())
+            {
+                player setviewmodel("c_zom_richtofen_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Richtofen", COL_YELLOW), player);
+            }
+            break;
+        case "takeo":
+            if (is_origins())
+            {
+                player setviewmodel("c_zom_takeo_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Takeo", COL_YELLOW), player);
+            }
+            break;
+
+        case "cdc":
+            if (is_nuketown())
+            {
+                player setviewmodel("c_zom_hazmat_viewhands_light");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("CDC", COL_YELLOW), player);
+            }
+            else if (is_survival_map())
+            {
+                player setviewmodel("c_zom_hazmat_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("CDC", COL_YELLOW), player);
+            }
+            break;
+        case "cia":
+            if (is_survival_map())
+            {
+                player setviewmodel("c_zom_suit_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("CIA", COL_YELLOW), player);
+            }
+            break;
+
+        case "reset":
+            to_reset = undefined;
+            switch (player.characterindex)
+            {
+                case 0:
+                    if (is_survival_map() && player getviewmodel() != "c_zom_suit_viewhands")
+                    {
+                        to_reset = "c_zom_suit_viewhands";
+                    }
+                    else if (is_victis_map() && player getviewmodel() != "c_zom_oldman_viewhands")
+                    {
+                        to_reset = "c_zom_oldman_viewhands";
+                    }
+                    else if (is_mob() && player getviewmodel() != "c_zom_oleary_shortsleeve_viewhands")
+                    {
+                        to_reset = "c_zom_oleary_shortsleeve_viewhands";
+                    }
+                    else if (is_origins() && player getviewmodel() != "c_zom_dempsey_viewhands")
+                    {
+                        to_reset = "c_zom_dempsey_viewhands";
+                    }
+                    break;
+                case 1:
+                    if (is_nuketown() && player getviewmodel() != "c_zom_hazmat_viewhands")
+                    {
+                        to_reset = "c_zom_hazmat_viewhands";
+                    }
+                    else if (is_survival_map() && player getviewmodel() != "c_zom_hazmat_viewhands_light")
+                    {
+                        to_reset = "c_zom_hazmat_viewhands_light";
+                    }
+                    else if (is_victis_map() && player getviewmodel() != "c_zom_reporter_viewhands")
+                    {
+                        to_reset = "c_zom_reporter_viewhands";
+                    }
+                    else if (is_mob() && player getviewmodel() != "c_zom_deluca_longsleeve_viewhands")
+                    {
+                        to_reset = "c_zom_deluca_longsleeve_viewhands";
+                    }
+                    else if (is_origins() && player getviewmodel() != "c_zom_nikolai_viewhands")
+                    {
+                        to_reset = "c_zom_nikolai_viewhands";
+                    }
+                    break;
+                case 2:
+                    if (is_survival_map() && player getviewmodel() != "c_zom_suit_viewhands")
+                    {
+                        to_reset = "c_zom_suit_viewhands";
+                    }
+                    else if (is_victis_map() && player getviewmodel() != "c_zom_farmgirl_viewhands")
+                    {
+                        to_reset = "c_zom_farmgirl_viewhands";
+                    }
+                    else if (is_mob() && player getviewmodel() != "c_zom_handsome_sleeveless_viewhands")
+                    {
+                        to_reset = "c_zom_handsome_sleeveless_viewhands";
+                    }
+                    else if (is_origins() && player getviewmodel() != "c_zom_richtofen_viewhands")
+                    {
+                        to_reset = "c_zom_richtofen_viewhands";
+                    }
+                    break;
+                case 3:
+                    if (is_nuketown() && player getviewmodel() != "c_zom_hazmat_viewhands")
+                    {
+                        to_reset = "c_zom_hazmat_viewhands";
+                    }
+                    else if (is_survival_map() && player getviewmodel() != "c_zom_hazmat_viewhands_light")
+                    {
+                        to_reset = "c_zom_hazmat_viewhands_light";
+                    }
+                    else if (is_victis_map() && player getviewmodel() != "c_zom_engineer_viewhands")
+                    {
+                        to_reset = "c_zom_engineer_viewhands";
+                    }
+                    else if (is_mob() && player getviewmodel() != "c_zom_arlington_coat_viewhands")
+                    {
+                        to_reset = "c_zom_arlington_coat_viewhands";
+                    }
+                    else if (is_origins() && player getviewmodel() != "c_zom_takeo_viewhands")
+                    {
+                        to_reset = "c_zom_takeo_viewhands";
+                    }
+                    break;
+            }
+
+            if (isdefined(to_reset))
+            {
+                player setviewmodel(to_reset);
+                print_scheduler("Viewmodel has been reset", player);
+            }
             break;
     }
 }
