@@ -1165,6 +1165,8 @@ chat_watcher(lookups)
 
 bad_file()
 {
+    flag_set("b2_bad_file");
+
     wait 0.75;
     iprintln("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
     wait 0.75;
@@ -1202,6 +1204,9 @@ sniff()
 welcome_prints()
 {
     PLAYER_ENDON
+
+    if (is_true(flag("b2_bad_file")))
+        return;
 
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
