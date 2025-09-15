@@ -2100,7 +2100,7 @@ resolve_permaperk(perk)
     if (is_round(perk["to_round"]))
         return;
 
-    if (isinarray(perk["maps_award"], level.script) && !self.pers_upgrades_awarded[perk_code])
+    if (isinarray(perk["maps_award"], level.script) && is_false(self.pers_upgrades_awarded[perk_code]))
     {
         for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
         {
@@ -2111,8 +2111,10 @@ resolve_permaperk(perk)
         }
     }
 
-    if (isinarray(perk["maps_take"], level.script) && self.pers_upgrades_awarded[perk_code])
+    if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
+    {
         self remove_permaperk(perk_code);
+    }
 }
 
 award_permaperk(stat_name, perk_code, stat_value)
