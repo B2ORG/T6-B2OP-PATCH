@@ -2090,6 +2090,8 @@ award_permaperks_safe()
 
 resolve_permaperk(perk)
 {
+    PLAYER_ENDON
+
     wait 0.05;
 
     perk_code = perk["code"];
