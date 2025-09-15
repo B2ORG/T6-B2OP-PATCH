@@ -7,10 +7,11 @@
 - Fixed first box queue breaking when one of the codes isn't correct
 - Deprecated Redacted and Ancient versions
 - Changed structure of welcome prints and added bunch of info about game state
-- Locked client FPS to 250
+- Locked client FPS (it's set to 332, as in-game limiter is highly inaccurate, this allows people to go up to 250 via their own locker, which is currently max fps allowed)
 - Anticheat now triggers Plutos cheat state (star) as well as the watermark
 - Removed all remaining hooks for B2 extensions
 - Added option to define custom splits via text file
+- Added viewmodel customization (independend from setting characters, it only changes character hands but allows for use mid game and has no conflicts in coop games)
 
 # Version 3.8
 
