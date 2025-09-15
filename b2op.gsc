@@ -660,7 +660,7 @@ convert_time(seconds)
 {
     hours = 0;
     minutes = 0;
-        
+
     if (seconds > 59)
     {
         minutes = int(seconds / 60);
@@ -1076,7 +1076,7 @@ emulate_menu_call(content, ent)
 is_io_available()
 {
 #if PLUTO == 1
-    return is_plutonium_version(VER_4K) && getdvar("scr_allowFileIo") == 1;
+    return is_plutonium_version(VER_4K) && getdvar("scr_allowFileIo") == "1";
 #else
     return false;
 #endif
@@ -1666,9 +1666,8 @@ show_split(start_time)
     else
         print_scheduler("Round " + level.round_number + " time: " + COLOR_TXT(timestamp, COL_RED));
 
-    if (!is_plutonium_version(4837)) {
+    if (!is_plutonium_version(4837))
         print_scheduler("UTC: " + COLOR_TXT(getutc(), COL_RED));
-    }
 }
 
 #if FEATURE_HORDES == 1
@@ -3083,10 +3082,6 @@ print_box_location(loc)
  ************************************************************************************************************
  *********************************************** CHARACTERS *************************************************
  ************************************************************************************************************
-*/
-
-/* TODO
-    Add a way for ppl to change just the viewmodel, which would work without having to restart etc 
 */
 
 #if FEATURE_CHARACTERS == 1
