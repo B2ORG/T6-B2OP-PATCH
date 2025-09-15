@@ -389,7 +389,10 @@ init_b2_chat_watcher()
     chat["box"] = ::print_box_stats;
 #endif
 
-    thread chat_watcher(chat);
+    if (chat.size)
+    {
+        thread chat_watcher(chat);
+    }
 #endif
 }
 
