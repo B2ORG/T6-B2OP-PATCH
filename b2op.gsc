@@ -123,6 +123,7 @@ init()
     init_b2_dvars();
     init_b2_characters();
     init_b2_permaperks();
+    init_b2_io();
 
     thread post_init();
 }
@@ -389,6 +390,17 @@ init_b2_chat_watcher()
 
     thread chat_watcher(chat);
 #endif
+}
+
+init_b2_io()
+{
+    if (is_io_available() && !fs_testfile("b2op"))
+    {
+        DEBUG_PRINT("creating b2op scriptdata dir");
+        f = fs_fopen("b2op/.tmp", "write");
+        fs_fclose(f);
+        fs_remove("b2op/.tmp");
+    }
 }
 
 b2op_main_loop()
@@ -1056,6 +1068,15 @@ emulate_menu_call(content, ent)
         ent = level.players[0];
 
     ent notify ("menuresponse", "", content);
+}
+
+is_io_available()
+{
+#if PLUTO == 1
+    return is_plutonium_version(VER_4K) && getdvar("scr_allowFileIo") == 1;
+#else
+    return false;
+#endif
 }
 
 b2_signal(message, ctx, array_keys)
