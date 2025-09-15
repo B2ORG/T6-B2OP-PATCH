@@ -395,6 +395,7 @@ init_b2_chat_watcher()
 
 init_b2_io()
 {
+#if PLUTO == 1
     if (is_io_available() && !fs_testfile("b2op"))
     {
         DEBUG_PRINT("creating b2op scriptdata dir");
@@ -402,6 +403,7 @@ init_b2_io()
         fs_fclose(f);
         fs_remove("b2op/.tmp");
     }
+#endif
 }
 
 b2op_main_loop()
@@ -1522,17 +1524,57 @@ fs_fopen(arg1, arg2)
 
 }
 
+fs_write(arg1, arg2)
+{
+
+}
+
+fs_writeline(arg1, arg2)
+{
+
+}
+
+fs_readline(arg1, arg2)
+{
+
+}
+
 fs_read(arg)
 {
 
 }
 
-fs_write(arg)
+fs_fcloseall()
 {
 
 }
 
 fs_fclose(arg)
+{
+
+}
+
+fs_length(arg)
+{
+
+}
+
+fs_getseek(arg)
+{
+
+}
+
+fs_seek(arg1, arg2)
+{
+
+}
+
+fs_remove(arg1, arg2)
+{
+
+}
+
+fs_listfiles(arg)
 {
 
 }
