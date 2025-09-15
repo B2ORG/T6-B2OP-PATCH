@@ -248,6 +248,36 @@ Prior to version 3.5 splits were not fully accurate. Starting on 3.5, B2OP emula
 | 70 | -2.25 |
 | 100 | -4.25 |
 
+## Customizing splits
+
+On Plutonium version R4516+ you can customize on which rounds splits are going to be shown, in order to do that, go to
+
+```
+%localappdata%\Plutonium\storage\t6\raw\scriptdata
+```
+
+Or wherever your Plutonium is installed. If some part of this path is missing on your pc, just create empty folders.
+
+Then proceed to create a `b2op` folder inside of scriptdata, create `splits.txt` file inside. You can specify all splits you want displayed there, for example, writing the following contents to the file, will cause splits to show on rounds 15, 18, 21, 24, 27 and 30.
+
+```
+15
+18
+21
+24
+27
+30
+```
+
+> [!WARNING]
+> If the `splits.txt` file is not empty, default splits rounds used by the patch no longer apply, so you need to specify ALL of the rounds you want it to show up yourself.
+
+> [!NOTE]
+> In a coop game, splits defined by the host player will apply to all players.
+
+> [!WARNING]
+> Splits customization (much like any other feature based on file IO) won't work if you have `scr_allowFileIo` dvar set to 0
+
 # Box / Fridge
 
 This patch has the following capabilites regarding box and fridge:
