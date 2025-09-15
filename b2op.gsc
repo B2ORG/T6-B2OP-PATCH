@@ -44,6 +44,7 @@
 #define COL_GREY "^9"
 #define TXT_AVAILABLE COL_GREEN + "AVAILABLE" + COL_WHITE
 #define TXT_DISABLED COL_RED + "DISABLED" + COL_WHITE
+#define SPLITS_FILE "b2op/splits.txt"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -1474,10 +1475,10 @@ load_b2_splits()
 {
     splits = [];
 #if PLUTO == 1
-    if (is_plutonium_version(VER_4K) && fs_testfile("splits.txt"))
+    if (is_io_available() && fs_testfile(SPLITS_FILE))
     {
         // DEBUG_PRINT("splits init");
-        f = fs_fopen("splits.txt", "read");
+        f = fs_fopen(SPLITS_FILE, "read");
         contents = fs_read(f);
         fs_fclose(f);
 
