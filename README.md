@@ -19,7 +19,7 @@ Please inform me about any issues you may encounter with the patch, so they can 
 
 I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2 section
 
-Before reporting a problem, please check out the FAQ section down below, you may find answers you're looking for there
+Before reporting a problem, please check out the [FAQ section down below](#faq), you may find answers you're looking for there
 
 [Also check out a B2 website with useful tools and data](https://b2.wtf/)
 
