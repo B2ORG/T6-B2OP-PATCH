@@ -37,6 +37,9 @@ This patch is meant to be used during games of Highrounds, No Powers & Round Spe
 > For World at War you can check [Evelyn's community patch](https://gitlab.com/EvelynYuki/WAW-Community-Patch/)
 
 > [!TIP]
+> For Black Ops I you can check [Evelyn's CT5 mod](https://gitlab.com/EvelynYuki/Competitive-T5/), in that game patching is NOT allowed, however you can use a plugin (which is similar as you'd use a tool like TIM or LiveSplit with game hooks)
+
+> [!TIP]
 > For Black Ops III you can check [oJumpy's community patches](https://steamcommunity.com/profiles/76561199211441639/myworkshopfiles/?appid=311210)
 
 # Installation
