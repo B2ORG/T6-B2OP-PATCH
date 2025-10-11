@@ -1,5 +1,6 @@
 # Version 4.1
 
+- **[PLUTONIUM ONLY]** Added `key` dvar/chat command for overriding key position
 - Fixed a crash related to box tracking on Farm & Depot
 
 # Version 4.0

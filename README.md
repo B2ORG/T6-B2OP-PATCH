@@ -284,13 +284,14 @@ Then proceed to create a `b2op` folder inside of scriptdata, create `splits.txt`
 > [!WARNING]
 > Splits customization (much like any other feature based on file IO) won't work if you have `scr_allowFileIo` dvar set to 0
 
-# Box / Fridge
+# Box / Fridge / Mob key
 
-This patch has the following capabilites regarding box and fridge:
+This patch has the following capabilites regarding setup:
 
 - Overriding weapon in the box (First Box Patch)
 - Overriding starting box location
 - Overriding weapon in the fridge (Fridge Patch)
+- Overriding Mob of the Dead key position
 
 > [!NOTE]
 > None of the modules specified above will do anything to your game, unless specific actions described in following sections are taken.
@@ -447,6 +448,41 @@ Example of player setting upgraded weapons for everyone (host only):
 
 ```
 fridge all +m16
+```
+
+## Overriding key location
+
+> [!NOTE]
+> This feature is available only on Plutonium 4516+
+
+Host can override key position on Mob of the Dead. Once changed, the setting persists across game launches as it's saved using stats system (much like character changing). After changing this setting, host must restart the game (as it's only read at the beginning of the game during the normal key spawning logic).
+
+Set by DVAR or chat message, to set the key to be in Warden's Office, Cafeteria or randomized (default behavior) respectively
+
+```
+key warden
+key cafe
+key reset
+```
+
+Or while in main menu by directly modifying stats, use these commands
+
+Cafeteria:
+
+```
+statwriteddl playerstatsbymap zm_prison weaponlocker clip 1;uploadstats
+```
+
+Warden's Office
+
+```
+statwriteddl playerstatsbymap zm_prison weaponlocker clip 2;uploadstats
+```
+
+Default (random)
+
+```
+statwriteddl playerstatsbymap zm_prison weaponlocker clip 0;uploadstats
 ```
 
 # Basic trade tracker

@@ -3,7 +3,7 @@
 #define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_HUD 0
 #define BETA 0
 
@@ -45,6 +45,8 @@
 #define TXT_AVAILABLE COL_GREEN + "AVAILABLE" + COL_WHITE
 #define TXT_DISABLED COL_RED + "DISABLED" + COL_WHITE
 #define SPLITS_FILE "b2op/splits.txt"
+#define LOCATION_CAFE "cafe"
+#define LOCATION_WARDEN "warden"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -57,6 +59,7 @@
 #define FEATURE_CHARACTERS 1
 #define FEATURE_BOXTRACKER 1
 #define FEATURE_CONNECTOR 0
+#define FEATURE_MOB_KEY 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -109,6 +112,10 @@ main()
 {
     replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
     replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+
+#if FEATURE_MOB_KEY == 1
+    replacefunc(getfunction("maps/mp/zm_alcatraz_sq", "setup_master_key"), ::override_setup_master_key);
+#endif
 }
 #endif
 
@@ -315,6 +322,10 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("lb",                             "",                     false,  false,      undefined,                                          ::box_location_input);
 #endif
 
+#if FEATURE_MOB_KEY == 1
+    dvars[dvars.size] = register_dvar("key",                            "",                     false,  false,      array(::is_plutonium_version, VER_4K),              ::set_key_position);
+#endif
+
 #if DEBUG == 1
     dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,  false,      undefined,                                          ::_dvar_reader);
 #endif
@@ -387,6 +398,10 @@ init_b2_chat_watcher()
 
 #if FEATURE_BOXTRACKER == 1
     chat["box"] = ::print_box_stats;
+#endif
+
+#if FEATURE_MOB_KEY == 1
+    chat["key"] = ::set_key_position;
 #endif
 
     if (chat.size)
@@ -1524,6 +1539,82 @@ load_b2_splits()
     return splits;
 }
 
+#if FEATURE_MOB_KEY == 1
+set_key_position(value, key, player)
+{
+    if (!is_plutonium_version(VER_4K))
+    {
+        print_scheduler("This feature does not support your Plutonium version, consider updating", player);
+        return true;
+    }
+    if (!player ishost())
+    {
+        print_scheduler("You must be a host to set key position", player);
+        return true;
+    }
+
+    switch (value)
+    {
+        case LOCATION_CAFE:
+        case "east":
+        case 1:
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_prison");
+            print_scheduler("Successfully set key position to: " + COLOR_TXT("Cafeteria (east)", COL_YELLOW));
+            break;
+        case LOCATION_WARDEN:
+        case "west":
+        case 2:
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_prison");
+            print_scheduler("Successfully set key position to: " + COLOR_TXT("Warden's office (west)", COL_YELLOW));
+            break;
+        case "reset":
+        case 0:
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_prison");
+            print_scheduler("Key position is now random");
+            break;
+        default:
+            print_scheduler("'" + value + "' is not a valid option for key position");
+    }
+
+    return true;
+}
+
+override_setup_master_key()
+{
+    switch (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_prison"))
+    {
+        case 1:
+            thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
+            DEBUG_PRINT("Overriding master key => 'east'");
+            level.is_master_key_west = 0;
+            break;
+        case 2:
+            thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
+            DEBUG_PRINT("Overriding master key => 'west'");
+            level.is_master_key_west = 1;
+            break;
+        default:
+            /* Default behavior */
+            DEBUG_PRINT("Overriding master key => 'null'");
+            level.is_master_key_west = randomintrange(0, 2);
+    }
+    setclientfield("fake_master_key", level.is_master_key_west + 1);
+
+    if (level.is_master_key_west)
+    {
+        level thread [[getfunction("maps/mp/zm_alcatraz_sq", "key_pulley")]]("west");
+        exploder(101);
+        array_delete(getentarray("wires_pulley_east", "script_noteworthy"));
+    }
+    else
+    {
+        level thread [[getfunction("maps/mp/zm_alcatraz_sq", "key_pulley")]]("east");
+        exploder(100);
+        array_delete(getentarray("wires_pulley_west", "script_noteworthy"));
+    }
+}
+#endif
+
 /*
  ************************************************************************************************************
  ************************************************** STUBS ***************************************************
@@ -1601,6 +1692,11 @@ fs_listfiles(arg)
 }
 
 setcheatstate()
+{
+
+}
+
+getfunction(arg1, arg2)
 {
 
 }
@@ -3075,9 +3171,9 @@ process_box_location(input_msg)
             return "town_chest_2";
         case "qr":
             return "town_chest";
-        case "cafe":
+        case LOCATION_CAFE:
             return "cafe_chest";
-        case "warden":
+        case LOCATION_WARDEN:
             return "start_chest";
         case "yellow":
             return "start_chest2";
