@@ -3,12 +3,12 @@
 #define ANCIENT 0
 #define REDACTED 0
 #define PLUTO 0
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_HUD 0
 #define BETA 0
 
 /* Const macros */
-#define B2OP_VER 4.0
+#define B2OP_VER 4.1
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
