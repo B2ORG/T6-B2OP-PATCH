@@ -60,6 +60,7 @@
 #define FEATURE_BOXTRACKER 1
 #define FEATURE_CONNECTOR 0
 #define FEATURE_MOB_KEY 1
+#define FEATURE_ORIGINS_TANK_DEPATCH 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -113,9 +114,17 @@ main()
     replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
     replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
 
+    if (is_plutonium_version(VER_4K))
+    {
 #if FEATURE_MOB_KEY == 1
-    replacefunc(getfunction("maps/mp/zm_alcatraz_sq", "setup_master_key"), ::override_setup_master_key);
+        replacefunc(getfunction("maps/mp/zm_alcatraz_sq", "setup_master_key"), ::override_setup_master_key);
 #endif
+
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+    /* Honor original fix, use this if original does not exist */
+    replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
+#endif
+    }
 }
 #endif
 
@@ -402,6 +411,10 @@ init_b2_chat_watcher()
 
 #if FEATURE_MOB_KEY == 1
     chat["key"] = ::set_key_position;
+#endif
+
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+    chat["tank depatch"] = ::depatch_tank;
 #endif
 
     if (chat.size)
@@ -1612,6 +1625,59 @@ override_setup_master_key()
         exploder(100);
         array_delete(getentarray("wires_pulley_west", "script_noteworthy"));
     }
+}
+#endif
+
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+override_tank_push_player_off_edge(trig)
+{
+    stat = gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_tomb");
+    DEBUG_PRINT("Using integrated override_tank_push_player_off_edge => " + stat);
+    if (stat)
+    {
+        return;
+    }
+
+    self endon("player_jumped_off_tank");
+    while (self.b_already_on_tank)
+    {
+        trig waittill("trigger", player);
+
+        if (player == self && self isonground())
+        {
+            v_push = anglestoforward(trig.angles) * 150;
+            self setvelocity(v_push);
+        }
+
+        wait 0.05;
+    }
+}
+
+depatch_tank(value, key, player)
+{
+    if (!is_plutonium_version(VER_4K))
+    {
+        print_scheduler("This feature does not support your Plutonium version, consider updating", player);
+        return true;
+    }
+    if (!player ishost())
+    {
+        print_scheduler("You must be a host to toggle tank patch", player);
+        return true;
+    }
+
+    if (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_tomb"))
+    {
+        print_scheduler("Tank depatch: " + COLOR_TXT("Disabled", COL_YELLOW));
+        player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_tomb");
+    }
+    else
+    {
+        print_scheduler("Tank depatch: " + COLOR_TXT("Enabled", COL_YELLOW));
+        player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_tomb");
+    }
+
+    return true;
 }
 #endif
 

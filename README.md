@@ -521,7 +521,19 @@ List of permaperks awarded by B2OP
 
 # Tank fix
 
-On Plutonium R4516+, the tank has been changed to match how it works on Steam and Console. [This file](https://github.com/B2ORG/T6-B2OP-PATCH/blob/main/b2op_tomb.gsc) is a fix to that, if the community agrees that it should be prepatches, there's gonna be a separate release in [release section](https://github.com/B2ORG/T6-B2OP-PATCH/releases) for that fix specifically, as it has to be a separate file. You can hear about this topic in [this video](https://youtu.be/p8s-4b4D1J8)
+On Plutonium R4516+, the tank has been changed to match how it works on Steam and Console. Prior to B2OP Version 4.1 the fix to that was it's own file, but now it's integrated right into the main patch. The implementation is backwards compatibile, which means you can keep using the file, only if file does not exist, the new implementation is used. 
+
+New version can be toggled at any time, to do that, simply put following message in the game chat (host only).
+
+```
+tank depatch
+```
+
+> [!NOTE]
+> The toggle does not work for the standalone file, if it's loaded by the game, depatch is always active.
+
+> [!TIP]
+> You can hear about this topic [in this video](https://youtu.be/p8s-4b4D1J8)
 
 # Characters
 

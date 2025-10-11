@@ -1,6 +1,7 @@
 # Version 4.1
 
 - **[PLUTONIUM ONLY]** Added `key` dvar/chat command for overriding key position
+- Moved Origins tank depatch to the main patch file (standalone fix can still be used, check README for more details)
 - Fixed a crash related to box tracking on Farm & Depot
 
 # Version 4.0

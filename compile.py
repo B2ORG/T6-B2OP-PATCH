@@ -18,7 +18,7 @@ COMPILED_DIR = "compiled/" + GAME_COMP
 ZMUTILITY_DIR = "maps/mp/zombies"
 FORCE_SPACES = True
 BAD_COMPILER_VERSIONS: set["Version"] = set()
-COMPILE_TANK_PATCH = True
+COMPILE_TANK_PATCH = False
 STRICT_FILE_RM_CHECK = int(os.environ.get("B2_STRICT_CHECK", True))
 
 class Version:
