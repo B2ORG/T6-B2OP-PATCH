@@ -1,7 +1,7 @@
 from traceback import print_exc
 from copy import copy, deepcopy
 import subprocess, sys, os, zipfile, re, binascii, shutil
-from typing import Callable
+from typing import Callable, Optional
 
 
 # Config
@@ -176,7 +176,7 @@ def edit_in_place(path: str, **replace_pairs) -> None:
         gsc_io.write(gsc_content)
 
 
-def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, eval_callback: Callable[[subprocess.CompletedProcess, str], subprocess.CompletedProcess] = None, **sbp_args) -> subprocess.CompletedProcess:
+def wrap_subprocess_call(*calls: str, timeout: int = 5, cli_output: bool = True, eval_callback: Optional[Callable[[subprocess.CompletedProcess, str], subprocess.CompletedProcess]] = None, **sbp_args) -> subprocess.CompletedProcess:
     call: str = " ".join(calls)
     try:
         print(f"Call: {call}")
