@@ -639,6 +639,8 @@ player_print_scheduler(content, delay)
 {
     PLAYER_ENDON
 
+    DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content));
+
     while (delay > 0 && isdefined(self.scheduled_prints) && getdvarint("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount"))
     {
         if (delay > 0)
@@ -651,7 +653,7 @@ player_print_scheduler(content, delay)
     else
         self.scheduled_prints = 1;
 
-    self iprintln(content);
+    self iprintln(sstr(content));
     wait_for_message_end();
     self.scheduled_prints--;
 
@@ -810,6 +812,15 @@ number_round(floating_point, decimal_places, format)
     if (!isdefined(decimal_places))
         decimal_places = 0;
 
+    if (!isdefined(floating_point))
+    {
+        DEBUG_PRINT("number_round() " + COLOR_TXT("Undefined floating point!", COL_RED));
+#if DEBUG == 0
+        /* We prevent potential crash in release, infinite for loop kills the game */
+        return 0;
+#endif
+    }
+
     factor = int(pow(10, decimal_places));
     scaled = floating_point * factor;
     decimal = scaled - int(scaled);
@@ -820,12 +831,14 @@ number_round(floating_point, decimal_places, format)
         full = "" + (int(full_scaled / factor));
         decimal = "" + (int(abs(full_scaled) % factor));
 
-        // DEBUG_PRINT("decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + gettype(scaled) + " typeof(factor)=" + gettype(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
+        DEBUG_PRINT("decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + gettype(scaled) + " typeof(factor)=" + gettype(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
 
         for (i = decimal.size; i < decimal_places; i++)
         {
             decimal = "0" + decimal;
         }
+
+        DEBUG_PRINT("number_round() for loop finished");
 
         number = full;
         if (floating_point < 0 && full == "0")
@@ -2700,7 +2713,7 @@ print_box_stats(value, key, player)
     {
         return;
     }
-    DEBUG_PRINT("print_box_stats('" + value + "')");
+    DEBUG_PRINT("print_box_stats('" + value + "', '" + key + "')");
 
     weapon = get_weapon_key(value);
 
@@ -2719,7 +2732,15 @@ print_box_stats(value, key, player)
             );
             break;
         default:
-            print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(level.boxtracker_pulls[BOXTRACKER_KEY_JOKER], COL_RED));
+            jokers = get_joker_pulls();
+            if (jokers)
+            {
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED));
+            }
+            else
+            {
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED));
+            }
             print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED));
             print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED));
     }
@@ -2729,22 +2750,28 @@ print_box_stats(value, key, player)
 
 get_total_pulls(key)
 {
+    DEBUG_PRINT("get_total_pulls('" + key + "')");
     value = 0;
     if (!isdefined(level.boxtracker_pulls[key]))
         return value;
 
+    DEBUG_PRINT("Boxtracker pulls for key '" + key + "': " + sstr(level.boxtracker_pulls[key]));
     foreach (pull in level.boxtracker_pulls[key])
+    {
         value += pull;
+    }
     return value;
 }
 
 get_average(key)
 {
-    no_joker_pulls = level.boxtracker_cnt_to_avg[key] - level.boxtracker_pulls[BOXTRACKER_KEY_JOKER];
+    DEBUG_PRINT("get_average('" + key + "')");
+    no_joker_pulls = level.boxtracker_cnt_to_avg[key] - get_joker_pulls();
     key_pulls = get_total_pulls(key);
     if (no_joker_pulls == 0 || key_pulls == 0)
         return 0;
 
+    DEBUG_PRINT("get_average() no_joker_pulls=" + sstr(no_joker_pulls) + " key_pulls=" + sstr(key_pulls) + " resulting from boxtracker_cnt_to_avg['" + key + "']=" + sstr(level.boxtracker_cnt_to_avg[key]) + " joker_pulls=" + sstr(get_joker_pulls()));
     return number_round(no_joker_pulls / key_pulls, 3, true);
 }
 
@@ -2761,6 +2788,15 @@ kill_box_tracker()
     CLEAR(level.boxtracker_cnt_to_avg);
     DEBUG_PRINT("killed box tracker");
     return true;
+}
+
+get_joker_pulls()
+{
+    if (!is_tracking_box_key(BOXTRACKER_KEY_JOKER) || !isdefined(level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]))
+    {
+        return 0;
+    }
+    return level.boxtracker_pulls[BOXTRACKER_KEY_JOKER];
 }
 #endif
 

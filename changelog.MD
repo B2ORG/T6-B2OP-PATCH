@@ -1,3 +1,7 @@
+# Version 4.1
+
+- Fixed a crash related to box tracking on Farm & Depot
+
 # Version 4.0
 
 - Added system for tracking trades on survival maps
