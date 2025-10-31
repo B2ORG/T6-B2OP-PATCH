@@ -1609,11 +1609,13 @@ override_setup_master_key()
     {
         case 1:
             thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
+            thread print_key_setting(LOCATION_CAFE);
             DEBUG_PRINT("Overriding master key => 'east'");
             level.is_master_key_west = 0;
             break;
         case 2:
             thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
+            thread print_key_setting(LOCATION_WARDEN);
             DEBUG_PRINT("Overriding master key => 'west'");
             level.is_master_key_west = 1;
             break;
@@ -1635,6 +1637,24 @@ override_setup_master_key()
         level thread [[getfunction("maps/mp/zm_alcatraz_sq", "key_pulley")]]("east");
         exploder(100);
         array_delete(getentarray("wires_pulley_west", "script_noteworthy"));
+    }
+}
+
+print_key_setting(setting)
+{
+    LEVEL_ENDON
+
+    flag_wait("initial_blackscreen_passed");
+    wait 0.5;
+
+    switch (setting)
+    {
+        case LOCATION_CAFE:
+            print_scheduler("Key set to: " + COLOR_TXT("Cafeteria", COL_YELLOW));
+            break;
+        case LOCATION_WARDEN:
+            print_scheduler("Key set to: " + COLOR_TXT("Warden's Office", COL_YELLOW));
+            break;
     }
 }
 #endif
