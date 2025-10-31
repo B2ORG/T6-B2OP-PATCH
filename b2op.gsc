@@ -352,7 +352,8 @@ init_b2_dvars()
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
-    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "8",                    true,   false,      array(::is_plutonium_version, 4837, true));
+    /* The corpse count dvar definition says 8, however it's being set to 5 on first game launch, so effectively records are being played on 5. It's being mistakenly set to 8 on Pluto 4837 to 5140+ */
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    true,   false,      array(::is_plutonium_version, 5145, true));
     /* Prevent host migration (redundant nowadays) */
     dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
     /* Force post dlc1 patch on recoil */
