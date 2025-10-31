@@ -1332,12 +1332,15 @@ register_dvar(dvar, set_value, b2_protect, init_only, closure, on_change)
     {
         if (isarray(closure) && is_false(call_func_with_variadic_args(closure[0], array_shift(closure))))
         {
+            DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
             return undefined;
         }
         else if (!isarray(closure) && ![[closure]]())
         {
+            DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
             return undefined;
         }
+        DEBUG_PRINT("Closure for dvar '" + dvar + "' is true");
     }
 
     dvar_data = SpawnStruct();
