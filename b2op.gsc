@@ -991,6 +991,10 @@ fetch_pluto_definition()
 
 try_parse_pluto_version()
 {
+    dvar = getdvar("shortversion");
+    if (dvar)
+        return int(getsubstr(dvar, 1));
+
     dvar = getdvar("version");
     if (!issubstr(dvar, "Plutonium"))
         return 0;
