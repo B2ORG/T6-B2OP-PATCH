@@ -111,8 +111,11 @@
 #if PLUTO == 1
 main()
 {
-    replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
-    replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+    if (!is_plutonium_version(VER_3K))
+    {
+        replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+        replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+    }
 
     if (is_plutonium_version(VER_4K))
     {
