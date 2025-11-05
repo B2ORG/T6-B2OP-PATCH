@@ -815,6 +815,8 @@ sstr(value)
         return "undefined";
     else if (isarray(value))
         return "{" + array_implode(", ", value) + "}";
+    else if (!isdefined("" + value))
+        return "<unserializable>";
     return value;
 }
 
@@ -828,9 +830,9 @@ gettype(value)
         return "string";
     if (isarray(value))
         return "array";
-    if (value == true || value == false)
-        return "boolean";
-    return "struct";
+    if (!isdefined("" + value))
+        return "struct|callable";
+    return "boolean";
 }
 
 naive_round(floating_point)
