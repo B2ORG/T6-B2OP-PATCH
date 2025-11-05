@@ -1399,10 +1399,20 @@ dvar_scanner(dvars)
                 setdvar(dvars[i]["name"], dvars[i]["start_value"]);
             }
 
+            enabledvarchangednotify(dvars[i]["name"]);
             state[dvars[i]["name"]] = dvars[i]["start_value"];
         }
     }
 
+#if PLUTO == 1
+    if (is_plutonium_version(5150))
+    {
+        thread new_dvar_scanner();
+        return;
+    }
+#endif
+
+    /* Old method without using stateless config and new pluto api */
     while (true)
     {
         for (i = 0; i < dvars.size; i++)
@@ -1440,6 +1450,49 @@ dvar_scanner(dvars)
     }
 }
 
+#if PLUTO == 1
+new_dvar_scanner()
+{
+    LEVEL_ENDON
+
+    while (true)
+    {
+        level waittill("dvar_changed", dvar, new_value, old_value, being_registered);
+
+        cfg = dvar_config(dvar);
+        if (!isdefined(cfg))
+        {
+            CLEAR(dvar)
+            CLEAR(new_value)
+            CLEAR(old_value)
+            CLEAR(being_registered)
+            continue;
+        }
+
+        if (isdefined(cfg["on_change"]))
+        {
+            /* The signature is counter-intuitive, but it needs to match chat callbacks 
+                it also needs to be non-blocking, or else it'll block notifiers */
+            if ([[cfg["on_change"]]](new_value, dvar, gethostplayer(), old_value))
+            {
+                disabledvarchangednotify(dvar);
+                setdvar(dvar, cfg["start_value"]);
+                enabledvarchangednotify(dvar);
+            }
+        }
+        else if (cfg["is_protected"])
+        {
+            dvar_violation(new_value, old_value, dvar);
+        }
+
+        CLEAR(cfg)
+        CLEAR(dvar)
+        CLEAR(new_value)
+        CLEAR(old_value)
+        CLEAR(being_registered)
+    }
+}
+#endif
 
 dvar_violation(new_value, old_value, dvar)
 {
@@ -1823,6 +1876,16 @@ setcheatstate()
 }
 
 getfunction(arg1, arg2)
+{
+
+}
+
+enabledvarchangednotify(arg)
+{
+
+}
+
+disabledvarchangednotify(arg)
 {
 
 }
