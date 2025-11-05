@@ -3832,13 +3832,13 @@ _network_frame_hud()
     netframe_hud = createserverfontstring("default", 1.3);
     netframe_hud set_hud_properties("netframe_hud", "CENTER", "BOTTOM", 0, 28);
     netframe_hud.label = &"NETFRAME: ";
-    netframe_hud.alpha = 1;
     while (true)
     {
         start_time = gettime();
         wait_network_frame();
         end_time = gettime();
         netframe_hud setvalue(end_time - start_time);
+        netframe_hud.alpha = 1;
     }
 }
 
