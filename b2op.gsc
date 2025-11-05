@@ -1394,13 +1394,6 @@ dvar_scanner(dvars)
             {
                 if (dvars[i].protected)
                 {
-                    if (current_state != dvars[i].value)
-                    {
-                        /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
-                        generate_watermark("DVAR " + toupper(dvars[i].name) + " VIOLATED", (1, 0.6, 0.2), 0.66);
-                        setcheatstate();
-                        dvars[i].protected = false;
-                    }
                 }
 
                 if (isdefined(dvars[i].on_change) && dvars[i].state != current_state)
@@ -1417,10 +1410,22 @@ dvar_scanner(dvars)
                     }
                 }
                 dvars[i].state = current_state;
+                    dvar_violation(current_state, state[dvars[i]["name"]], dvars[i]["name"]);
             }
         }
 
         wait 0.1;
+    }
+}
+
+
+dvar_violation(new_value, old_value, dvar)
+{
+    if (new_value != old_value)
+    {
+        /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
+        generate_watermark("DVAR CHANGED:\n" + toupper(dvar), (1, 0.6, 0.2), 0.66);
+        setcheatstate();
     }
 }
 
