@@ -451,39 +451,37 @@ b2op_main_loop()
  ************************************************************************************************************
 */
 
-generate_watermark_slots()
+get_watermark_position(mode, allocate)
 {
-    slots = [];
-
-    positions = array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630);
-
-    foreach (pos in positions)
+    foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
     {
-        i = slots.size;
-        slots[i] = [];
-        slots[i]["pos"] = pos;
-        slots[i]["perm_on"] = false;
-        slots[i]["temp_on"] = false;
-    }
-
-    level.set_of_slots = slots;
-}
-
-get_watermark_position(mode)
-{
-    mode += "_on";
-    for (i = 0; i < level.set_of_slots.size; i++)
-    {
-        if (!level.set_of_slots[i][mode])
+        if (!flag("b2_watermark_" + mode + slot))
         {
-            level.set_of_slots[i][mode] = true;
-            pos = level.set_of_slots[i]["pos"];
-            if (pos < 640 && pos > -640)
-                return pos;
-            return 0;
+            s = abs(slot);
+            if (slot < 0)
+            {
+                s = "-" + s;
+            }
+
+            if (is_true(allocate))
+            {
+                flag_set("b2_watermark_" + mode + s);
+            }
+            return slot;
         }
     }
+
     return 0;
+}
+
+deallocate_temp_watermark_slot(slot)
+{
+    s = abs(slot);
+    if (slot < 0)
+    {
+        s = "-" + s;
+    }
+    flag_clear("b2_watermark_temp" + s);
 }
 
 generate_watermark(text, color, alpha_override)
@@ -491,12 +489,7 @@ generate_watermark(text, color, alpha_override)
     if (is_true(flag(text)))
         return;
 
-    if (!isdefined(level.set_of_slots))
-        generate_watermark_slots();
-
-    x_pos = get_watermark_position("perm");
-    if (!isdefined(x_pos))
-        return;
+    x_pos = get_watermark_position("perm", true);
 
     if (!isdefined(color))
         color = (1, 1, 1);
@@ -510,6 +503,8 @@ generate_watermark(text, color, alpha_override)
     watermark settext(text);
     watermark.alpha = alpha_override;
     watermark.hidewheninmenu = 0;
+
+    DEBUG_PRINT("Created permanent watermark: " + sstr(text));
 
     flag_set(text);
 
@@ -525,12 +520,7 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     if (is_true(flag(text)))
         return;
 
-    if (!isdefined(level.set_of_slots))
-        generate_watermark_slots();
-
-    x_pos = get_watermark_position("temp");
-    if (!isdefined(x_pos))
-        return;
+    x_pos = get_watermark_position("temp", true);
 
     if (!isdefined(color))
         color = (1, 1, 1);
@@ -545,6 +535,8 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     twatermark.alpha = alpha_override;
     twatermark.hidewheninmenu = 0;
 
+    DEBUG_PRINT("Created temp watermark: " + sstr(text));
+
     flag_set(text);
 
     CLEAR(text)
@@ -557,12 +549,8 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     twatermark.alpha = 0;
     twatermark destroy_hud();
 
-    /* Cleanup slots array if there are no huds to track */
-    for (i = 0; i < level.set_of_slots.size; i++)
-    {
-        if (level.set_of_slots[i]["pos"] == x_pos)
-            level.set_of_slots[i]["temp_on"] = false;
-    }
+    /* Cleanup the slot */
+    deallocate_temp_watermark_slot(x_pos);
 
     /* There should've been flag_clear here, but don't add it anymore, since it's now used
     for appending first box info to splits */
