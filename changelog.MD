@@ -1,3 +1,10 @@
+# Version 4.3
+
+- Added integration for strat tester mods for Modern Plutonium (4516+)
+- New dvar anticheat version (less allocations) for new Plutonium update (5162+)
+- Changed watermarks to be a bit more readable
+- Changed fps limiter for new Plutonium update (5162+)
+
 # Version 4.2
 
 - Added print with current key setting at the beginning of the game
