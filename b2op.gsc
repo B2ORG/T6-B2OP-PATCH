@@ -1333,7 +1333,7 @@ dvar_config(key)
     {
         for (i = 0; i < dvars.size; i++)
         {
-            if (dvars[i]["name"] == key)
+            if (tolower(dvars[i]["name"]) == tolower(key))
             {
                 return dvars[i];
             }
@@ -1350,7 +1350,10 @@ set_dvar_internal(dvar)
     if (!isdefined(dvar))
         return;
     if (dvar["is_init_only"] && getdvar(dvar["name"]) != "")
+    {
+        DEBUG_PRINT("abort set_dvar_iternal: is_init_only for " + sstr(dvar["name"]));
         return;
+    }
     setdvar(dvar["name"], dvar["start_value"]);
 }
 
@@ -1413,6 +1416,8 @@ dvar_scanner(dvars)
     }
 #endif
 
+    DEBUG_PRINT("old dvar scanner");
+
     /* Old method without using stateless config and new pluto api */
     while (true)
     {
@@ -1456,6 +1461,8 @@ new_dvar_scanner()
 {
     LEVEL_ENDON
 
+    DEBUG_PRINT("new dvar scanner");
+
     while (true)
     {
         level waittill("dvar_changed", dvar, new_value, old_value, being_registered);
@@ -1469,6 +1476,8 @@ new_dvar_scanner()
             CLEAR(being_registered)
             continue;
         }
+
+        // DEBUG_PRINT("dvar_changed '" + sstr(dvar) + "': '" + sstr(old_value) + "' => '" + sstr(new_value) + "'");
 
         if (isdefined(cfg["on_change"]))
         {
