@@ -80,6 +80,7 @@
 #define CLEAR(__var) __var = undefined;
 #define MS_TO_SECONDS(__ms) int(__ms / 1000)
 #define COLOR_TXT(__txt, __color) __color + __txt + COL_WHITE
+#define STR(__val) "" + (__val)
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -647,9 +648,9 @@ convert_time(seconds)
         str_seconds = "0" + seconds;
 
     if (hours == 0)
-        combined = "" + str_minutes  + ":" + str_seconds;
+        combined = str_minutes  + ":" + str_seconds;
     else
-        combined = "" + str_hours  + ":" + str_minutes  + ":" + str_seconds;
+        combined = str_hours  + ":" + str_minutes  + ":" + str_seconds;
 
     return combined;
 }
@@ -736,7 +737,7 @@ sstr(value)
         return "undefined";
     else if (isarray(value))
         return "{" + array_implode(", ", value) + "}";
-    else if (!isdefined("" + value))
+    else if (!isdefined(STR(value)))
         return "<unserializable>";
     return value;
 }
@@ -751,7 +752,7 @@ gettype(value)
         return "string";
     if (isarray(value))
         return "array";
-    if (!isdefined("" + value))
+    if (!isdefined(STR(value)))
         return "struct|callable";
     return "boolean";
 }
@@ -783,8 +784,8 @@ number_round(floating_point, decimal_places, format)
     if (is_true(format))
     {
         full_scaled = int(scaled);
-        full = "" + (int(full_scaled / factor));
-        decimal = "" + (int(abs(full_scaled) % factor));
+        full = STR(int(full_scaled / factor));
+        decimal = STR(int(abs(full_scaled) % factor));
 
         DEBUG_PRINT("decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + gettype(scaled) + " typeof(factor)=" + gettype(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
 
