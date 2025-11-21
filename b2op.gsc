@@ -223,6 +223,10 @@ init_b2_characters()
 
 init_b2_permaperks()
 {
+    if (check_for_strattester_override("pers"))
+    {
+        return;
+    }
 #if FEATURE_PERMAPERKS == 1
     thread perma_perks_setup();
 #endif
@@ -230,6 +234,10 @@ init_b2_permaperks()
 
 init_b2_hud()
 {
+    if (check_for_strattester_override("hud"))
+    {
+        return;
+    }
 #if FEATURE_HUD == 1
     create_timers();
 
@@ -244,9 +252,10 @@ init_b2_hud()
 
 init_b2_box()
 {
-    if (!has_magic())
+    if (check_for_strattester_override("fb") || !has_magic())
+    {
         return;
-
+    }
     LEVEL_ENDON
 
     while (!isdefined(level.chests))
@@ -983,6 +992,8 @@ is_special_round()
 
 is_tracking_buildables()
 {
+    if (check_for_strattester_override("hud"))
+        return false;
     return has_buildables(STAT_TURBINE) || has_buildables(STAT_SPRINGPAD) || has_buildables(STAT_SUBWOOFER);
 }
 
@@ -1057,6 +1068,30 @@ b2_signal(message, ctx, array_keys)
 #endif
 }
 
+check_for_strattester()
+{
+#if PLUTO == 1
+    if (!is_plutonium_version(VER_4K))
+        return false;
+    return is_true(level.strat_tester) || is_true(level.b2_strat_tester);
+#else
+    return false;
+#endif
+}
+
+check_is_not_strattester()
+{
+    return !check_for_strattester();
+}
+
+check_for_strattester_override(key)
+{
+    if (check_is_not_strattester())
+        return false;
+    if (is_true(level.strat_tester))
+        return true;
+    return flag("b2_strattester_" + key);
+}
 
 b2_restart_level()
 {
@@ -1201,6 +1236,8 @@ compose_welcome_print()
     out[out.size] = get_connection_status_as_txt();
     if (is_plutonium_version(4843))
         out[out.size] = get_graphic_content_as_txt();
+    if (check_for_strattester())
+        out[out.size] = COLOR_TXT("STRAT TESTER MODE", COL_PURPLE);
     return array_implode(" | ", out);
 }
 
@@ -1215,7 +1252,7 @@ print_checksums()
         cmdexec("flashScriptHashes");
     }
 
-    if (getdvar("cg_drawChecksums") != "1")
+    if (!check_for_strattester_override("hud") && getdvar("cg_drawChecksums") != "1")
     {
         setdvar("cg_drawChecksums", 1);
         wait 3;
@@ -1389,6 +1426,12 @@ dvar_scanner(dvars)
     LEVEL_ENDON
 
     flag_wait("initial_blackscreen_passed");
+
+    if (check_for_strattester_override("anticheat"))
+    {
+        DEBUG_PRINT("DISABLED dvar_scanner, strattester detected");
+        return;
+    }
 
     /* We're setting them once again, to ensure lack of accidental detections */
     state = [];
@@ -2984,6 +3027,11 @@ boxtracker_watchweapon(player)
 
 is_tracking_box_key(key)
 {
+    if (check_for_strattester_override("fb"))
+    {
+        return;
+    }
+
     switch (key)
     {
         case BOXTRACKER_KEY_JOKER:

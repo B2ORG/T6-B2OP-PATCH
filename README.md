@@ -742,6 +742,32 @@ reset
 
 to set viewmodel back to what it should be with your original character.
 
+# Strat tester mode
+
+Since version 4.3, the patch natively supports running alongside strattester mods on modern Plutonium clients, if that happens many functionalities can be disabled, such as
+- First box module
+- HUD
+- Checking DVARs (anticheat) 
+- Permaperk system
+
+Please note, in strat tester mode the patch is not suitable for competitive games.
+
+## For developers
+
+In order to enable integration, you should set one of the following to true `level.strat_tester` or `level.b2_strat_tester`
+
+If you set `level.strat_tester` to true, all modules listed above are disabled. If you set `level.b2_strat_tester` to true, you'll be able to define which modules you wish to disable via flags (table below).
+
+> [!WARNING]
+> Make sure to set the variable and flags very early on, either at the top of `init()` or in `main()` function, B2OP will check for them in the init sequence already
+
+| Flag | Module | Since |
+| :---: | :---: | :---: |
+| `b2_strattester_fb` | First Box | 4.3 |
+| `b2_strattester_hud` | HUD | 4.3 |
+| `b2_strattester_anticheat` | Dvar scanner | 4.3 |
+| `b2_strattester_pers` | Perma perks | 4.3 |
+
 # Contributions
 
 If you'd like to contribute to the code, please fork this repository, apply changes / fixes and open a pull request. If the change is in line with rules and the purpose of this patch, it'll be merged and a new version of the patch will be released.
