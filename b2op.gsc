@@ -47,6 +47,17 @@
 #define SPLITS_FILE "b2op/splits.txt"
 #define LOCATION_CAFE "cafe"
 #define LOCATION_WARDEN "warden"
+#define OPT_START_RND1 1
+#define OPT_START_RND5 2
+#define OPT_START_RND10 4
+#define OPT_START_RND15 8
+#define OPT_START_RND20 16
+#define OPT_START_RND25 32
+#define OPT_START_RND30 64
+#define OPT_NOMAGIC 128
+#define OPT_DOGS 256
+#define OPT_HEADSHOT_ONLY 512
+#define OPT_EASY 1024
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -379,12 +390,15 @@ b2op_main_loop()
     // DEBUG_PRINT("initialized b2op_main_loop");
     game_start = gettime();
 
+    b2_signal("GAME_START", array(game_start, getutc(), "b2op", B2OP_VER, get_plutonium_version(), encode_game_settings(), fetch_players_info()), array("game_time", "utc_time", "patch", "patch_version", "plutonium_version", "game_settings", "players"));
+
     while (true)
     {
         level waittill("start_of_round");
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_start = gettime();
 #endif
+        b2_signal("START_OF_ROUND", array(gettime(), getutc(), level.round_number, fetch_players_info()), array("game_time", "utc_time", "round_number", "players"));
 
 #if FEATURE_HUD == 1
         if (isdefined(level.round_hud))
@@ -411,6 +425,7 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_duration = gettime() - round_start;
 #endif
+        b2_signal("END_OF_ROUND", array(gettime(), getutc()), array("game_time", "utc_time"));
 
 #if FEATURE_HUD == 1
         if (isdefined(level.round_hud))
@@ -946,6 +961,59 @@ get_plutonium_version()
     return detected_version;
 }
 
+encode_game_settings()
+{
+    settings = 0;
+    /* Has to be preprocessed out, Irony can't do bit ops */
+#if PLUTO == 1
+    if (!getgametypesetting("magic"))
+        settings |= OPT_NOMAGIC;
+    if (getgametypesetting("headshotsonly"))
+        settings |= OPT_HEADSHOT_ONLY;
+    if (getgametypesetting("allowdogs"))
+        settings |= OPT_DOGS;
+    if (!getgametypesetting("zmDifficulty"))
+        settings |= OPT_EASY;
+    switch (getgametypesetting("startRound"))
+    {
+        case 1:
+            settings |= OPT_START_RND1;
+            break;
+        case 5:
+            settings |= OPT_START_RND5;
+            break;
+        case 10:
+            settings |= OPT_START_RND10;
+            break;
+        case 15:
+            settings |= OPT_START_RND15;
+            break;
+        case 20:
+            settings |= OPT_START_RND20;
+            break;
+        case 25:
+            settings |= OPT_START_RND25;
+            break;
+        default:
+            settings |= OPT_START_RND30;
+            break;
+    }
+
+#endif
+    return settings;
+}
+
+fetch_players_info()
+{
+    players = [];
+    foreach (player in level.players)
+    {
+        players[players.size] = array(player.name, player.clientid);
+    }
+
+    return players;
+}
+
 should_set_draw_offset()
 {
     return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_plutonium_version(VER_4K));
@@ -1064,6 +1132,7 @@ b2_signal(message, ctx, array_keys)
     {
         ctx = array_create(ctx, array_keys);
     }
+    DEBUG_PRINT("b2_signal => " + sstr(message) + " " + sstr(ctx));
     level notify("b2_sig_out", message, ctx);
 #endif
 }
