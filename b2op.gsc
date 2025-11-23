@@ -47,17 +47,6 @@
 #define SPLITS_FILE "b2op/splits.txt"
 #define LOCATION_CAFE "cafe"
 #define LOCATION_WARDEN "warden"
-#define OPT_START_RND1 1
-#define OPT_START_RND5 2
-#define OPT_START_RND10 4
-#define OPT_START_RND15 8
-#define OPT_START_RND20 16
-#define OPT_START_RND25 32
-#define OPT_START_RND30 64
-#define OPT_NOMAGIC 128
-#define OPT_DOGS 256
-#define OPT_HEADSHOT_ONLY 512
-#define OPT_EASY 1024
 
 /* Feature flags */
 #define FEATURE_HUD 1
