@@ -4,7 +4,7 @@
 - New dvar anticheat version (less allocations) for new Plutonium update (5162+)
 - Changed watermarks to be a bit more readable
 - Changed fps limiter for new Plutonium update (5162+)
-- Fixed rare occurance of false detection of duplicated patch which can terminate the game
+- Fixed rare occurrence of false detection of duplicated patch which can terminate the game
 
 # Version 4.2
 
