@@ -355,6 +355,10 @@ init_b2_chat_watcher()
     chat["tank depatch"] = ::depatch_tank;
 #endif
 
+#if FEATURE_PERMAPERKS == 1
+    chat["purist"] = ::purist_nojug_message;
+#endif
+
     if (chat.size)
     {
         thread chat_watcher(chat);
@@ -1878,6 +1882,55 @@ depatch_tank(value, key, player)
 }
 #endif
 
+purist_nojug_message(new_value, dvar, player)
+{
+    skip_hint = false;
+
+    switch (new_value)
+    {
+        case "1":
+        case "yes":
+        case "on":
+            if (player ishost())
+            {
+                player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 1, "zm_prison");
+                skip_hint = true;
+                /* UX - set the dvar to allow for new perk assignment even on r1 */
+                setdvar("award_perks", 1);
+            }
+
+            break;
+
+        case "0":
+        case "no":
+        case "off":
+            if (player ishost())
+            {
+                player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 0, "zm_prison");
+                skip_hint = true;
+                /* UX - set the dvar to allow for new perk assignment even on r1 */
+                setdvar("award_perks", 1);
+            }
+            break;
+    }
+
+    if (is_in_nojug_purist_mode())
+    {
+        print_scheduler("Purist no jug: " + COLOR_TXT("ACTIVE", COL_YELLOW));
+    }
+    else
+    {
+        print_scheduler("Purist no jug: " + COLOR_TXT("Inactive", COL_LIGHT_BLUE));
+    }
+
+    if (!skip_hint && player ishost())
+    {
+        print_scheduler("To change the status, add 1 or 0 at the end of the message as host");
+    }
+
+    return true;
+}
+
 /*
  ************************************************************************************************************
  ************************************************** STUBS ***************************************************
@@ -2395,6 +2448,7 @@ fixed_upgrade_jugg_active()
     flag_set("pers_jug_cleared");
 
     DEBUG_PRINT("fixed_upgrade_jugg_active() deinit " + self.name);
+    // DEBUG_PRINT("fixed_upgrade_jugg_active() stat: " + sstr(self maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg")));
 }
 
 #if FEATURE_PERMAPERKS == 1
@@ -2557,18 +2611,20 @@ nojug_purist_mode_setup()
             player maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg( "jugg_upgrade", 1, 1 );
         }
     }
-    generate_temp_watermark(level.pers_jugg_round_lose_target, "PURIST NOJUG", (0.5, 0.3, 0.7), 0.66);
+    thread generate_temp_watermark(level.pers_jugg_round_lose_target, "PURIST NOJUG", (0.5, 0.3, 0.7), 0.66);
 
     while(!isdefined(level.pers_jugg_round_lose_target) || !is_round(level.pers_jugg_round_lose_target))
     {
         if (!is_in_nojug_purist_mode())
         {
-            generate_temp_watermark(max(level.pers_jugg_round_lose_target, level.round_number + 2), "PURIST NOJUG CHANGED", (1, 0.5, 0), 0.66);
+            thread generate_temp_watermark(max(level.pers_jugg_round_lose_target, level.round_number + 2), "PURIST NOJUG CHANGED", (1, 0.5, 0), 0.66);
             break;
         }
 
         wait 0.1;
     }
+
+    DEBUG_PRINT("nojug_purist_mode_setup() end");
 }
 #endif
 
