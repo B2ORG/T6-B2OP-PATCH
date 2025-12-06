@@ -1118,6 +1118,15 @@ b2_restart_level()
         emulate_menu_call("endround");
 }
 
+is_in_nojug_purist_mode()
+{
+#if FEATURE_PERMAPERKS == 1
+    return gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("stock", "zm_prison");
+#else
+    return false;
+#endif
+}
+
 /*
  ************************************************************************************************************
  ****************************************** SINGLE PURPOSE FUNCTIONS ****************************************
@@ -2275,6 +2284,7 @@ perma_perks_setup()
     level.b2_awarding_permaperks_now = 0;
 
     flag_wait("initial_blackscreen_passed");
+    thread nojug_purist_mode_setup();
     thread watch_permaperk_award();
 
     if (getdvar("award_perks") != "1")
@@ -2361,6 +2371,13 @@ fixed_upgrade_jugg_active()
 
         if (maps\mp\zombies\_zm_pers_upgrades::is_pers_system_active())
         {
+#if FEATURE_PERMAPERKS == 1
+            if (is_in_nojug_purist_mode())
+            {
+                DEBUG_PRINT("fixed_upgrade_jugg_active breaking cause of purist mode");
+                break;
+            }
+#endif
             if (is_round(level.pers_jugg_round_lose_target))
             {
                 self maps\mp\zombies\_zm_stats::increment_client_stat("pers_jugg_downgrade_count", 0);
@@ -2399,6 +2416,7 @@ watch_permaperk_award()
     }
 
     CLEAR(level.b2_awarding_permaperks_now)
+    level notify("b2_finished_awarding_permaperks");
 }
 
 permaperk_array(code, maps_award, maps_take, to_round)
@@ -2432,7 +2450,14 @@ award_permaperks_safe()
     perks_to_process[perks_to_process.size] = permaperk_array("revive");
     perks_to_process[perks_to_process.size] = permaperk_array("multikill_headshots");
     perks_to_process[perks_to_process.size] = permaperk_array("perk_lose");
-    perks_to_process[perks_to_process.size] = permaperk_array("jugg", undefined, undefined, 15);
+    if (is_in_nojug_purist_mode())
+    {
+        perks_to_process[perks_to_process.size] = permaperk_array("jugg", [], array("zm_transit", "zm_highrise", "zm_buried"));
+    }
+    else
+    {
+        perks_to_process[perks_to_process.size] = permaperk_array("jugg", undefined, undefined, 15);
+    }
     perks_to_process[perks_to_process.size] = permaperk_array("flopper", array("zm_buried"));
     perks_to_process[perks_to_process.size] = permaperk_array("box_weapon", array("zm_highrise", "zm_buried"), array("zm_transit"));
     perks_to_process[perks_to_process.size] = permaperk_array("cash_back");
@@ -2509,6 +2534,41 @@ award_permaperk(stat_name, perk_code, stat_value)
     self.stats_this_frame[stat_name] = 1;
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
     self playsoundtoplayer("evt_player_upgrade", self);
+}
+
+nojug_purist_mode_setup()
+{
+    LEVEL_ENDON
+
+    level waittill("b2_finished_awarding_permaperks");
+    if (!is_in_nojug_purist_mode())
+    {
+        DEBUG_PRINT("Exiting nojug_purist_mode_setup");
+        return;
+    }
+
+    foreach (player in level.players)
+    {
+        if (player maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg"))
+        {
+            DEBUG_PRINT("Nojug purist loop removing 'pers_jugg' for " + player.name + " with stat: " + sstr(player maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg")));
+            player remove_permaperk_wrapper("pers_jugg");
+            player remove_permaperk_wrapper("pers_jugg_downgrade_count");
+            player maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg( "jugg_upgrade", 1, 1 );
+        }
+    }
+    generate_temp_watermark(level.pers_jugg_round_lose_target, "PURIST NOJUG", (0.5, 0.3, 0.7), 0.66);
+
+    while(!isdefined(level.pers_jugg_round_lose_target) || !is_round(level.pers_jugg_round_lose_target))
+    {
+        if (!is_in_nojug_purist_mode())
+        {
+            generate_temp_watermark(max(level.pers_jugg_round_lose_target, level.round_number + 2), "PURIST NOJUG CHANGED", (1, 0.5, 0), 0.66);
+            break;
+        }
+
+        wait 0.1;
+    }
 }
 #endif
 
