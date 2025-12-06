@@ -70,17 +70,17 @@
     self endon("disconnect");
 
 /* Function macros */
+#define COLOR_TXT(__txt, __color) __color + __txt + COL_WHITE
+#define CLEAR(__var) __var = undefined;
+#define MS_TO_SECONDS(__ms) int(__ms / 1000)
+#define STR(__val) "" + (__val)
 #if PLUTO == 1 && DEBUG == 1
-#define DEBUG_PRINT(__txt) printf("DEBUG: ^5" + __txt);
+#define DEBUG_PRINT(__txt) printf("DEBUG [" + convert_time() + "]: ^5" + __txt + "^7");
 #elif DEBUG == 1
 #define DEBUG_PRINT(__txt) iprintln("DEBUG: ^5" + __txt);
 #else
 #define DEBUG_PRINT(__txt)
 #endif
-#define CLEAR(__var) __var = undefined;
-#define MS_TO_SECONDS(__ms) int(__ms / 1000)
-#define COLOR_TXT(__txt, __color) __color + __txt + COL_WHITE
-#define STR(__val) "" + (__val)
 
 #include common_scripts\utility;
 #include maps\mp\gametypes_zm\_hud_util;
@@ -617,6 +617,10 @@ convert_time(seconds)
 {
     hours = 0;
     minutes = 0;
+    if (!isdefined(seconds))
+    {
+        seconds = int(gettime() / 1000);
+    }
 
     if (seconds > 59)
     {
