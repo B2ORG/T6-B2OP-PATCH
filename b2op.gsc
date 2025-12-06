@@ -2296,7 +2296,6 @@ remove_permaperk_wrapper(perk_code, round)
         round = 1;
 
     if (is_round(round) && issubstr(perk_code, "pers_"))
-        self maps\mp\zombies\_zm_stats::zero_client_stat(perk_code, 0);
         self remove_permaperk_by_stat(perk_code);
     else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
         self remove_permaperk_by_code(perk_code);
@@ -2474,22 +2473,32 @@ resolve_permaperk(perk)
 
     /* Too high of a round, return out */
     if (is_round(perk["to_round"]))
-        return;
-
-    if (isinarray(perk["maps_award"], level.script) && is_false(self.pers_upgrades_awarded[perk_code]))
     {
-        for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
-        {
-            stat_name = level.pers_upgrades[perk_code].stat_names[j];
-            stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
-
-            self award_permaperk(stat_name, perk_code, stat_value);
-        }
+        DEBUG_PRINT("Exiting resolve_permaperk for " + sstr(perk_code) + ", round (" + sstr(perk["to_round"]) + " is too high");
+        return;
+    }
+    if (!isdefined(level.pers_upgrades[perk_code].stat_names))
+    {
+        DEBUG_PRINT("Exiting resolve_permaperk for " + sstr(perk_code) + ", pers_upgrade is not defined");
+        return;
     }
 
-    if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
+    for (j = 0; j < level.pers_upgrades[perk_code].stat_names.size; j++)
     {
-        self remove_permaperk(perk_code);
+        stat_name = level.pers_upgrades[perk_code].stat_names[j];
+        stat_value = level.pers_upgrades[perk_code].stat_desired_values[j];
+
+        if (isinarray(perk["maps_award"], level.script) && is_false(self.pers_upgrades_awarded[perk_code]))
+        {
+            // DEBUG_PRINT("call award_permaperk with " + sstr(stat_name) + ", " + sstr(perk_code) + ", " + sstr(stat_value));
+            self award_permaperk(stat_name, perk_code, stat_value);
+        }
+
+        if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
+        {
+            // DEBUG_PRINT("call remove_permaperk_by_stat with " + sstr(stat_name) + " (" + sstr(perk_code) + ")");
+            self remove_permaperk_by_stat(stat_name);
+        }
     }
 }
 
