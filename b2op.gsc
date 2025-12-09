@@ -1884,8 +1884,6 @@ depatch_tank(value, key, player)
 
 purist_nojug_message(new_value, dvar, player)
 {
-    skip_hint = false;
-
     switch (new_value)
     {
         case "1":
@@ -1894,9 +1892,18 @@ purist_nojug_message(new_value, dvar, player)
             if (player ishost())
             {
                 player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 1, "zm_prison");
-                skip_hint = true;
-                /* UX - set the dvar to allow for new perk assignment even on r1 */
                 setdvar("award_perks", 1);
+                print_scheduler("Purist has been " + COLOR_TXT("ENABLED", COL_GREEN) + " for the next game");
+
+                if (level.round_number <= 15)
+                {
+                    wait 0.1;
+                    print_scheduler("Restarting ...");
+
+                    wait 0.4;
+                    b2_restart_level();
+                    return;
+                }
             }
 
             break;
@@ -1907,9 +1914,18 @@ purist_nojug_message(new_value, dvar, player)
             if (player ishost())
             {
                 player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 0, "zm_prison");
-                skip_hint = true;
-                /* UX - set the dvar to allow for new perk assignment even on r1 */
                 setdvar("award_perks", 1);
+                print_scheduler("Purist has been " + COLOR_TXT("DISABLED", COL_GREEN) + " for the next game");
+
+                if (level.round_number <= 15)
+                {
+                    wait 0.1;
+                    print_scheduler("Restarting ...");
+
+                    wait 0.4;
+                    b2_restart_level();
+                    return;
+                }
             }
             break;
     }
@@ -1923,7 +1939,7 @@ purist_nojug_message(new_value, dvar, player)
         print_scheduler("Purist no jug: " + COLOR_TXT("Inactive", COL_LIGHT_BLUE));
     }
 
-    if (!skip_hint && player ishost())
+    if (player ishost())
     {
         print_scheduler("To change the status, add 1 or 0 at the end of the message as host");
     }
