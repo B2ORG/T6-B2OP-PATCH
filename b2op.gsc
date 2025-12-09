@@ -2352,33 +2352,50 @@ perma_perks_setup()
 #endif
 }
 
-/* If client stat (prefixed with 'pers_') is passed to perk_code, it tries to do it with existing system */
-remove_permaperk_wrapper(perk_code, round)
+remove_permaperk_wrapper(perk_code, round, upload)
 {
     if (!isdefined(round))
+    {
         round = 1;
+    }
 
-    if (is_round(round) && issubstr(perk_code, "pers_"))
-        self remove_permaperk_by_stat(perk_code);
-    else if (is_round(round) && is_true(self.pers_upgrades_awarded[perk_code]))
-        self remove_permaperk_by_code(perk_code);
+    if (!is_round(round))
+    {
+        DEBUG_PRINT("Exiting remove_permaperk_wrapper for " + sstr(perk_code) + ", round not reached");
+        return;
+    }
 
-    self maps\mp\zombies\_zm_stats::uploadstatssoon();
+    if (!isdefined(level.pers_upgrades[perk_code].stat_names))
+    {
+        DEBUG_PRINT("Exiting remove_permaperk_wrapper for " + sstr(perk_code) + ", pers_upgrade is not defined");
+        return;
+    }
+
+    self remove_permaperk_local(perk_code);
+
+    for (i = 0; i < level.pers_upgrades[perk_code].stat_names.size; i++)
+    {
+        self remove_permaperk_stat(level.pers_upgrades[perk_code].stat_names[i]);
+    }
+
+    if (is_true(upload))
+    {
+        self thread maps\mp\zombies\_zm_stats::uploadstatssoon();
+    }
 }
 
-remove_permaperk_by_code(perk_code)
+remove_permaperk_local(perk_code)
 {
-    DEBUG_PRINT("remove_permaperk_by_code: " + sstr(perk_code));
+    DEBUG_PRINT("remove_permaperk_local: " + sstr(perk_code));
     self.pers_upgrades_awarded[perk_code] = 0;
     self playsoundtoplayer("evt_player_downgrade", self);
 }
 
-remove_permaperk_by_stat(stat_name)
+remove_permaperk_stat(stat_name)
 {
-    DEBUG_PRINT("remove_permaperk_by_stat: " + sstr(stat_name));
+    DEBUG_PRINT("remove_permaperk_stat: " + sstr(stat_name));
     self maps\mp\zombies\_zm_stats::zero_client_stat(stat_name, 0);
     self.stats_this_frame[stat_name] = 1;
-    self playsoundtoplayer("evt_player_downgrade", self);
 }
 
 emergency_permaperks_cleanup()
@@ -2389,8 +2406,7 @@ emergency_permaperks_cleanup()
     /* This shouldn't be necessary, serves as last resort defence. Will not reset health but will prevent the perk to be active after a down */
     foreach (player in level.players)
     {
-        player remove_permaperk_wrapper("pers_jugg");
-        player remove_permaperk_wrapper("pers_jugg_downgrade_count");
+        player remove_permaperk_wrapper("jugg", 0, true);
     }
 }
 
@@ -2572,12 +2588,12 @@ resolve_permaperk(perk)
             // DEBUG_PRINT("call award_permaperk with " + sstr(stat_name) + ", " + sstr(perk_code) + ", " + sstr(stat_value));
             self award_permaperk(stat_name, perk_code, stat_value);
         }
+    }
 
-        if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
-        {
-            // DEBUG_PRINT("call remove_permaperk_by_stat with " + sstr(stat_name) + " (" + sstr(perk_code) + ")");
-            self remove_permaperk_by_stat(stat_name);
-        }
+    if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
+    {
+        // DEBUG_PRINT("call remove_permaperk_wrapper with " + sstr(stat_name) + " (" + sstr(perk_code) + ")");
+        self remove_permaperk_wrapper(perk_code, 0, false);
     }
 }
 
@@ -2603,11 +2619,10 @@ nojug_purist_mode_setup()
 
     foreach (player in level.players)
     {
-        if (player maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg"))
+        if (player maps\mp\zombies\_zm_pers_upgrades_functions::pers_jugg_active())
         {
-            DEBUG_PRINT("Nojug purist loop removing 'pers_jugg' for " + player.name + " with stat: " + sstr(player maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg")));
-            player remove_permaperk_wrapper("pers_jugg");
-            player remove_permaperk_wrapper("pers_jugg_downgrade_count");
+            DEBUG_PRINT("Nojug purist loop removing 'jugg' for " + player.name);
+            player remove_permaperk_wrapper("jugg", 0, true);
             player maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg( "jugg_upgrade", 1, 1 );
         }
     }
@@ -3386,7 +3401,7 @@ rig_box(guns, player)
         level.pers_box_weapon_lose_round = 1;
         /* This is a for so i don't override player var */
         for (i = 0; i < level.players.size; i++)
-            level.players[i] remove_permaperk_wrapper("pers_box_weapon_counter");
+            level.players[i] remove_permaperk_wrapper("box_weapon");
     }
 
     level waittill("b2_box_restore");
