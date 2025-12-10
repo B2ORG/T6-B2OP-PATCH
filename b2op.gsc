@@ -290,6 +290,7 @@ init_b2_flags()
     flag_init("b2_fridge_locked");
     flag_init("b2_fb_locked");
     flag_init("b2_lb_locked");
+    flag_init("b2_silent_backspeed");
 }
 
 init_b2_dvars()
@@ -389,15 +390,19 @@ init_b2_io()
 init_b2_backspeed()
 {
 #if PLUTO == 1
+    strafe = gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("alt_clip", "zm_prison");
+    back = gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("lh_clip", "zm_prison");
+
+    DEBUG_PRINT("decoded backspeed stats: (" + gettype(strafe) + ") " + sstr(strafe) + " (" + gettype(back) + ") " + sstr(back));
+
     flag_set("b2_silent_backspeed");
-    if (getdvar("steam_backspeed") == "1")
+    if (!strafe || !back)
     {
-        backspeed_input("steam", "bs", gethostplayer());
+        strafe = 100;
+        back = 100;
     }
-    else
-    {
-        backspeed_input("fix", "bs", gethostplayer());
-    }
+
+    backspeed_input(array(strafe / 100, back / 100), "bs", gethostplayer());
     flag_clear("b2_silent_backspeed");
 #endif
 }
@@ -1417,7 +1422,6 @@ dvar_config(key)
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
-    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true/*,       undefined,                                          ::steam_backspeed_callback*/);
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true,       undefined,                                          ::timers_alpha);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true,       undefined,                                          ::buildables_alpha);
     dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
@@ -1457,16 +1461,11 @@ dvar_config(key)
 #endif
 
 #if PLUTO == 0
-    if (getdvar("steam_backspeed") == "1")
-    {
-        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
-        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.7",                  false,  false);
-    }
-    else
-    {
-        dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "1",                    false,  false);
-        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "1",                    false,  false);
-    }
+    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
+    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "0.8",                  false,  false,  ::check_steam_backspeed);
+    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "0.7",                  false,  false,  ::check_steam_backspeed);
+    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "1",                    false,  false,  array(::check_steam_backspeed, true));
+    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "1",                    false,  false,  array(::check_steam_backspeed, true));
 #endif
 
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
@@ -2046,7 +2045,15 @@ backspeed_input(new_value, dvar, player)
             break;
     }
 
-    values = array_slice(strtok(new_value, " "), 0, 2);
+    if (isarray(new_value))
+    {
+        values = array_slice(new_value, 0, 2);
+    }
+    else
+    {
+        values = array_slice(strtok(new_value, " "), 0, 2);
+    }
+
     DEBUG_PRINT("backspeed_input(): new_value='" + sstr(new_value) + "' => " + sstr(values));
     if (player ishost() && values.size == 1)
     {
@@ -2055,22 +2062,37 @@ backspeed_input(new_value, dvar, player)
     }
     else if (player ishost() && values.size > 1)
     {
-        strafe = float(values[0]);
-        back = float(values[1]);
+        strafe = clamp(float(values[0]), 0.1, 1.0);
+        back = clamp(float(values[1]), 0.1, 1.0);
     }
 
     if (is_true(strafe) && is_true(back))
     {
-        setdvar("player_strafeSpeedScale", clamp(strafe, 0.1, 1.0));
-        setdvar("player_backSpeedScale", clamp(back, 0.1, 1.0));
+        setdvar("player_strafeSpeedScale", strafe);
+        setdvar("player_backSpeedScale", back);
+
+        DEBUG_PRINT("encoding backspeed stats: " + sstr(int(strafe * 100)) + " " + sstr(int(back * 100)));
+        player setdstat("PlayerStatsByMap", "zm_prison", "weaponLocker", "alt_clip", int(strafe * 100));
+        player setdstat("PlayerStatsByMap", "zm_prison", "weaponLocker", "lh_clip", int(back * 100));
+
+        player thread maps\mp\zombies\_zm_stats::uploadstatssoon();
     }
 
     if (!flag("b2_silent_backspeed"))
     {
-        print_scheduler("Strafespeed: " + COLOR_TXT(getdvar("player_strafeSpeedScale"), COL_YELLOW) + " | Backspeed:" + COLOR_TXT(getdvar("player_backSpeedScale"), COL_YELLOW));
+        print_scheduler("Strafespeed: " + COLOR_TXT(getdvar("player_strafeSpeedScale"), COL_YELLOW) + " | Backspeed: " + COLOR_TXT(getdvar("player_backSpeedScale"), COL_YELLOW));
     }
     return true;
 }
+#endif
+
+#if PLUTO == 0
+    check_steam_backspeed(revert)
+    {
+        if (revert)
+            return getdvar("steam_backspeed") != "1";
+        return getdvar("steam_backspeed") == "1";
+    }
 #endif
 
 /*
