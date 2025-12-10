@@ -1605,7 +1605,7 @@ dvar_scanner(dvars)
                 if (isdefined(dvars[i]["on_change"]) && state[dvars[i]["name"]] != current_state)
                 {
                     DEBUG_PRINT("dvar onchange " + sstr(dvars[i]["name"]) + ": " + sstr(state[dvars[i]["name"]]) + " != " + sstr(current_state));
-                    if (!flag("b2_" + dvars[i].name + "_locked"))
+                    if (!flag("b2_" + dvars[i]["name"] + "_locked"))
                     {
                         callback = dvars[i]["on_change"];
                         reset = [[callback]](current_state, dvars[i]["name"], gethostplayer());
@@ -4344,7 +4344,10 @@ check_whoami(value, key, player)
 #if DEBUG == 1
 _dvar_reader(dvar)
 {
+    iprintln("DVAR " + dvar + " => " + getdvar(dvar));
+#if PLUTO == 1
     DEBUG_PRINT("DVAR " + dvar + " => " + getdvar(dvar));
+#endif
     return true;
 }
 
