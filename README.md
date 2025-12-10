@@ -103,7 +103,7 @@ A high level overview what features are available in each of the versions.
 | Basic anticheat | ✓ | ✓ | ✓ | ✓ |
 | Network frame fix | ✓ | ✓ | ✗ | ✓ |
 | Automatic Permaperks & Bank | ✓ | ✓ | ✓ | ✓ |
-| Backspeed (with option to disable) | ✓ | ✓ | ✓ | ✓ |
+| Backspeed (with option to adjust) | ✓ | ✓ | ✓ | ✓ |
 | Trap / JetGun fix | ✗ | ✓ | ✓ | ✓ |
 | HUD timers | ✓ | ✓ | ✓ | ✓ |
 | HUD buildable counter | ✓ | ✓ | ✓ | ✓ |
@@ -116,6 +116,7 @@ A high level overview what features are available in each of the versions.
 | Simple trade tracker | ✓ | ✓ | ✓ | ✓ |
 | FPS Limiter | ✓ | ✓ | ✓ | ✓ |
 | DOF Disabled | ✓ | ✓ | ✓ | ✓ |
+| Toogleable Purist no jug mode | ✓ | ✓ | ✓ | ✓ |
 
 1. Configuration only as host
 
@@ -192,7 +193,7 @@ End of 18, 28, 38 onwards up to the end, and additionally
 - DVAR is a variable that player can (usually) modify from the game console. DVARs mentioned in this document are all changeable. In order to set a DVAR, press `~` button, then type in dvar name, and value you want to assign to it, like so
 
 ```
-steam_backspeed 1
+cg_drawReset 1
 ```
 
 8) Network Frame Fix file is missing from this repository
@@ -208,6 +209,10 @@ steam_backspeed 1
 - Plutonium have changed their go-to directory for scripts, but they maintain them for backwards compatibility. Try the following
     - Check if you still have a `t6r` folder in your Plutonium directory, if so, just remove it (it's a leftover from earliest versions of Plutonium)
     - Check if you have anything in `Plutonium\storage\t6\scripts\zm`, if so, just remove it. The patch should be in `Plutonium\storage\t6\raw\scripts\zm` alongside `ranked.gsc` file according to current Plutonium guidelines.
+
+11) I want to play No Jug category without persistent jug
+
+- There is a dedicated setting to it, a description can be found below, but tl;dr is send `purist 1` chat message as a host and restart the map
 
 # Steps for basic troubleshooting
 
@@ -256,7 +261,9 @@ Prior to version 3.5 splits were not fully accurate. Starting on 3.5, B2OP emula
 
 ## Customizing splits
 
-On Plutonium version R4516+ you can customize on which rounds splits are going to be shown, in order to do that, go to
+On Plutonium version R4516+ you can customize on which rounds splits are going to be shown, in order to do that
+
+### Direct file edit
 
 ```
 %localappdata%\Plutonium\storage\t6\raw\scriptdata
@@ -274,6 +281,14 @@ Then proceed to create a `b2op` folder inside of scriptdata, create `splits.txt`
 27
 30
 ```
+
+### Chat message
+
+As of B2OP version 4.4, you can set splits using chat messages as host. Under the hood, the patch will just overwrite contents of the file described above.
+
+- To check current custom splits settings type `splits` in chat
+- To remove custom splits settings and revert to default, type `splits 0`
+- To define new set of custom splits, type `splits 2 3 4 5`, which will cause the splits to show on rounds 2, 3, 4 and 5. Adjust round numbers accordingly
 
 > [!WARNING]
 > If the `splits.txt` file is not empty, default splits rounds used by the patch no longer apply, so you need to specify ALL of the rounds you want it to show up yourself.
@@ -497,6 +512,22 @@ Basic trade tracker is a small utility available in survival maps, it prints sta
 
 - If you wish to stop the tracker (you don't like it / for allocation purposes), you can use DVAR `kill_box_tracker 1`, this will permanently clear all the logic from the tracker from the game. WARNING! Once disabled, it won't work again in that game.
 
+# Backspeed
+
+The patch automatically fixes strafe and backspeed scales to console levels, however since version 4.4 (Plutonium only) it is possible to adjust the value (without having to use cheat protected dvar). In order to change between steam and console backspeed, use following chat messages accordingly
+
+```
+bs steam
+bs fix
+```
+
+You can also set custom values (between 0.1 and 1). This setting will persist across game launches.
+
+> [!TIP]
+> You can send `bs` in the chat to see the current values.
+
+For Redacted and Ancient, by default backspeed is fixed. You can change it by settings `steam_backspeed` dvar to `1` and restart the match.
+
 # Permaperks
 
 Patch does award players with permaperks on connect, but only at the beginning of the game. Players joining in progress will not be given any permaperks. Every player joining the game past round 15 will have PermaJug taken away from him.
@@ -518,6 +549,39 @@ List of permaperks awarded by B2OP
 
 > [!NOTE]
 > The game will restart automatically after awarding players with permaperks, when the sitution allows for it (all launchers solo and Plutonium coop). Otherwise it'll just end, as restarting would cause the crash. In unsupported configurations, all players are recommended to get into a solo game to get their permaperks before starting the coop.
+
+## No jug games
+
+Purist mode enables you to play out a No Jug game without persistent jug permaperk. In order to enable this mode, you can either use this command BEFORE the game, or send a chat text message in game and restart
+
+- Command to enable purist before the game
+```
+statwriteddl playerstatsbymap zm_prison weaponlocker stock 1;uploadstats
+```
+
+- Chat message to enable purist in game (requires a restart)
+```
+purist 1
+```
+
+- Command to disable purist before the game
+```
+statwriteddl playerstatsbymap zm_prison weaponlocker stock 0;uploadstats
+```
+
+- Chat message to disable purist in game (requires a restart)
+```
+purist 0
+```
+
+> [!TIP]
+> To check current status of purist (whether it's enabled or not), just send `purist` in the chat
+
+> [!CAUTION]
+> Changing this option mid game technically applies instantly, but your game may not be possible to classify as either with or without perma jug if you toggle it mid game and then carry on. Always restart after changing the mode. If purist was enabled but someone disabled it, an appropriate watermark is displayed (as it enables violations by reconnecting with permajug before r15).
+
+> [!INFO]
+> Aside from status message, a watermark is generated to show that the game is played on the purist mode. This watermark will be removed from the screen after round 15 to not interrupt with the game, the status message will work throught the entire game.
 
 # Tank fix
 
@@ -783,3 +847,19 @@ After applying desired changes, run script `compile.py` while in the patch main 
 
 > [!NOTE]
 > Please note, as the modding scene for BO2 is still very young, stuff and tech is changing rapidly. Above description may not always be up to date, but i will try to not let that happen too often.
+
+# Weaponlocker stats allocations for B2 patches
+
+Here is a list of weaponlocker stats B2 patches use to persist settings. Note, Tranzit stats are all used by the game, all the other maps are available to use by modders.
+
+| Map | Stat | Component | Effect |
+| :---: | :---: | :---: | :--- |
+| zm_highrise | clip | Characters | Controls character preset on Victis maps |
+| zm_highrise | stock | Characters | Controls character preset on MOTD |
+| zm_highrise | alt_clip | Characters | Controls character preset on Origins |
+| zm_highrise | lh_clip | Characters | Controls character preset on survival maps |
+| zm_prison | clip | RNG | (B2OP) Controls MOTD key position overrides |
+| zm_prison | stock | Permaperks | (B2OP) Controls Purist mode |
+| zm_prison | alt_clip | Gameplay | (B2OP) Controls strafespeed scale |
+| zm_prison | lh_clip | Gameplay | (B2OP) Controls backspeed scale |
+| zm_tomb | clip | Gameplay | (B2OP) Controls tank depatching |
