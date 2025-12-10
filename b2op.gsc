@@ -162,6 +162,7 @@ post_init()
     thread init_b2_hud();
     init_b2_box();
     init_b2_chat_watcher();
+    init_b2_backspeed();
     thread b2op_main_loop();
 
 #if DEBUG == 1
@@ -323,6 +324,10 @@ init_b2_chat_watcher()
 {
 #if PLUTO == 1
     chat = [];
+
+    chat["bs"] = ::backspeed_input;
+    chat["backspeed"] = ::backspeed_input;
+
 #if FEATURE_FRIDGE == 1
     chat["fridge"] = ::fridge_input;
 #endif
@@ -378,6 +383,22 @@ init_b2_io()
         fs_fclose(f);
         fs_remove("b2op/.tmp");
     }
+#endif
+}
+
+init_b2_backspeed()
+{
+#if PLUTO == 1
+    flag_set("b2_silent_backspeed");
+    if (getdvar("steam_backspeed") == "1")
+    {
+        backspeed_input("steam", "bs", gethostplayer());
+    }
+    else
+    {
+        backspeed_input("fix", "bs", gethostplayer());
+    }
+    flag_clear("b2_silent_backspeed");
 #endif
 }
 
@@ -748,6 +769,11 @@ array_slice(arr, offset, length, preserve_keys)
     }
 
     return sliced;
+}
+
+clamp(value, min, max)
+{
+    return min(max(value, min), max);
 }
 
 call_func_with_variadic_args(callback, arg_array)
@@ -1430,6 +1456,7 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,  false,      undefined,                                          ::_dvar_reader);
 #endif
 
+#if PLUTO == 0
     if (getdvar("steam_backspeed") == "1")
     {
         dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "0.8",                  false,  false);
@@ -1438,8 +1465,10 @@ dvar_config(key)
     else
     {
         dvars[dvars.size] = register_dvar("player_strafeSpeedScale",    "1",                    false,  false);
-        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "0.9",                  false,  false);
+        dvars[dvars.size] = register_dvar("player_backSpeedScale",      "1",                    false,  false);
     }
+#endif
+
     dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
@@ -2002,6 +2031,47 @@ purist_nojug_message(new_value, dvar, player)
 
     return true;
 }
+
+#if PLUTO == 1
+backspeed_input(new_value, dvar, player)
+{
+    // DEBUG_PRINT("backspeed_input('" + sstr(new_value) + "', '" + sstr(dvar) + "', '" + sstr(player.name) + "')");
+    switch (new_value)
+    {
+        case "steam":
+            new_value = "0.8 0.7";
+            break;
+        case "fix":
+            new_value = "1.0";
+            break;
+    }
+
+    values = array_slice(strtok(new_value, " "), 0, 2);
+    DEBUG_PRINT("backspeed_input(): new_value='" + sstr(new_value) + "' => " + sstr(values));
+    if (player ishost() && values.size == 1)
+    {
+        strafe = float(values[0]);
+        back = float(values[0]);
+    }
+    else if (player ishost() && values.size > 1)
+    {
+        strafe = float(values[0]);
+        back = float(values[1]);
+    }
+
+    if (is_true(strafe) && is_true(back))
+    {
+        setdvar("player_strafeSpeedScale", clamp(strafe, 0.1, 1.0));
+        setdvar("player_backSpeedScale", clamp(back, 0.1, 1.0));
+    }
+
+    if (!flag("b2_silent_backspeed"))
+    {
+        print_scheduler("Strafespeed: " + COLOR_TXT(getdvar("player_strafeSpeedScale"), COL_YELLOW) + " | Backspeed:" + COLOR_TXT(getdvar("player_backSpeedScale"), COL_YELLOW));
+    }
+    return true;
+}
+#endif
 
 /*
  ************************************************************************************************************
