@@ -231,9 +231,7 @@ init_b2_permaperks()
     {
         return;
     }
-#if FEATURE_PERMAPERKS == 1
     thread perma_perks_setup();
-#endif
 }
 
 init_b2_hud()
