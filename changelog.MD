@@ -3,7 +3,6 @@
 - Added Purist mode to enable playing No Jug games without persistent jug (minijug) for Plutonium
 - Added ability to manage custom splits file via chat messages for Modern Plutonium (4516+)
 - Changed the behavior of permaperk system to prevent possible stat/script state mismatch
-- Custom splits file can now be managed via `splits` chat message on Plutonium
 - Backspeed can now be set via `bs` chat message on Plutonium
 - Fix custom dvars on Redacted & Ancient
 
