@@ -6,6 +6,7 @@
 #define DEBUG 0
 #define DEBUG_HUD 0
 #define BETA 0
+#define DEPRECATION 5162
 
 /* Const macros */
 #define B2OP_VER 4.4
@@ -1358,6 +1359,13 @@ welcome_prints()
     level waittill("end_of_round");
     print_scheduler(COLOR_TXT("DEPRECATION NOTICE", COL_RED), self);
     print_scheduler("Version for " + COLOR_TXT(get_launcher_as_txt(), COL_RED) + " is deprecated. Check ReadMe for more info!", self);
+#else
+    if (get_plutonium_version() < DEPRECATION)
+    {
+        level waittill("end_of_round");
+        print_scheduler(COLOR_TXT("DEPRECATION NOTICE", COL_RED), self);
+        print_scheduler("Support for this Plutonium version is deprecated. Make sure to update urgently!", self);
+    }
 #endif
 }
 
