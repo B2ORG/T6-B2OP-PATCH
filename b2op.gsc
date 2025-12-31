@@ -415,7 +415,7 @@ b2op_main_loop()
     // DEBUG_PRINT("initialized b2op_main_loop");
     game_start = gettime();
 
-    b2_signal("GAME_START", array(game_start, getutc(), "b2op", B2OP_VER, get_plutonium_version(), fetch_players_info()), array("game_time", "utc_time", "patch", "patch_version", "plutonium_version", "players"));
+    b2_signal("GAME_START", array("b2op", STR(B2OP_VER), get_plutonium_version()), array("patch", "patch_version", "plutonium_version"));
 
     while (true)
     {
@@ -423,7 +423,7 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_start = gettime();
 #endif
-        b2_signal("START_OF_ROUND", array(gettime(), getutc(), level.round_number, fetch_players_info()), array("game_time", "utc_time", "round_number", "players"));
+        b2_signal("START_OF_ROUND", array(level.round_number), array("round_number"));
 
 #if FEATURE_HUD == 1
         if (isdefined(level.round_hud))
@@ -450,7 +450,7 @@ b2op_main_loop()
 #if FEATURE_HUD == 1 || FEATURE_SPH == 1
         round_duration = gettime() - round_start;
 #endif
-        b2_signal("END_OF_ROUND", array(gettime(), getutc()), array("game_time", "utc_time"));
+        b2_signal("END_OF_ROUND");
 
 #if FEATURE_HUD == 1
         if (isdefined(level.round_hud))
@@ -1023,17 +1023,6 @@ get_plutonium_version()
             detected_version = version;
     }
     return detected_version;
-}
-
-fetch_players_info()
-{
-    players = [];
-    foreach (player in level.players)
-    {
-        players[players.size] = array(player.name, player.clientid);
-    }
-
-    return players;
 }
 
 should_set_draw_offset()
@@ -3420,7 +3409,7 @@ boxtracker_watchweapon(player)
     if (!isdefined(self.weapon_string))
     {
         level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
-        b2_signal("BOX_WEAPON", array(BOXTRACKER_KEY_JOKER, player.name, gettime()), array("weapon", "player", "time"));
+        b2_signal("BOX_WEAPON", array(BOXTRACKER_KEY_JOKER, player.name), array("weapon", "player"));
         return;
     }
 
@@ -3435,7 +3424,7 @@ boxtracker_watchweapon(player)
         }
     }
 
-    b2_signal("BOX_WEAPON", array(key, player.name, gettime()), array("weapon", "player", "time"));
+    b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
 
     if (!is_tracking_box_key(key))
     {
