@@ -863,3 +863,4 @@ Here is a list of weaponlocker stats B2 patches use to persist settings. Note, T
 | zm_prison | alt_clip | Gameplay | (B2OP) Controls strafespeed scale |
 | zm_prison | lh_clip | Gameplay | (B2OP) Controls backspeed scale |
 | zm_tomb | clip | Gameplay | (B2OP) Controls tank depatching |
+| zm_tomb | stock | Gameplay | (B2FR) Controls reticle for Origins gun |
