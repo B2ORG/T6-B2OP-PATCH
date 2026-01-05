@@ -48,6 +48,11 @@
 #define SPLITS_FILE "b2op/splits.txt"
 #define LOCATION_CAFE "cafe"
 #define LOCATION_WARDEN "warden"
+#define STAT_CHAR_MAP "zm_highrise"
+#define STAT_CHAR_VICTIS "clip"
+#define STAT_CHAR_PRISON "stock"
+#define STAT_CHAR_TOMB "alt_clip"
+#define STAT_CHAR_SURVIVAL "lh_clip"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -3909,7 +3914,7 @@ override_personality_character()
     if (run_default_character_hotjoin_safety())
         return;
 
-    preset = self parse_preset(get_stat_for_map(), array(1, 2, 3, 4));
+    preset = self parse_preset(get_character_stat_for_map(), array(1, 2, 3, 4));
     charindex = preset - 1;
     if (preset > 0 && !flag("b2_char_taken_" + charindex))
     {
@@ -3936,7 +3941,7 @@ override_team_character()
 
     if (!flag("b2_char_taken_0") && !flag("b2_char_taken_1"))
     {
-        preset = gethostplayer() parse_preset(get_stat_for_map(), array(1, 2));
+        preset = gethostplayer() parse_preset(get_character_stat_for_map(), array(1, 2));
         charindex = preset - 1;
         flag_set("b2_char_taken_" + charindex);
         level.should_use_cia = charindex;
@@ -3965,15 +3970,15 @@ parse_preset(stat, allowed_presets)
     return 0;
 }
 
-get_stat_for_map()
+get_character_stat_for_map()
 {
     if (is_victis_map())
-        return "clip";
+        return STAT_CHAR_VICTIS;
     else if (is_mob())
-        return "stock";
+        return STAT_CHAR_PRISON;
     else if (is_origins())
-        return "alt_clip";
-    return "lh_clip";
+        return STAT_CHAR_TOMB;
+    return STAT_CHAR_SURVIVAL;
 }
 
 character_flag_cleanup()
@@ -4006,91 +4011,150 @@ run_default_character_hotjoin_safety()
     return false;
 }
 
-characters_input(value, key, player)
+characters_input(new_value, key, player)
 {
+    preset_txt = "Your character preset is: ";
+    DEBUG_PRINT("characters_input(" + sstr(new_value) + ", " + sstr(key) + ", " + sstr(player.name) + ")");
+
+    if (!isdefined(new_value))
+    {
+        switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_character_stat_for_map(), STAT_CHAR_MAP))
+        {
+            case 1:
+                if (is_victis_map())
+                    print_scheduler(preset_txt + COLOR_TXT("Russman", COL_YELLOW), player);
+                else if (is_mob())
+                    print_scheduler(preset_txt + COLOR_TXT("Finn", COL_YELLOW), player);
+                else if (is_origins())
+                    print_scheduler(preset_txt + COLOR_TXT("Dempsey", COL_YELLOW), player);
+                else
+                    print_scheduler(preset_txt + COLOR_TXT("CDC", COL_YELLOW), player);
+                break;
+            case 2:
+                if (is_victis_map())
+                    print_scheduler(preset_txt + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
+                else if (is_mob())
+                    print_scheduler(preset_txt + COLOR_TXT("Sal", COL_YELLOW), player);
+                else if (is_origins())
+                    print_scheduler(preset_txt + COLOR_TXT("Nikolai", COL_YELLOW), player);
+                else
+                    print_scheduler(preset_txt + COLOR_TXT("CIA", COL_YELLOW), player);
+                break;
+            case 3:
+                if (is_victis_map())
+                    print_scheduler(preset_txt + COLOR_TXT("Misty", COL_YELLOW), player);
+                else if (is_mob())
+                    print_scheduler(preset_txt + COLOR_TXT("Billy", COL_YELLOW), player);
+                else if (is_origins())
+                    print_scheduler(preset_txt + COLOR_TXT("Richtofen", COL_YELLOW), player);
+                else
+                    print_scheduler("You don't currently have any character preset", player);
+                break;
+            case 4:
+                if (is_victis_map())
+                    print_scheduler(preset_txt + COLOR_TXT("Marlton", COL_YELLOW), player);
+                else if (is_mob())
+                    print_scheduler(preset_txt + COLOR_TXT("Weasel", COL_YELLOW), player);
+                else if (is_origins())
+                    print_scheduler(preset_txt + COLOR_TXT("Takeo", COL_YELLOW), player);
+                else
+                    print_scheduler("You don't currently have any character preset", player);
+                break;
+            default:
+                print_scheduler("You don't currently have any character preset", player);
+        }
+
+#if DEBUG == 1
+    print_scheduler("Characterindex: ^1" + player.characterindex, player);
+#endif
+
+        return true;
+    }
+
+    /* Don't allow updating the preset deeper into the game */
     if (!did_game_just_start())
     {
         return true;
     }
 
-    switch (value)
+    switch (new_value)
     {
         case "russman":
         case "oldman":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Russman", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_VICTIS, 1, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Russman", COL_YELLOW), player);
             break;
         case "marlton":
         case "reporter":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_VICTIS, 4, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
             break;
         case "misty":
         case "farmgirl":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Misty", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_VICTIS, 3, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Misty", COL_YELLOW), player);
             break;
         case "stuhlinger":
         case "engineer":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Marlton", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_VICTIS, 2, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Marlton", COL_YELLOW), player);
             break;
 
         case "finn":
         case "oleary":
         case "shortsleeve":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Finn", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_PRISON, 1, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Finn", COL_YELLOW), player);
             break;
         case "sal":
         case "deluca":
         case "longsleeve":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Sal", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_PRISON, 2, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Sal", COL_YELLOW), player);
             break;
         case "billy":
         case "handsome":
         case "sleeveless":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Billy", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_PRISON, 3, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Billy", COL_YELLOW), player);
             break;
         case "weasel":
         case "arlington":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Weasel", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_PRISON, 4, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Weasel", COL_YELLOW), player);
             break;
 
         case "dempsey":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Dempsey", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_TOMB, 1, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Dempsey", COL_YELLOW), player);
             break;
         case "nikolai":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Nikolai", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_TOMB, 2, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Nikolai", COL_YELLOW), player);
             break;
         case "richtofen":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 3, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Richtofen", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_TOMB, 3, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Richtofen", COL_YELLOW), player);
             break;
         case "takeo":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 4, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("Takeo", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_TOMB, 4, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("Takeo", COL_YELLOW), player);
             break;
 
         case "cdc":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 1, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("CDC", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_SURVIVAL, 1, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("CDC", COL_YELLOW), player);
             break;
         case "cia":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 2, "zm_highrise");
-            print_scheduler("Successfully updated character settings to: " + COLOR_TXT("CIA", COL_YELLOW), player);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_SURVIVAL, 2, STAT_CHAR_MAP);
+            print_scheduler(preset_txt + COLOR_TXT("CIA", COL_YELLOW), player);
             break;
 
         case "reset":
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_highrise");
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("stock", 0, "zm_highrise");
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("alt_clip", 0, "zm_highrise");
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("lh_clip", 0, "zm_highrise");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_VICTIS, 0, STAT_CHAR_MAP);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_PRISON, 0, STAT_CHAR_MAP);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_TOMB, 0, STAT_CHAR_MAP);
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CHAR_SURVIVAL, 0, STAT_CHAR_MAP);
             print_scheduler("Character settings have been reset", player);
             break;
     }
@@ -4321,7 +4385,7 @@ viewmodel_input(value, key, player)
 
 check_whoami(value, key, player)
 {
-    switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_stat_for_map(), "zm_highrise"))
+    switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_character_stat_for_map(), "zm_highrise"))
     {
         case 1:
             if (is_victis_map())
