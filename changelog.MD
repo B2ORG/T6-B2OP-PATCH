@@ -2,6 +2,7 @@
 
 - Added some aliases to chat commands
 - Deprecate legacy Plutonium versions support
+- Improve Plutonium version detection
 
 # Version 4.4
 

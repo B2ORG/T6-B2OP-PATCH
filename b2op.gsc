@@ -951,19 +951,34 @@ fetch_pluto_definition()
 try_parse_pluto_version()
 {
     dvar = getdvar("shortversion");
-    if (dvar)
-        return int(getsubstr(dvar, 1));
+    if (dvar && isstrstart(dvar, "r"))
+    {
+        dvar_int = int(getsubstr(dvar, 1));
+        if (dvar_int)
+        {
+            DEBUG_PRINT("Parsed version from 'shortversion' => " + sstr(dvar_int));
+            return dvar_int;
+        }
+    }
 
     dvar = getdvar("version");
-    if (!issubstr(dvar, "Plutonium"))
-        return 0;
+    if (dvar && isstrstart(dvar, "Plutonium"))
+    {
+        dvar_int = int(getsubstr(dvar, 23, 28));
+        if (dvar_int)
+        {
+            DEBUG_PRINT("Parsed version from 'version' => " + sstr(dvar_int));
+            return dvar_int;
+        }
+        dvar_int = int(getsubstr(dvar, 23, 27));
+        if (dvar_int)
+        {
+            DEBUG_PRINT("Parsed version from 'version' => " + sstr(dvar_int));
+            return dvar_int;
+        }
+    }
 
-    /* Future proof for potential version 10k+ */
-    parsed = getsubstr(dvar, 23, 28);
-    if (int(parsed))
-        return int(parsed);
-    parsed = getsubstr(dvar, 23, 27);
-    return int(parsed);
+    return 0;
 }
 
 get_plutonium_version()
@@ -977,9 +992,11 @@ get_plutonium_version()
     foreach (definition in array_reverse(getarraykeys(definitions)))
     {
         version = definitions[definition];
-        // DEBUG_PRINT("definition: " + definition + " version: " + version);
         if (getdvar(definition) != "")
+        {
+            DEBUG_PRINT("Found version from definition '" + sstr(definition) + "' => " + sstr(version));
             detected_version = version;
+        }
     }
     return detected_version;
 }
