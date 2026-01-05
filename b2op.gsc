@@ -1477,7 +1477,6 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
     dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true,       undefined,                                          ::timers_alpha);
     dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true,       undefined,                                          ::buildables_alpha);
-    dvars[dvars.size] = register_dvar("splits",                         "1",                    false,  true);
     dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,  true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
     dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false,      undefined,                                          ::kill_hud);
     dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
