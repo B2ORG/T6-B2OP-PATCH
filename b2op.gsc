@@ -1127,7 +1127,7 @@ wait_for_message_end()
 emulate_menu_call(content, ent)
 {
     if (!isdefined(ent))
-        ent = level.players[0];
+        ent = gethostplayer();
 
     ent notify ("menuresponse", "", content);
 }
@@ -2995,7 +2995,7 @@ rig_fridge(key, player)
     }
     else
     {
-        print_scheduler(COLOR_TXT(level.players[0].name, COL_YELLOW) + " set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW));
+        print_scheduler(COLOR_TXT(gethostplayer().name, COL_YELLOW) + " set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW));
         foreach (player in level.players)
             player player_rig_fridge(weapon);
     }
@@ -3607,7 +3607,7 @@ rig_box(guns, player)
 
     weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
     if (level.players.size == 1)
-        weapon_key = level.players[0] player_box_weapon_verification(weapon_key);
+        weapon_key = gethostplayer() player_box_weapon_verification(weapon_key);
     else
         weapon_key = server_box_weapon_verification(weapon_key);
 
@@ -3739,7 +3739,7 @@ box_location_input(value, key, player)
     /* Initial afterlife - logic not ready */
     if (is_mob() && !flag("afterlife_start_over"))
     {
-        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), level.players[0]);
+        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), gethostplayer());
         return true;
     }
 
@@ -3747,7 +3747,7 @@ box_location_input(value, key, player)
 
     if (process_selection == "no box selected")
     {
-        print_scheduler("Incorrect selection: " + COLOR_TXT(value, COL_RED), level.players[0]);
+        print_scheduler("Incorrect selection: " + COLOR_TXT(value, COL_RED), gethostplayer());
         return true;
     }
 
