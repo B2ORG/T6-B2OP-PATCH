@@ -220,6 +220,28 @@ cg_drawReset 1
 - Remove other patches. B2 Plugins should not cause any issues, but if you are using any, for the sake of troubleshooting remove them as well.
 - Check if the directory the patch is in is correct. Perhaps you have multiple instances of Plutonium or Redacted and you put it in the directory belonging to another instance.
 
+# Chat commands and dvars
+
+The patch can be interacted with using DVARs and game chat commands. Below is a table listing all the options
+
+| DVAR | Chat message | Chat aliases | Chat command for host only | Feature description |
+| :--- : | :---: | :---: | :--- | :--- |
+| `timers` | - | - | - | Set to `1` to show timers |
+| `buildables` | - | - | - | Set to `1` to show buildables tracker |
+| `kill_hud` | - | - | - | Set to `1` to premanently destroy HUD for the rest of the game to save allocations |
+| `kill_box_tracker` | - | - | - | Set to `1` to premanently disable box tracker for the rest of the game |
+| `viewmodel` | `view` | `!v` | No | [Viewmodel swapping](#viewmodel-swapping) |
+| - | `char` | `!c` | No | [Character chat commands](#character-chat-commands) |
+| - | `splits` | `!s` | Yes | [Splits chat command](#splits-chat-command) |
+| - | `backspeed` | `bs`, `!b` | Yes | [Backspeed](#backspeed) |
+| `fridge` | `fridge` | `!fr` | No | [Overriding fridge weapon](#overriding-fridge-weapon) |
+| `fb` | `fb` | `!fb` | No | [Overriding box weapon](#overriding-box-weapon) |
+| `lb` | `lb` | `!lb` | No | [Overriding box location](#overriding-box-location) |
+| - | `box` | `!bt` | No | [Basic trade tracker](#basic-trade-tracker) |
+| `key` | `key` | `!k` | Yes | [Overriding key location](#overriding-key-location) |
+| - | `tank` | `!t`, `tank deptach` | Yes | [Tank fix](#tank-fix) |
+| - | `purist` | `!p` | No | [No jug games](#no-jug-games) |
+
 # HUD
 
 All HUD elements are toogleable (with the exception of watermarks), below is the table with DVARs that can be used to hide and show them. Change DVAR state by invoking the in-game command line (`~` button by default), enter name of the DVAR and value following the spacebar.
@@ -282,7 +304,7 @@ Then proceed to create a `b2op` folder inside of scriptdata, create `splits.txt`
 30
 ```
 
-### Chat message
+### Splits chat command
 
 As of B2OP version 4.4, you can set splits using chat messages as host. Under the hood, the patch will just overwrite contents of the file described above.
 

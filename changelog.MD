@@ -1,3 +1,8 @@
+# Version 4.5
+
+- Added some aliases to chat commands
+- Deprecate legacy Plutonium versions support
+
 # Version 4.4
 
 - Added Purist mode to enable playing No Jug games without persistent jug (minijug) for Plutonium

@@ -9,7 +9,7 @@
 #define DEPRECATION 5162
 
 /* Const macros */
-#define B2OP_VER 4.4
+#define B2OP_VER 4.5
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
