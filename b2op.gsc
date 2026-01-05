@@ -330,53 +330,7 @@ init_b2_dvars()
 init_b2_chat_watcher()
 {
 #if PLUTO == 1
-    chat = [];
-
-    chat["bs"] = ::backspeed_input;
-    chat["backspeed"] = ::backspeed_input;
-
-#if FEATURE_FRIDGE == 1
-    chat["fridge"] = ::fridge_input;
-#endif
-
-#if FEATURE_FIRSTBOX == 1
-    chat["fb"] = ::firstbox_input;
-#endif
-
-#if FEATURE_BOX_LOCATION == 1
-    chat["lb"] = ::box_location_input;
-#endif
-
-#if FEATURE_CHARACTERS == 1
-    chat["char"] = ::characters_input;
-    chat["whoami"] = ::check_whoami;
-    chat["view"] = ::viewmodel_input;
-#endif
-
-#if FEATURE_BOXTRACKER == 1
-    chat["box"] = ::print_box_stats;
-#endif
-
-#if FEATURE_MOB_KEY == 1
-    chat["key"] = ::set_key_position;
-#endif
-
-#if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat["tank depatch"] = ::depatch_tank;
-#endif
-
-#if FEATURE_PERMAPERKS == 1
-    chat["purist"] = ::purist_nojug_message;
-#endif
-
-#if FEATURE_HUD == 1
-    chat["splits"] = ::splits_input;
-#endif
-
-    if (chat.size)
-    {
-        thread chat_watcher(chat);
-    }
+    thread chat_watcher();
 #endif
 }
 
@@ -1267,27 +1221,75 @@ protect_file()
 }
 
 #if PLUTO == 1
-chat_watcher(lookups)
+chat_watcher()
 {
     LEVEL_ENDON
 
-    keys = getarraykeys(lookups);
     while (true)
     {
         level waittill("say", message, player);
 
-        foreach (chat in keys)
+        cfg = chat_config();
+
+        /* TODO check if i should specifically validate if player is a player */
+        foreach (chat in cfg)
         {
-            if (!flag("b2_" + chat + "_locked") && isstrstart(message, chat))
+            if (flag("b2_" + chat["chat"] + "_locked"))
             {
-                DEBUG_PRINT("chat_callback('" + getsubstr(message, chat.size + 1) + "', '" + chat + "', '" + player.name + "')");
-                [[lookups[chat]]](getsubstr(message, chat.size + 1), chat, player);
+                DEBUG_PRINT("not checking chat " + sstr(chat["chat"]) + " as flag is locked");
+                continue;
+            }
+            if (chat["host_only"] && !player ishost())
+            {
+                DEBUG_PRINT("not checking chat " + sstr(chat["chat"]) + " as player " + sstr(player.name) + " is not a host");
+                continue;
+            }
+
+            matched_signature = undefined;
+            for (i = -1; i < chat["aliases"].size; i++)
+            {
+                if (i == -1)
+                {
+                    signature = chat["chat"];
+                }
+                else
+                {
+                    signature = chat["aliases"][i];
+                }
+
+                if (isstrstart(message, signature))
+                {
+                    matched_signature = signature;
+                    break;
+                }
+            }
+
+            if (isdefined(matched_signature))
+            {
+                DEBUG_PRINT("matched chat signature '" + sstr(matched_signature) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
+                input = undefined;
+                if (message.size > matched_signature.size + 1)
+                {
+                    input = getsubstr(message, matched_signature.size + 1);
+                }
+                if (chat["thread"])
+                {
+                    thread [[chat["callback"]]](input, chat["chat"], player);
+                }
+                else
+                {
+                    [[chat["callback"]]](input, chat["chat"], player);
+                }
                 break;
             }
         }
 
         CLEAR(message)
         CLEAR(chat)
+        CLEAR(matched_signature)
+        CLEAR(signature)
+        CLEAR(input)
+        CLEAR(cfg)
     }
 }
 #endif
@@ -1417,6 +1419,55 @@ should_print_checksum()
         return true;
     return false;
 }
+
+chat_config()
+{
+    chat = [];
+
+    /*                              CHATS       ALIASES             CALLBACK                    HOSTONLY    THREAD */
+    chat[chat.size] = register_chat("backspeed",array("!b", "bs"),  ::backspeed_input,          true,       false);
+    chat[chat.size] = register_chat("splits",   array("!s"),        ::splits_input,             true,       false);
+
+#if FEATURE_CHARACTERS == 1
+    chat[chat.size] = register_chat("char",     array("!c"),        ::characters_input,         false,      false);
+    chat[chat.size] = register_chat("view",     array("!v"),        ::viewmodel_input,          false,      false);
+#endif
+#if FEATURE_FRIDGE == 1
+    chat[chat.size] = register_chat("fridge",   array("!fr"),       ::fridge_input,             false,      false);
+#endif
+#if FEATURE_FIRSTBOX == 1
+    chat[chat.size] = register_chat("fb",       array("!fb"),       ::firstbox_input,           false,      false);
+#endif
+#if FEATURE_BOX_LOCATION == 1
+    chat[chat.size] = register_chat("lb",       array("!lb"),       ::box_location_input,       false,      false);
+#endif
+#if FEATURE_BOXTRACKER == 1
+    chat[chat.size] = register_chat("box",      array("!bt"),       ::print_box_stats,          false,      false);
+#endif
+#if FEATURE_MOB_KEY == 1
+    chat[chat.size] = register_chat("key",      array("!k"),        ::key_input,                true,       false);
+#endif
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+    chat[chat.size] = register_chat("tank",    array("!t", "tank depatch"), ::tank_input,       true,       false);
+#endif
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+    chat[chat.size] = register_chat("purist",  array("!p"),         ::purist_input,             false,      false);
+#endif
+
+    return chat;
+}
+
+register_chat(chat, aliases, callback, host_only, is_thread)
+{
+    cfg = [];
+    cfg["chat"] = chat;
+    cfg["aliases"] = aliases;
+    cfg["callback"] = callback;
+    cfg["host_only"] = host_only;
+    cfg["thread"] = is_thread;
+
+    return cfg;
+}
 #endif
 
 dvar_config(key)
@@ -1455,7 +1506,7 @@ dvar_config(key)
 #endif
 
 #if FEATURE_MOB_KEY == 1
-    dvars[dvars.size] = register_dvar("key",                            "",                     false,  false,      array(::is_plutonium_version, VER_4K),              ::set_key_position);
+    dvars[dvars.size] = register_dvar("key",                            "",                     false,  false,      array(::is_plutonium_version, VER_4K),              ::key_input);
 #endif
 
 #if DEBUG == 1
@@ -1820,16 +1871,11 @@ load_b2_splits()
 }
 
 #if FEATURE_MOB_KEY == 1
-set_key_position(value, key, player)
+key_input(value, key, player)
 {
     if (!is_plutonium_version(VER_4K))
     {
         print_scheduler("This feature does not support your Plutonium version, consider updating", player);
-        return true;
-    }
-    if (!player ishost())
-    {
-        print_scheduler("You must be a host to set key position", player);
         return true;
     }
 
@@ -1940,16 +1986,11 @@ override_tank_push_player_off_edge(trig)
     }
 }
 
-depatch_tank(value, key, player)
+tank_input(value, key, player)
 {
     if (!is_plutonium_version(VER_4K))
     {
         print_scheduler("This feature does not support your Plutonium version, consider updating", player);
-        return true;
-    }
-    if (!player ishost())
-    {
-        print_scheduler("You must be a host to toggle tank patch", player);
         return true;
     }
 
@@ -1968,7 +2009,7 @@ depatch_tank(value, key, player)
 }
 #endif
 
-purist_nojug_message(new_value, dvar, player)
+purist_input(new_value, dvar, player)
 {
     switch (new_value)
     {
@@ -2057,15 +2098,15 @@ backspeed_input(new_value, dvar, player)
     }
 
     DEBUG_PRINT("backspeed_input(): new_value='" + sstr(new_value) + "' => " + sstr(values));
-    if (player ishost() && values.size == 1)
-    {
-        strafe = float(values[0]);
-        back = float(values[0]);
-    }
-    else if (player ishost() && values.size > 1)
+    if (values.size > 1)
     {
         strafe = clamp(float(values[0]), 0.1, 1.0);
         back = clamp(float(values[1]), 0.1, 1.0);
+    }
+    else
+    {
+        strafe = float(values[0]);
+        back = float(values[0]);
     }
 
     if (is_true(strafe) && is_true(back))
@@ -2308,7 +2349,7 @@ splits_input(new_value, dvar, player)
         return true;
     }
 
-    if (player ishost() && new_value)
+    if (new_value)
     {
         if (new_value == "0" && fs_testfile(SPLITS_FILE))
         {
@@ -4381,60 +4422,6 @@ viewmodel_input(value, key, player)
     }
 
     return true;
-}
-
-check_whoami(value, key, player)
-{
-    switch (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(get_character_stat_for_map(), "zm_highrise"))
-    {
-        case 1:
-            if (is_victis_map())
-                print_scheduler("Your preset is: " + COLOR_TXT("Russman", COL_YELLOW), player);
-            else if (is_mob())
-                print_scheduler("Your preset is: " + COLOR_TXT("Finn", COL_YELLOW), player);
-            else if (is_origins())
-                print_scheduler("Your preset is: " + COLOR_TXT("Dempsey", COL_YELLOW), player);
-            else
-                print_scheduler("Your preset is: " + COLOR_TXT("CDC", COL_YELLOW), player);
-            break;
-        case 2:
-            if (is_victis_map())
-                print_scheduler("Your preset is: " + COLOR_TXT("Stuhlinger", COL_YELLOW), player);
-            else if (is_mob())
-                print_scheduler("Your preset is: " + COLOR_TXT("Sal", COL_YELLOW), player);
-            else if (is_origins())
-                print_scheduler("Your preset is: " + COLOR_TXT("Nikolai", COL_YELLOW), player);
-            else
-                print_scheduler("Your preset is: " + COLOR_TXT("CIA", COL_YELLOW), player);
-            break;
-        case 3:
-            if (is_victis_map())
-                print_scheduler("Your preset is: " + COLOR_TXT("Misty", COL_YELLOW), player);
-            else if (is_mob())
-                print_scheduler("Your preset is: " + COLOR_TXT("Billy", COL_YELLOW), player);
-            else if (is_origins())
-                print_scheduler("Your preset is: " + COLOR_TXT("Richtofen", COL_YELLOW), player);
-            else
-                print_scheduler("You don't currently have any character preset", player);
-            break;
-        case 4:
-            if (is_victis_map())
-                print_scheduler("Your preset is: " + COLOR_TXT("Marlton", COL_YELLOW), player);
-            else if (is_mob())
-                print_scheduler("Your preset is: " + COLOR_TXT("Weasel", COL_YELLOW), player);
-            else if (is_origins())
-                print_scheduler("Your preset is: " + COLOR_TXT("Takeo", COL_YELLOW), player);
-            else
-                print_scheduler("You don't currently have any character preset", player);
-            break;
-        default:
-            print_scheduler("You don't currently have any character preset", player);
-    }
-
-#if DEBUG == 1
-    print_scheduler("Characterindex: ^1" + player.characterindex, player);
-    // print_scheduler("Shader: ^1" + player.whos_who_shader, player);
-#endif
 }
 #endif
 
