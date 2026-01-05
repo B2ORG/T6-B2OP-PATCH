@@ -2,3 +2,4 @@
 /parsed
 *.exe
 *.dll
+.vscode/launch.json
