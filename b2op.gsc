@@ -2630,7 +2630,10 @@ fill_up_bank()
 
     if (has_permaperks_system() && did_game_just_start())
     {
+        DEBUG_PRINT("Setting bank for " + sstr(self.name) + " from value " + sstr(self.account_value) + " to " + sstr(level.bank_account_max));
+
         self.account_value = level.bank_account_max;
+        self maps\mp\zombies\_zm_stats::set_map_stat("depositBox", self.account_value, level.banking_map);
     }
 }
 
