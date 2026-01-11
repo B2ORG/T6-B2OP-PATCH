@@ -65,7 +65,7 @@ Download script `b2op-plutonium.gsc` from releases section, and put it in your P
 ```
 
 > [!TIP]
-> You can press CTRL + R on your keyboard and paste this string there. Assuming you haven't changed any Plutonium paths, directory with scripts should open right away.
+> You can press WIN + R on your keyboard and paste this string there. Assuming you haven't changed any Plutonium paths, directory with scripts should open right away.
 
 > [!WARNING]
 > Prior to patch version 4.0, the directory we recommended here was `Plutonium\storage\t6\scripts\zm` (the only difference is that `raw` folder in the middle), you should still use that directory if you want to use the patch in 2905. On modern Plutonium, it is recommended to start using the new location (remove the patch you currently have in the old location and place the updated version in the new directory specified above)
