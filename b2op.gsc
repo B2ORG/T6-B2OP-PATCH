@@ -1465,10 +1465,10 @@ chat_config()
     chat[chat.size] = register_chat("key",      array("!k"),        ::key_input,                true,       false);
 #endif
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat[chat.size] = register_chat("tank",    array("!t", "tank depatch"), ::tank_input,       true,       false);
+    chat[chat.size] = register_chat("tank",     array("!t", "tank depatch"), ::tank_input,      true,       false);
 #endif
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat[chat.size] = register_chat("purist",  array("!p"),         ::purist_input,             false,      false);
+    chat[chat.size] = register_chat("purist",   array("!p"),        ::purist_input,             false,      false);
 #endif
 
     return chat;
