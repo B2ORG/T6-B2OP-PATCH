@@ -819,7 +819,7 @@ set_character 0
 As a response to drawbacks in the character system, we added additional functionaltiy that allows you to swap only the viewmodel (hands in first person), as oppose to the entire character. Changes here will apply instantly and have no effect to any game logic (as far as the game is concerned, the character has not been changed). You may swap viewmodels either by using `view` chat message or `viewmodel` dvar, followed by one of these values
 
 ```
-misty russman stuhlinger marlton weasel billy sal finn dempsey nikolai takeo richtofen cia cdc
+misty russman stuhlinger marlton weasel billy sal finn ghost dempsey nikolai takeo richtofen cia cdc
 ```
 
 or

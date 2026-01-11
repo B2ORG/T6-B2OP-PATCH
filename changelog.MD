@@ -5,6 +5,7 @@
 - Improve Plutonium version detection
 - Add explicit saving of updated bank balance in player stats
 - Add support for animated camos on Buried and Origins
+- Add Ghost (afterlife) to the possible options of viewmodel swap
 
 # Version 4.4
 

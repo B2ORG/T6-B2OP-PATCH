@@ -4518,6 +4518,14 @@ viewmodel_input(value, key, player)
                 print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Takeo", COL_YELLOW), player);
             }
             break;
+        case "ghost":
+        case "afterlife":
+            /* Don't set it during afterlife, as str_living_view will override */
+            if (is_mob() && is_false(player.afterlife))
+            {
+                player setviewmodel("c_zom_ghost_viewhands");
+                print_scheduler("Successfully set viewmodel to: " + COLOR_TXT("Ghost", COL_YELLOW), player);
+            }
 
         case "cdc":
             if (is_nuketown())
