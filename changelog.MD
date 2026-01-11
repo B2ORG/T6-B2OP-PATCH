@@ -4,6 +4,7 @@
 - Deprecate legacy Plutonium versions support
 - Improve Plutonium version detection
 - Add explicit saving of updated bank balance in player stats
+- Add support for animated camos on Buried and Origins
 
 # Version 4.4
 

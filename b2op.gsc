@@ -53,6 +53,10 @@
 #define STAT_CHAR_PRISON "stock"
 #define STAT_CHAR_TOMB "alt_clip"
 #define STAT_CHAR_SURVIVAL "lh_clip"
+#define STAT_RETICLE_MAP "zm_tomb"
+#define STAT_RETICLE "stock"
+#define STAT_CAMO_MAP "zm_tomb"
+#define STAT_CAMO "alt_clip"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -67,6 +71,7 @@
 #define FEATURE_CONNECTOR 0
 #define FEATURE_MOB_KEY 1
 #define FEATURE_ORIGINS_TANK_DEPATCH 1
+#define FEATURE_ANIMATED_CAMOS 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -135,6 +140,10 @@ main()
     replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
 #endif
     }
+
+#if FEATURE_ANIMATED_CAMOS == 1
+    replacefunc(getfunction("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options"), ::b2_get_pack_a_punch_weapon_options);
+#endif
 }
 #endif
 
@@ -1470,6 +1479,10 @@ chat_config()
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
     chat[chat.size] = register_chat("purist",   array("!p"),        ::purist_input,             false,      false);
 #endif
+#if FEATURE_ANIMATED_CAMOS == 1
+    chat[chat.size] = register_chat("camo",     array("!ca"),       ::camo_input,               false,      false);
+    chat[chat.size] = register_chat("reticle",  array("!r"),        ::reticle_input,            false,      false);
+#endif
 
     return chat;
 }
@@ -2025,6 +2038,131 @@ tank_input(value, key, player)
 }
 #endif
 
+#if FEATURE_ANIMATED_CAMOS == 1
+b2_get_pack_a_punch_weapon_options(weapon)
+{
+    if (!isdefined(self.pack_a_punch_weapon_options))
+        self.pack_a_punch_weapon_options = [];
+
+    if (!is_weapon_upgraded(weapon))
+        return self calcweaponoptions(0, 0, 0, 0, 0);
+
+    if (isdefined(self.pack_a_punch_weapon_options[weapon]))
+        return self.pack_a_punch_weapon_options[weapon];
+
+    smiley_face_reticle_index = 1;
+    base = get_base_name(weapon);
+    camo_opt = get_camo_stat();
+    reticle_opt = get_reticle_stat();
+
+    camo_index = 39;
+    if (isdefined(camo_opt) && map_supports_camo_indexing() && gun_compatibile_with_index(camo_opt, weapon))
+    {
+        DEBUG_PRINT("Setting custom camo index: " + sstr(camo_opt));
+        camo_index = camo_opt;
+    }
+    else if ("zm_prison" == level.script)
+        camo_index = 40;
+    else if ("zm_tomb" == level.script)
+        camo_index = 45;
+    DEBUG_PRINT("Selected camo index: " + camo_index);
+
+    lens_index = randomintrange(0, 6);
+    reticle_index = randomintrange(0, 16);
+    reticle_color_index = randomintrange(0, 6);
+    plain_reticle_index = 16;
+    r = randomint(10);
+    use_plain = r < 3;
+
+    if ("saritch_upgraded_zm" == base)
+        reticle_index = smiley_face_reticle_index;
+    else if (use_plain)
+        reticle_index = plain_reticle_index;
+
+    scary_eyes_reticle_index = 8;
+    purple_reticle_color_index = 3;
+
+    if (reticle_index == scary_eyes_reticle_index)
+        reticle_color_index = purple_reticle_color_index;
+
+    letter_a_reticle_index = 2;
+    pink_reticle_color_index = 6;
+
+    if (reticle_index == letter_a_reticle_index)
+        reticle_color_index = pink_reticle_color_index;
+
+    letter_e_reticle_index = 7;
+    green_reticle_color_index = 1;
+
+    if (reticle_index == letter_e_reticle_index)
+        reticle_color_index = green_reticle_color_index;
+
+    if (isdefined(reticle_opt))
+    {
+        reticle_index = reticle_opt;
+    }
+    DEBUG_PRINT("Selected reticle opt: " + reticle_index);
+
+    self.pack_a_punch_weapon_options[weapon] = self calcweaponoptions(camo_index, lens_index, reticle_index, reticle_color_index);
+    return self.pack_a_punch_weapon_options[weapon];
+
+}
+
+camo_input(new_value, key, player)
+{
+    DEBUG_PRINT("camo_input(" + sstr(new_value) + ", " + sstr(key) + ", " + sstr(player.name) + ")");
+
+    if (isdefined(new_value))
+    {
+        if (new_value == "reset")
+        {
+            new_value = 0;
+        }
+
+        new_value = int(new_value);
+        if (new_value >= 0 && new_value <= 64)
+        {
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_CAMO, new_value, STAT_CAMO_MAP);
+        }
+    }
+
+    camo_txt = "Your current camo index: ";
+    current_stat = player get_camo_stat();
+    if (isdefined(current_stat))
+        print_scheduler(camo_txt + COLOR_TXT(sstr(current_stat), COL_YELLOW), player);
+    else
+        print_scheduler(camo_txt + COLOR_TXT("UNSET", COL_YELLOW), player);
+    return true;
+}
+
+reticle_input(new_value, key, player)
+{
+    DEBUG_PRINT("reticle_input(" + sstr(new_value) + ", " + sstr(key) + ", " + sstr(player.name) + ")");
+
+    if (isdefined(new_value))
+    {
+        if (new_value == "reset")
+        {
+            new_value = 0;
+        }
+
+        new_value = int(new_value);
+        if (new_value >= 0 && new_value <= 16)
+        {
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_RETICLE, new_value, STAT_RETICLE_MAP);
+        }
+    }
+
+    ret_txt = "Your current reticle option: ";
+    current_stat = player get_reticle_stat();
+    if (isdefined(current_stat))
+        print_scheduler(ret_txt + COLOR_TXT(sstr(current_stat), COL_YELLOW), player);
+    else
+        print_scheduler(ret_txt + COLOR_TXT("UNSET", COL_YELLOW), player);
+    return true;
+}
+#endif
+
 purist_input(new_value, dvar, player)
 {
     switch (new_value)
@@ -2152,6 +2290,64 @@ backspeed_input(new_value, dvar, player)
             return getdvar("steam_backspeed") != "1";
         return getdvar("steam_backspeed") == "1";
     }
+#endif
+
+#if PLUTO == 1
+get_reticle_stat()
+{
+    stat = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_RETICLE, STAT_RETICLE_MAP);
+    DEBUG_PRINT("raw reticle stat: " + sstr(stat));
+    stat = int(stat);
+
+    if (stat >= 1 && stat <= 16)
+    {
+        return stat;
+    }
+
+    return undefined;
+}
+
+get_camo_stat()
+{
+    stat = self maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_CAMO, STAT_CAMO_MAP);
+    DEBUG_PRINT("raw camo stat: " + sstr(stat));
+    stat = int(stat);
+
+    if (stat)
+    {
+        return stat;
+    }
+
+    return undefined;
+}
+
+map_supports_camo_indexing()
+{
+    return is_mob() || is_buried() || is_origins() || getdvar("b2_declare_animated_camo_support") == "1";
+}
+
+gun_compatibile_with_index(index, weapon)
+{
+    DEBUG_PRINT("gun_compatibile_with_index " + sstr(index) + " " + sstr(weapon) + " override: " + sstr(isdefined(level.b2_gun_compatibile_with_index)));
+    /* Customs/mods can hook here */
+    if (isdefined(level.b2_gun_compatibile_with_index))
+    {
+        return [[level.b2_gun_compatibile_with_index]](index, weapon);
+    }
+
+    if (index == 40)
+    {
+        switch (weapon)
+        {
+            case "rnma_upgraded_zm":
+            case "mg08_upgraded_zm":
+            case "c96_upgraded_zm":
+                return false;
+        }
+    }
+
+    return true;
+}
 #endif
 
 /*

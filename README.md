@@ -241,6 +241,8 @@ The patch can be interacted with using DVARs and game chat commands. Below is a 
 | `key` | `key` | `!k` | Yes | [Overriding key location](#overriding-key-location) |
 | - | `tank` | `!t`, `tank deptach` | Yes | [Tank fix](#tank-fix) |
 | - | `purist` | `!p` | No | [No jug games](#no-jug-games) |
+| - | `reticle` | `!r` | No | Allows for customizing PaP'd gun reticle, values between 1 and 16 (eg. 16 is a red dot), 0 to make it random. Needs to be set BEFORE the gun is obtained |
+| - | `camo` | `!ca` | No | Allows for customizing gun PaP'd camo, needs to be a valid index, you risk crashing if it isn't, use only if you know how to manage custom camos. Needs to be set BEFORE the gun is obtained |
 
 # HUD
 
@@ -828,6 +830,29 @@ reset
 
 to set viewmodel back to what it should be with your original character.
 
+# Animated camos support
+
+You can set your desired camo index using `camo` chat message followed by the right index. Your settings will apply even if you're not hosting, as long as the host is running the compatibile version of B2OP. To set the index back to default, use `camo reset`. To check current settings, send `camo`. This settings applied only on Mob, Buried and Origins since those are the only maps known to work with animated camos.
+
+> [!TIP]
+> At the time of writing this, people create animated camos by overriding Mob of the Dead camo, if you're doing that, the index is going to be 40. If that doesn't work, consult the person who created the camo. Please note, some weapons that are exclusive to Buried and Origins won't have the animated camo, because it isn't supported by the game.
+
+> [!WARNING]
+> This needs to be set BEFORE you obtained the pack a punched gun, as guns camo is calculated as you pick it up from the PaP machine, this patch won't replace the camo that's already on a gun in your hands
+
+> [!TIP]
+> By design the index override works only on Mob of the Dead, Buried and Origins, however if you want to mess with it on other maps, you may change the `b2_declare_animated_camo_support` dvar to 1, do so at your own risk.
+
+## Set via stats
+
+You can also set camos before the game while manipulating stats directly
+
+```
+statwriteddl playerstatsbymap zm_tomb weaponlocker alt_clip 0;uploadstats
+```
+
+Will set it back to original index, change zero to actual index to enable the override.
+
 # Strat tester mode
 
 Since version 4.3, the patch natively supports running alongside strattester mods on modern Plutonium clients, if that happens many functionalities can be disabled, such as
@@ -885,4 +910,5 @@ Here is a list of weaponlocker stats B2 patches use to persist settings. Note, T
 | zm_prison | alt_clip | Gameplay | (B2OP) Controls strafespeed scale |
 | zm_prison | lh_clip | Gameplay | (B2OP) Controls backspeed scale |
 | zm_tomb | clip | Gameplay | (B2OP) Controls tank depatching |
-| zm_tomb | stock | Gameplay | (B2FR) Controls reticle for Origins gun |
+| zm_tomb | stock | Gameplay | Controls reticle for upgraded gun (Origins only on B2FR) |
+| zm_tomb | alt_clip | Gameplay | (B2OP) Controls camo index |
