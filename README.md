@@ -222,10 +222,10 @@ cg_drawReset 1
 
 # Chat commands and dvars
 
-The patch can be interacted with using DVARs and game chat commands. Below is a table listing all the options
+The patch can be interacted with using DVARs and game chat commands. Below is a table listing all the options.
 
 | DVAR | Chat message | Chat aliases | Chat command for host only | Feature description |
-| :--- : | :---: | :---: | :--- | :--- |
+| :---: | :---: | :---: | :--- | :--- |
 | `timers` | - | - | - | Set to `1` to show timers |
 | `buildables` | - | - | - | Set to `1` to show buildables tracker |
 | `kill_hud` | - | - | - | Set to `1` to premanently destroy HUD for the rest of the game to save allocations |
