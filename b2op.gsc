@@ -139,11 +139,11 @@ main()
     /* Honor original fix, use this if original does not exist */
     replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
 #endif
-    }
 
 #if FEATURE_ANIMATED_CAMOS == 1
     replacefunc(getfunction("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options"), ::b2_get_pack_a_punch_weapon_options);
 #endif
+    }
 }
 #endif
 
