@@ -1012,7 +1012,7 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
-    return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_plutonium_version(VER_4K));
+    return is_plutonium_version(5202) && (getdvar("cg_debugInfoCornerOffset") == "40 0" || getdvar("cg_debugInfoCornerOffset") == "50 20");
 }
 
 is_redacted()
@@ -1570,7 +1570,7 @@ dvar_config(key)
     /* Enables flashing hashes of individual scripts */
     dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Offsets for pluto draws compatibile with b2 timers */
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,  false,      ::should_set_draw_offset);
     /* Displays the game status ID */
     dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Locks fps for all clients - 5162 fixes the limiter so we can set it more accurately */
