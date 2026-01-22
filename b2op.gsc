@@ -470,7 +470,7 @@ get_watermark_position(mode, allocate)
 {
     foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
     {
-        if (!flag("b2_watermark_" + mode + slot))
+        if (!flag_exists("b2_watermark_" + mode + slot) || is_false(flag("b2_watermark_" + mode + slot)))
         {
             s = abs(slot);
             if (slot < 0)
@@ -501,7 +501,7 @@ deallocate_temp_watermark_slot(slot)
 
 generate_watermark(text, color, alpha_override)
 {
-    if (is_true(flag(text)))
+    if (flag_exists(text) && is_true(flag(text)))
         return;
 
     x_pos = get_watermark_position("perm", true);
@@ -512,7 +512,7 @@ generate_watermark(text, color, alpha_override)
     if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
-    watermark = createserverfontstring("hudsmall" , 1.2);
+    watermark = createserverfontstring("objective" , 1.2);
     watermark setpoint("CENTER", "TOP", x_pos, -5);
     watermark.color = color;
     watermark settext(text);
@@ -532,7 +532,7 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 {
     LEVEL_ENDON
 
-    if (is_true(flag(text)))
+    if (flag_exists(text) && is_true(flag(text)))
         return;
 
     x_pos = get_watermark_position("temp", true);
@@ -543,7 +543,7 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
-    twatermark = createserverfontstring("hudsmall" , 1.2);
+    twatermark = createserverfontstring("objective" , 1.2);
     twatermark setpoint("CENTER", "TOP", x_pos, -17);
     twatermark.color = color;
     twatermark settext(text);
@@ -964,7 +964,7 @@ fetch_pluto_definition()
 try_parse_pluto_version()
 {
     dvar = getdvar("shortversion");
-    if (dvar && isstrstart(dvar, "r"))
+    if (dvar != "" && isstrstart(dvar, "r"))
     {
         dvar_int = int(getsubstr(dvar, 1));
         if (dvar_int)
@@ -975,7 +975,7 @@ try_parse_pluto_version()
     }
 
     dvar = getdvar("version");
-    if (dvar && isstrstart(dvar, "Plutonium"))
+    if (dvar != "" && isstrstart(dvar, "Plutonium"))
     {
         dvar_int = int(getsubstr(dvar, 23, 28));
         if (dvar_int)
@@ -1067,7 +1067,7 @@ is_tracking_buildables()
 
 has_buildables(name)
 {
-    return isdefined(level.zombie_buildables[name]);
+    return isdefined(level.zombie_buildables) && isdefined(level.zombie_buildables[name]);
 }
 
 get_locker_stat(stat)
@@ -1371,7 +1371,7 @@ welcome_prints()
 {
     PLAYER_ENDON
 
-    if (is_true(flag("b2_bad_file")))
+    if (flag_exists("b2_bad_file") && is_true(flag("b2_bad_file")))
         return;
 
     wait 0.75;
@@ -2236,14 +2236,17 @@ purist_input(new_value, dvar, player)
 backspeed_input(new_value, dvar, player)
 {
     // DEBUG_PRINT("backspeed_input('" + sstr(new_value) + "', '" + sstr(dvar) + "', '" + sstr(player.name) + "')");
-    switch (new_value)
+    if (isstring(new_value))
     {
-        case "steam":
-            new_value = "0.8 0.7";
-            break;
-        case "fix":
-            new_value = "1.0";
-            break;
+        switch (new_value)
+        {
+            case "steam":
+                new_value = "0.8 0.7";
+                break;
+            case "fix":
+                new_value = "1.0";
+                break;
+        }
     }
 
     if (isarray(new_value))
@@ -3649,7 +3652,7 @@ setup_box_tracker()
 
     foreach (key in getarraykeys(level.boxtracker_pulls))
     {
-        if (!isdefined(level.boxtracker_pulls[key][self.name]))
+        if (!isint(level.boxtracker_pulls[key]) && !isdefined(level.boxtracker_pulls[key][self.name]))
         {
             level.boxtracker_pulls[key][self.name] = 0;
             DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
