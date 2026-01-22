@@ -1377,7 +1377,7 @@ welcome_prints()
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
 #if PLUTO == 1
-    printf(get_launcher_as_txt() + " " + "b2op" + " " + STR(B2OP_VER));
+    printf(get_launcher_as_txt() + " " + get_plutonium_version() + " " + "b2op" + " " + STR(B2OP_VER));
 #endif
     wait 0.75;
     self iprintln(compose_welcome_print());
