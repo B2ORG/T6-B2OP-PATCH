@@ -206,9 +206,13 @@ on_player_spawned()
 
     self waittill("spawned_player");
 
-    /* Perhaps a redundand safety check, but doesn't hurt */
-    while (!flag("initial_players_connected"))
-        wait 0.05;
+    /* Notifier runs twice, 2nd one is when player actually spawns */
+    if (!did_game_just_start())
+    {
+        self waittill_any_array(array("spawned_player", "start_of_round"));
+    }
+
+    flag_wait("initial_players_connected");
 
     self thread welcome_prints();
     self thread evaluate_network_frame();
