@@ -1,3 +1,8 @@
+# Version 4.6
+
+- Fix persiting bank state for reconnecting players
+- Adjust label offsets for Pluto 5202+
+
 # Version 4.5
 
 - Added some aliases to chat commands
