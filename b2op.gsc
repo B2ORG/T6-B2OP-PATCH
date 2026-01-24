@@ -9,7 +9,7 @@
 #define DEPRECATION 5162
 
 /* Const macros */
-#define B2OP_VER 4.5
+#define B2OP_VER 4.6
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -136,12 +136,12 @@ main()
 #endif
 
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    /* Honor original fix, use this if original does not exist */
-    replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
+        /* Honor original fix, use this if original does not exist */
+        replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
 #endif
 
 #if FEATURE_ANIMATED_CAMOS == 1
-    replacefunc(getfunction("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options"), ::b2_get_pack_a_punch_weapon_options);
+        replacefunc(getfunction("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options"), ::b2_get_pack_a_punch_weapon_options);
 #endif
     }
 }
@@ -206,9 +206,13 @@ on_player_spawned()
 
     self waittill("spawned_player");
 
-    /* Perhaps a redundand safety check, but doesn't hurt */
-    while (!flag("initial_players_connected"))
-        wait 0.05;
+    /* Notifier runs twice, 2nd one is when player actually spawns */
+    if (!did_game_just_start())
+    {
+        self waittill_any_array(array("spawned_player", "start_of_round"));
+    }
+
+    flag_wait("initial_players_connected");
 
     self thread welcome_prints();
     self thread evaluate_network_frame();
@@ -466,7 +470,7 @@ get_watermark_position(mode, allocate)
 {
     foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
     {
-        if (!flag("b2_watermark_" + mode + slot))
+        if (!flag_exists("b2_watermark_" + mode + slot) || is_false(flag("b2_watermark_" + mode + slot)))
         {
             s = abs(slot);
             if (slot < 0)
@@ -497,7 +501,7 @@ deallocate_temp_watermark_slot(slot)
 
 generate_watermark(text, color, alpha_override)
 {
-    if (is_true(flag(text)))
+    if (flag_exists(text) && is_true(flag(text)))
         return;
 
     x_pos = get_watermark_position("perm", true);
@@ -508,7 +512,7 @@ generate_watermark(text, color, alpha_override)
     if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
-    watermark = createserverfontstring("hudsmall" , 1.2);
+    watermark = createserverfontstring("objective" , 1.2);
     watermark setpoint("CENTER", "TOP", x_pos, -5);
     watermark.color = color;
     watermark settext(text);
@@ -528,7 +532,7 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 {
     LEVEL_ENDON
 
-    if (is_true(flag(text)))
+    if (flag_exists(text) && is_true(flag(text)))
         return;
 
     x_pos = get_watermark_position("temp", true);
@@ -539,7 +543,7 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     if (!isdefined(alpha_override))
         alpha_override = 0.33;
 
-    twatermark = createserverfontstring("hudsmall" , 1.2);
+    twatermark = createserverfontstring("objective" , 1.2);
     twatermark setpoint("CENTER", "TOP", x_pos, -17);
     twatermark.color = color;
     twatermark settext(text);
@@ -960,7 +964,7 @@ fetch_pluto_definition()
 try_parse_pluto_version()
 {
     dvar = getdvar("shortversion");
-    if (dvar && isstrstart(dvar, "r"))
+    if (dvar != "" && isstrstart(dvar, "r"))
     {
         dvar_int = int(getsubstr(dvar, 1));
         if (dvar_int)
@@ -971,7 +975,7 @@ try_parse_pluto_version()
     }
 
     dvar = getdvar("version");
-    if (dvar && isstrstart(dvar, "Plutonium"))
+    if (dvar != "" && isstrstart(dvar, "Plutonium"))
     {
         dvar_int = int(getsubstr(dvar, 23, 28));
         if (dvar_int)
@@ -1012,7 +1016,7 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
-    return (getdvar("cg_debugInfoCornerOffset") == "40 0" && is_plutonium_version(VER_4K));
+    return is_plutonium_version(5202) && (getdvar("cg_debugInfoCornerOffset") == "40 0" || getdvar("cg_debugInfoCornerOffset") == "50 20");
 }
 
 is_redacted()
@@ -1063,7 +1067,7 @@ is_tracking_buildables()
 
 has_buildables(name)
 {
-    return isdefined(level.zombie_buildables[name]);
+    return isdefined(level.zombie_buildables) && isdefined(level.zombie_buildables[name]);
 }
 
 get_locker_stat(stat)
@@ -1367,11 +1371,14 @@ welcome_prints()
 {
     PLAYER_ENDON
 
-    if (is_true(flag("b2_bad_file")))
+    if (flag_exists("b2_bad_file") && is_true(flag("b2_bad_file")))
         return;
 
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
+#if PLUTO == 1
+    printf(get_launcher_as_txt() + " " + get_plutonium_version() + " " + "b2op" + " " + STR(B2OP_VER));
+#endif
     wait 0.75;
     self iprintln(compose_welcome_print());
     wait 0.75;
@@ -1570,7 +1577,7 @@ dvar_config(key)
     /* Enables flashing hashes of individual scripts */
     dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Offsets for pluto draws compatibile with b2 timers */
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "50 20",                false,  false,      ::should_set_draw_offset);
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,  false,      ::should_set_draw_offset);
     /* Displays the game status ID */
     dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
     /* Locks fps for all clients - 5162 fixes the limiter so we can set it more accurately */
@@ -2232,14 +2239,17 @@ purist_input(new_value, dvar, player)
 backspeed_input(new_value, dvar, player)
 {
     // DEBUG_PRINT("backspeed_input('" + sstr(new_value) + "', '" + sstr(dvar) + "', '" + sstr(player.name) + "')");
-    switch (new_value)
+    if (isstring(new_value))
     {
-        case "steam":
-            new_value = "0.8 0.7";
-            break;
-        case "fix":
-            new_value = "1.0";
-            break;
+        switch (new_value)
+        {
+            case "steam":
+                new_value = "0.8 0.7";
+                break;
+            case "fix":
+                new_value = "1.0";
+                break;
+        }
     }
 
     if (isarray(new_value))
@@ -2826,10 +2836,11 @@ fill_up_bank()
 
     if (has_permaperks_system() && did_game_just_start())
     {
-        DEBUG_PRINT("Setting bank for " + sstr(self.name) + " from value " + sstr(self.account_value) + " to " + sstr(level.bank_account_max));
-
-        self.account_value = level.bank_account_max;
+        /* Cast it to int, float will bug out in stats */
+        self.account_value = int(level.bank_account_max);
         self maps\mp\zombies\_zm_stats::set_map_stat("depositBox", self.account_value, level.banking_map);
+
+        DEBUG_PRINT("Set bank for " + sstr(self.name) + ": " + sstr(self.account_value) + " (" + sstr(self maps\mp\zombies\_zm_stats::get_map_stat("depositBox", level.banking_map)) + ")");
     }
 }
 
@@ -3644,7 +3655,7 @@ setup_box_tracker()
 
     foreach (key in getarraykeys(level.boxtracker_pulls))
     {
-        if (!isdefined(level.boxtracker_pulls[key][self.name]))
+        if (!isint(level.boxtracker_pulls[key]) && !isdefined(level.boxtracker_pulls[key][self.name]))
         {
             level.boxtracker_pulls[key][self.name] = 0;
             DEBUG_PRINT("created boxtracker array entry with key '" + key + "' for '" + self.name + "'");
