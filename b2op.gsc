@@ -1016,7 +1016,11 @@ get_plutonium_version()
 
 should_set_draw_offset()
 {
+#if REDACTED == 1
+    return false;
+#else
     return is_plutonium_version(5202) && (getdvar("cg_debugInfoCornerOffset") == "40 0" || getdvar("cg_debugInfoCornerOffset") == "50 20");
+#endif
 }
 
 is_redacted()
@@ -2045,20 +2049,20 @@ tank_input(value, key, player)
 }
 #endif
 
-#if FEATURE_ANIMATED_CAMOS == 1
+#if PLUTO == 1 && FEATURE_ANIMATED_CAMOS == 1
 b2_get_pack_a_punch_weapon_options(weapon)
 {
     if (!isdefined(self.pack_a_punch_weapon_options))
         self.pack_a_punch_weapon_options = [];
 
-    if (!is_weapon_upgraded(weapon))
+    if (!maps\mp\zombies\_zm_weapons::is_weapon_upgraded(weapon))
         return self calcweaponoptions(0, 0, 0, 0, 0);
 
     if (isdefined(self.pack_a_punch_weapon_options[weapon]))
         return self.pack_a_punch_weapon_options[weapon];
 
     smiley_face_reticle_index = 1;
-    base = get_base_name(weapon);
+    base = maps\mp\zombies\_zm_weapons::get_base_name(weapon);
     camo_opt = get_camo_stat();
     reticle_opt = get_reticle_stat();
 
@@ -2112,7 +2116,6 @@ b2_get_pack_a_punch_weapon_options(weapon)
 
     self.pack_a_punch_weapon_options[weapon] = self calcweaponoptions(camo_index, lens_index, reticle_index, reticle_color_index);
     return self.pack_a_punch_weapon_options[weapon];
-
 }
 
 camo_input(new_value, key, player)
