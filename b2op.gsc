@@ -57,6 +57,8 @@
 #define STAT_RETICLE "stock"
 #define STAT_CAMO_MAP "zm_tomb"
 #define STAT_CAMO "alt_clip"
+#define STAT_KEY_MAP "zm_prison"
+#define STAT_KEY "clip"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -1924,18 +1926,18 @@ key_input(value, key, player)
         case LOCATION_CAFE:
         case "east":
         case 1:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 1, STAT_KEY_MAP);
             print_scheduler("Successfully set key position to: " + COLOR_TXT("Cafeteria (east)", COL_YELLOW));
             break;
         case LOCATION_WARDEN:
         case "west":
         case 2:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 2, STAT_KEY_MAP);
             print_scheduler("Successfully set key position to: " + COLOR_TXT("Warden's office (west)", COL_YELLOW));
             break;
         case "reset":
         case 0:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 0, STAT_KEY_MAP);
             print_scheduler("Key position is now random");
             break;
         default:
@@ -1947,7 +1949,9 @@ key_input(value, key, player)
 
 override_setup_master_key()
 {
-    switch (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_prison"))
+    DEBUG_PRINT("override_setup_master_key: stat=>" + sstr(gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP)) + " type=>" + sstr(typeof(gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP))));
+
+    switch (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP))
     {
         case 1:
             thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
