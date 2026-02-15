@@ -704,6 +704,27 @@ array_implode(separator, arr)
     return str;
 }
 
+array_from_struct(struct)
+{
+    if (!is_plutonium_version(5202))
+    {
+        DEBUG_PRINT("array_from_struct use in incompatibile plutonium version");
+        return [];
+    }
+
+    arr = [];
+    foreach (field in getstructkeys(struct))
+    {
+        value = structget(struct, field);
+        if (typeof(value) == "struct")
+        {
+            value = array_from_struct(value);
+        }
+        arr[field] = value;
+    }
+    return arr;
+}
+
 array_shift(arr)
 {
     new_arr = [];
