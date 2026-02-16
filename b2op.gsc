@@ -74,6 +74,7 @@
 #define FEATURE_MOB_KEY 1
 #define FEATURE_ORIGINS_TANK_DEPATCH 1
 #define FEATURE_ANIMATED_CAMOS 1
+#define FEATURE_TOMAHAWK_STATE 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -222,6 +223,21 @@ on_player_spawned()
     self thread evaluate_network_frame();
     self thread fill_up_bank();
 
+#if FEATURE_TOMAHAWK_STATE == 1
+    if (is_mob())
+    {
+        if (!flag("b2_tomahawk_upgraded") && !is_round(50))
+        {
+            self thread watch_tomahawk_upgraded();
+        }
+        else if (flag("b2_tomahawk_upgraded"))
+        {
+            /* Setting this enables the tomahawk loop to recognize it's upgraded */
+            self.current_tomahawk_weapon = "upgraded_tomahawk_zm";
+        }
+    }
+#endif
+
     if (is_tracking_buildables())
     {
         self.initial_stats = [];
@@ -314,6 +330,8 @@ init_b2_flags()
     flag_init("b2_fb_locked");
     flag_init("b2_lb_locked");
     flag_init("b2_silent_backspeed");
+    if (is_mob())
+        flag_init("b2_tomahawk_upgraded");
 }
 
 init_b2_dvars()
@@ -2416,6 +2434,30 @@ gun_compatibile_with_index(index, weapon)
     }
 
     return true;
+}
+#endif
+
+#if FEATURE_TOMAHAWK_STATE == 1
+watch_tomahawk_upgraded()
+{
+    if (flag("b2_tomahawk_upgraded"))
+    {
+        return;
+    }
+
+    PLAYER_ENDON
+    level endon("b2_tomahawk_upgraded");
+
+    while (!is_round(50))
+    {
+        if (isdefined(self.current_tomahawk_weapon) && self.current_tomahawk_weapon == "upgraded_tomahawk_zm")
+        {
+            flag_set("b2_tomahawk_upgraded");
+            level notify("b2_tomahawk_upgraded");
+        }
+
+        wait 0.1;
+    }
 }
 #endif
 
