@@ -125,9 +125,16 @@
 #if PLUTO == 1
 main()
 {
-    replace_func_safe("maps/mp/animscripts/zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
-    replace_func_safe("maps/mp/zombies/_zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
+    // replace_func_safe("maps/mp/animscripts/zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
+    // replace_func_safe("maps/mp/zombies/_zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
+      if (!is_plutonium_version(VER_3K))
+    {
+        replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+        replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
+    }
 
+    if (is_plutonium_version(VER_4K))
+    {
 #if FEATURE_MOB_KEY == 1
     replace_func_safe("maps/mp/zm_alcatraz_sq", "setup_master_key", ::override_setup_master_key, is_plutonium_version(VER_4K));
 #endif
@@ -140,11 +147,7 @@ main()
 #if FEATURE_ANIMATED_CAMOS == 1
     replace_func_safe("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options", ::b2_get_pack_a_punch_weapon_options, is_plutonium_version(VER_4K));
 #endif
-
-#if DEBUG == 1
-    // replace_func_safe("maps/mp/zombies/_zm_audio", "do_zombies_playvocals", ::_debug_do_zombies_playvocals, true);
-    // replace_func_safe("maps/mp/zm_highrise", "zombie_init_done", ::_debug_zombie_init_done, true);
-#endif
+    }
 }
 #endif
 
