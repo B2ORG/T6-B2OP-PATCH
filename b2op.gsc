@@ -2076,6 +2076,11 @@ override_tank_push_player_off_edge(trig)
 
 tank_input(value, key, player)
 {
+    if (!is_origins())
+    {
+        return true;
+    }
+
     if (!is_plutonium_version(VER_4K))
     {
         print_scheduler("This feature does not support your Plutonium version, consider updating", player);
