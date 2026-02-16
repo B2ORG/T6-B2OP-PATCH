@@ -4167,6 +4167,12 @@ move_chest(box_config)
     foreach (chest in level.chests)
     {
         chest notify("kill_chest_think");
+        /* Kill the FX playing on active box location, hide_chest won't do it */
+        if (isdefined(chest.zbarrier) && chest.zbarrier getclientfield("magicbox_amb_fx"))
+        {
+            DEBUG_PRINT("overriding clientfield 'magicbox_amb_fx'");
+            chest.zbarrier setclientfield("magicbox_amb_fx", 0);
+        }
 
         if (chest.script_noteworthy == box_config["script_noteworthy"])
         {
