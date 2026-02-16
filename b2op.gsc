@@ -1836,6 +1836,11 @@ debug_mode()
         player thread award_points(333333);
     generate_watermark("DEBUGGER", (0.8, 0.8, 0));
 
+    foreach (chest in level.chests)
+    {
+        printf("chest '" + sstr(chest.script_noteworthy) + "' origin '" + sstr(chest.origin) + "'");
+    }
+
     thread _run_test_array();
 }
 #endif
@@ -4037,164 +4042,221 @@ server_box_weapon_verification(weapon_key)
 #if FEATURE_BOX_LOCATION == 1
 box_location_input(value, key, player)
 {
-    /* Map not supported by lb logic */
-    if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
-        return true;
-    /* Chest moving logic not yet processed by gsc */
-    if (!flag("moving_chest_enabled"))
-        return true;
-    /* Box has been hit already */
-    if (is_true(level.total_box_hits))
+    if (!can_set_box_location())
     {
-        flag_set("b2_lb_locked");
-        return true;
-    }
-    /* Initial afterlife - logic not ready */
-    if (is_mob() && !flag("afterlife_start_over"))
-    {
-        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), gethostplayer());
         return true;
     }
 
-    process_selection = process_box_location(value);
+    conf = box_location_config();
 
-    if (process_selection == "no box selected")
+    /* Show possible options */
+    if (value == "")
+    {
+        filtered_by_map = [];
+        foreach (loc_config in conf)
+        {
+            cb = loc_config["map_callback"];
+            if ([[cb]]())
+            {
+                filtered_by_map[filtered_by_map.size] = COLOR_TXT(loc_config["aliases"][0], COL_YELLOW) + " for " + loc_config["name"];
+            }
+        }
+
+        if (filtered_by_map.size)
+        {
+            print_scheduler("LB options: " + array_implode(", ", filtered_by_map), gethostplayer());
+        }
+        return true;
+    }
+
+    selection = undefined;
+    foreach (loc_config in conf)
+    {
+        cb = loc_config["map_callback"];
+        if ((tolower(value) == loc_config["script_noteworthy"] || isinarray(loc_config["aliases"], tolower(value))) && [[cb]]())
+        {
+            selection = loc_config;
+        }
+    }
+
+    /* Check selection against map chests */
+    chests_script = get_noteworthy_chests();
+    if (!isdefined(selection) || chests_script.size < 2 || !isinarray(chests_script, selection["script_noteworthy"]))
     {
         print_scheduler("Incorrect selection: " + COLOR_TXT(value, COL_RED), gethostplayer());
         return true;
     }
 
-    chests_script = [];
-    foreach (chest in level.chests)
-        chests_script[chests_script.size] = chest.script_noteworthy;
-
-    if (!isinarray(chests_script, process_selection))
-        return true;
-
-    thread move_chest(process_selection);
-    flag_set("b2_lb_locked");
-}
-
-move_chest(box)
-{
-    LEVEL_ENDON
-
-    if (isdefined(level._zombiemode_custom_box_move_logic))
-        kept_move_logic = level._zombiemode_custom_box_move_logic;
-
-    level._zombiemode_custom_box_move_logic = ::force_next_location;
+    /* Check if selected box is already there */
     foreach (chest in level.chests)
     {
-        if (!chest.hidden && chest.script_noteworthy == box)
+        if (chest.script_noteworthy == selection["script_noteworthy"] && chest.hidden == 0)
         {
-            print_scheduler("Box already in selected location");
-            if (isdefined(kept_move_logic))
+            print_scheduler("Box already in selected location", gethostplayer());
+            return true;
+        }
+    }
+
+    /* Attempt moving the chest */
+    if (move_chest(selection))
+    {
+        flag_set("b2_lb_locked");
+        print_scheduler("Box moved to: " + COLOR_TXT(selection["name"], COL_YELLOW));
+    }
+
+    return true;
+}
+
+move_chest(box_config)
+{
+    DEBUG_PRINT("moving chest: " + sstr(box_config));
+
+    chests_new = [];
+
+    /* All chests here do exist */
+    foreach (chest in level.chests)
+    {
+        chest notify("kill_chest_think");
+
+        if (chest.script_noteworthy == box_config["script_noteworthy"])
+        {
+            lb_chest = chest;
+        }
+        else
+        {
+            chests_new[chests_new.size] = chest;
+        }
+
+        /* Classic maps use this flag to check */
+        if (is_classic() && is_true(level.random_pandora_box_start))
+        {
+            chest.start_exclude = 1;
+
+            if (chest.script_noteworthy == box_config["script_noteworthy"])
             {
-                level._zombiemode_custom_box_move_logic = kept_move_logic;
+                chest.start_exclude = 0;
             }
-            return;
         }
-        else if (!chest.hidden)
+    }
+
+    /* We're in trouble if we get into this if */
+    if (!isdefined(lb_chest))
+    {
+        array_thread(level.chests, maps\mp\zombies\_zm_magicbox::treasure_chest_think);
+        DEBUG_PRINT("lb_chest undefined, should never happen!");
+        return false;
+    }
+
+    /* Pandora box based maps (mob & origins) */
+    if (is_true(level.random_pandora_box_start))
+    {
+        maps\mp\zombies\_zm_magicbox::init_starting_chest_location("start_chest");
+    }
+    /* script noteworthy based maps */
+    else
+    {
+        /* I have to reindex the global array, since the actual location is index dependent */
+        level.chests = [];
+        level.chests[0] = lb_chest;
+        foreach (new in chests_new)
         {
-            level.chest_min_move_usage = 8;
-            level.chest_name = box;
-            print_box_location(box);
+            level.chests[level.chests.size] = new;
+        }
 
-            flag_set("moving_chest_now");
-            chest thread maps\mp\zombies\_zm_magicbox::treasure_chest_move();
+        maps\mp\zombies\_zm_magicbox::init_starting_chest_location(box_config["script_noteworthy"]);
+    }
 
-            wait 0.05;
-            level notify("weapon_fly_away_start");
-            wait 0.05;
-            level notify("weapon_fly_away_end");
+    array_thread(level.chests, maps\mp\zombies\_zm_magicbox::treasure_chest_think);
 
-            break;
+    return true;
+}
+
+can_set_box_location()
+{
+    /* 1 or 0 boxes on the map */
+    if (level.chests.size < 2)
+    {
+        DEBUG_PRINT("can_set_box_location false => chest size");
+        return false;
+    }
+
+    /* random_pandora_box_start not used */
+    if (!is_true(level.random_pandora_box_start))
+    {
+        chests = get_noteworthy_chests();
+        start_chests = 0;
+        foreach (chest in chests)
+        {
+            if (is_town() && issubstr(chest, "town_chest"))
+                start_chests++;
+            else if (is_nuketown() && issubstr(chest, "start_chest"))
+                start_chests++;
+        }
+        if (start_chests < 2)
+        {
+            DEBUG_PRINT("can_set_box_location false => start chests size");
+            return false;
         }
     }
 
-    while (flag("moving_chest_now"))
-        wait 0.05;
-
-    if (isdefined(kept_move_logic))
-        level._zombiemode_custom_box_move_logic = kept_move_logic;
-
-    /* Prevents firesale to be included in origins dig cycle */
-    if (isdefined(level.chest_name) && isdefined(level.dig_magic_box_moved))
+    /* Check if GSC logic is ready */
+    if (!flag_exists("moving_chest_enabled") || !flag("moving_chest_enabled"))
     {
-        level.dig_magic_box_moved = 0;
+        DEBUG_PRINT("can_set_box_location false => moving_chest_enabled");
+        return false;
     }
-    CLEAR(level.chest_name)
+    /* Exit if box has been hit already */
+    if (is_true(level.total_box_hits))
+    {
+        DEBUG_PRINT("can_set_box_location false => total_box_hits");
+        flag_set("b2_lb_locked");
+        return false;
+    }
+    /* Mob can't lb until exit 1st afterlife */
+    if ((!flag_exists("afterlife_start_over") || !flag("afterlife_start_over")) && is_mob())
+    {
+        DEBUG_PRINT("can_set_box_location false => afterlife_start_over");
+        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), gethostplayer());
+        return false;
+    }
 
-    level.chest_min_move_usage = 4;
-    DEBUG_PRINT("dig_magic_box_moved: " + level.dig_magic_box_moved);
+    return true;
 }
 
-force_next_location()
+get_noteworthy_chests()
 {
-    for (b=0; b<level.chests.size; b++)
+    chests = [];
+    foreach (chest in level.chests)
     {
-        if (level.chests[b].script_noteworthy == level.chest_name)
-            level.chest_index = b;
+        chests[chests.size] = chest.script_noteworthy;
     }
+    return chests;
 }
 
-process_box_location(input_msg)
+box_location_config()
 {
-    // DEBUG_PRINT("Input for 'lb': " + input_msg);
-    switch (tolower(input_msg))
-    {
-        case "dt":
-            return "town_chest_2";
-        case "qr":
-            return "town_chest";
-        case LOCATION_CAFE:
-            return "cafe_chest";
-        case LOCATION_WARDEN:
-            return "start_chest";
-        case "yellow":
-            return "start_chest2";
-        case "green":
-            return "start_chest1";
-        case "2":
-            return "bunker_tank_chest";
-        case "3":
-            return "bunker_cp_chest";
-        default:
-            return "no box selected";
-    }
+    conf = [];
+    /*                                      script_noteworthy   aliases                             name                map_cb      */
+    conf[conf.size] = register_box_location("town_chest_2",     array("dt", "cage"),                "Double Tap Cage",  ::is_town);
+    conf[conf.size] = register_box_location("town_chest",       array("qr", "quick"),               "Quick Revive Room",::is_town);
+    conf[conf.size] = register_box_location("cafe_chest",       array(LOCATION_CAFE, "cateteria"),  "Cafeteria",        ::is_mob);
+    conf[conf.size] = register_box_location("start_chest",      array(LOCATION_WARDEN, "office"),   "Warden's Office",  ::is_mob);
+    conf[conf.size] = register_box_location("start_chest2",     array("yellow"),                    "Yellow House",     ::is_nuketown);
+    conf[conf.size] = register_box_location("start_chest1",     array("green"),                     "Green House",      ::is_nuketown);
+    conf[conf.size] = register_box_location("bunker_tank_chest",array("2", "tank"),                 "Generator 2",      ::is_origins);
+    conf[conf.size] = register_box_location("bunker_cp_chest",  array("3", "speed"),                "Generator 3",      ::is_origins);
+
+    return conf;
 }
 
-print_box_location(loc)
+register_box_location(script_noteworthy, aliases, name, map_callback)
 {
-    switch (loc)
-    {
-        case "town_chest_2":
-            print_scheduler("Box moving to: " + COLOR_TXT("Double Tap Cage", COL_YELLOW));
-            break;
-        case "town_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Quick Revive Room", COL_YELLOW));
-            break;
-        case "cafe_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Cafeteria", COL_YELLOW));
-            break;
-        case "start_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Warden's Office", COL_YELLOW));
-            break;
-        case "start_chest2":
-            print_scheduler("Box moving to: " + COLOR_TXT("Yellow House", COL_YELLOW));
-            break;
-        case "start_chest1":
-            print_scheduler("Box moving to: " + COLOR_TXT("Green House", COL_YELLOW));
-            break;
-        case "bunker_tank_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Generator 2", COL_YELLOW));
-            break;
-        case "bunker_cp_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Generator 3", COL_YELLOW));
-            break;
-        default:
-            print_scheduler("Box moving to: " + COLOR_TXT(loc, COL_GREEN));
-    }
+    location = [];
+    location["script_noteworthy"] = script_noteworthy;
+    location["aliases"] = aliases;
+    location["name"] = name;
+    location["map_callback"] = map_callback;
+    return location;
 }
 #endif
 
