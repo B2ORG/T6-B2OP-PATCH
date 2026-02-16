@@ -1528,7 +1528,7 @@ chat_config()
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
     chat[chat.size] = register_chat("tank",     array("!t", "tank depatch"), ::tank_input,      true,       false);
 #endif
-#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+#if FEATURE_PERMAPERKS == 1
     chat[chat.size] = register_chat("purist",   array("!p"),        ::purist_input,             false,      false);
 #endif
 #if FEATURE_ANIMATED_CAMOS == 1
