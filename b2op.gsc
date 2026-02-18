@@ -597,51 +597,83 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     for appending first box info to splits */
 }
 
-print_scheduler(content, player, delay)
+print_scheduler(content, player, custom_length)
 {
-    if (!isdefined(delay))
+    if (!isdefined(custom_length))
     {
-        delay = 0;
+        custom_length = 0;
     }
 
     // DEBUG_PRINT("print_scheduler(content='" + content + ")");
     if (isdefined(player))
     {
-        // DEBUG_PRINT(player.name + ": print scheduled: " + content);
-        player thread player_print_scheduler(content, delay);
+        if (isplayer(player))
+        {
+            player thread player_print_scheduler(content, custom_length);
+            return;
+        }
+        DEBUG_PRINT("Entity passet to print scheduler is not a player");
+        return;
     }
-    else
+    // DEBUG_PRINT("general: print scheduled: " + content);
+    foreach (player in level.players)
     {
-        // DEBUG_PRINT("general: print scheduled: " + content);
-        foreach (player in level.players)
-            player thread player_print_scheduler(content, delay);
+        player thread player_print_scheduler(content, custom_length);
     }
 }
 
-player_print_scheduler(content, delay)
+player_print_scheduler(content, custom_length)
 {
     PLAYER_ENDON
 
-    DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content));
+    DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content) + " custom length: " + sstr(custom_length));
 
-    while (delay > 0 && isdefined(self.scheduled_prints) && getdvarint("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount"))
+    for (max_waits = 100; isdefined(self.scheduled_prints) && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount") && max_waits; max_waits--)
     {
-        if (delay > 0)
-            delay -= 0.05;
         wait 0.05;
     }
 
     if (isdefined(self.scheduled_prints))
+    {
         self.scheduled_prints++;
+    }
     else
+    {
         self.scheduled_prints = 1;
+    }
+
+    original_dvar_value = undefined;
+    if (custom_length)
+    {
+        original_dvar_value = getdvarfloat("con_gameMsgWindow0MsgTime");
+        custom_dvar_value = clamp(custom_length, 5, 15);
+        setdvar("con_gameMsgWindow0MsgTime", custom_dvar_value);
+        DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value));
+    }
 
     self iprintln(sstr(content));
-    wait_for_message_end();
-    self.scheduled_prints--;
+    if (custom_length)
+    {
+        /* This must be delayed */
+        thread defer_msg_window_time_restore(original_dvar_value);
+    }
+    wait getdvarfloat("con_gameMsgWindow0FadeInTime") + custom_dvar_value + getdvarfloat("con_gameMsgWindow0FadeOutTime");
 
-    if (self.scheduled_prints <= 0)
-        CLEAR(self.scheduled_prints)
+    if (isdefined(self.scheduled_prints))
+    {
+        self.scheduled_prints--;
+
+        if (self.scheduled_prints <= 0)
+        {
+            CLEAR(self.scheduled_prints)
+        }
+    }
+}
+
+defer_msg_window_time_restore(restore_to)
+{
+    wait 0.1;
+    setdvar("con_gameMsgWindow0MsgTime", restore_to);
 }
 
 convert_time(seconds)
@@ -1171,11 +1203,6 @@ get_hordes_left()
     return int((get_zombies_left() / 24) * 100) / 100;
 }
 #endif
-
-wait_for_message_end()
-{
-    wait getdvarfloat("con_gameMsgWindow0FadeInTime") + getdvarfloat("con_gameMsgWindow0MsgTime") + getdvarfloat("con_gameMsgWindow0FadeOutTime");
-}
 
 emulate_menu_call(content, ent)
 {
