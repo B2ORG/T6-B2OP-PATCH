@@ -3924,26 +3924,26 @@ print_box_stats(value, key, player)
             print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
                 + " MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED)
                 + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED)
-            );
+            , undefined, 15);
             break;
         case WEAPON_NAME_MK2:
             print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
                 + " MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED)
                 + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED)
-            );
+            , undefined, 15);
             break;
         default:
             jokers = get_joker_pulls();
             if (jokers)
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED));
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED), undefined, 10);
             }
             else
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED));
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED), undefined, 10);
             }
-            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED));
-            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED));
+            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED), undefined, 10);
+            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED), undefined, 10);
     }
 
     return true;
