@@ -645,14 +645,14 @@ player_print_scheduler(content, custom_length)
     original_dvar_value = undefined;
     if (custom_length)
     {
-        original_dvar_value = getdvarfloat("con_gameMsgWindow0MsgTime");
+        original_dvar_value = dvar_config("con_gameMsgWindow0MsgTime")["start_value"];
         custom_dvar_value = clamp(custom_length, 5, 15);
         setdvar("con_gameMsgWindow0MsgTime", custom_dvar_value);
         DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value));
     }
 
     self iprintln(sstr(content));
-    if (custom_length)
+    if (isdefined(original_dvar_value))
     {
         /* This must be delayed */
         thread defer_msg_window_time_restore(original_dvar_value);
