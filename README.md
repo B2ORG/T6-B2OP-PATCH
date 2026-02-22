@@ -912,3 +912,4 @@ Here is a list of weaponlocker stats B2 patches use to persist settings. Note, T
 | zm_tomb | clip | Gameplay | (B2OP) Controls tank depatching |
 | zm_tomb | stock | Gameplay | Controls reticle for upgraded gun (Origins only on B2FR) |
 | zm_tomb | alt_clip | Gameplay | (B2OP) Controls camo index |
+| zm_tomb | lh_clip | HUD | (B2FR) Controls whether velocity meter is enabled (1 is disabled) |
