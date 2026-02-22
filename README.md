@@ -230,19 +230,19 @@ The patch can be interacted with using DVARs and game chat commands. Below is a 
 | `buildables` | - | - | - | Set to `1` to show buildables tracker |
 | `kill_hud` | - | - | - | Set to `1` to premanently destroy HUD for the rest of the game to save allocations |
 | `kill_box_tracker` | - | - | - | Set to `1` to premanently disable box tracker for the rest of the game |
-| `viewmodel` | `view` | `!v` | No | [Viewmodel swapping](#viewmodel-swapping) |
-| - | `char` | `!c` | No | [Character chat commands](#character-chat-commands) |
-| - | `splits` | `!s` | Yes | [Splits chat command](#splits-chat-command) |
-| - | `backspeed` | `bs`, `!b` | Yes | [Backspeed](#backspeed) |
+| `viewmodel` | `view` | - | No | [Viewmodel swapping](#viewmodel-swapping) |
+| - | `char` | - | No | [Character chat commands](#character-chat-commands) |
+| - | `splits` | `!sl` | Yes | [Splits chat command](#splits-chat-command) |
+| - | `backspeed` | `!bs` | Yes | [Backspeed](#backspeed) |
 | `fridge` | `fridge` | `!fr` | No | [Overriding fridge weapon](#overriding-fridge-weapon) |
-| `fb` | `fb` | `!fb` | No | [Overriding box weapon](#overriding-box-weapon) |
-| `lb` | `lb` | `!lb` | No | [Overriding box location](#overriding-box-location) |
+| `fb` | `fb` | - | No | [Overriding box weapon](#overriding-box-weapon) |
+| `lb` | `lb` | - | No | [Overriding box location](#overriding-box-location) |
 | - | `box` | `!bt` | No | [Basic trade tracker](#basic-trade-tracker) |
-| `key` | `key` | `!k` | Yes | [Overriding key location](#overriding-key-location) |
-| - | `tank` | `!t`, `tank deptach` | Yes | [Tank fix](#tank-fix) |
-| - | `purist` | `!p` | No | [No jug games](#no-jug-games) |
-| - | `reticle` | `!r` | No | Allows for customizing PaP'd gun reticle, values between 1 and 16 (eg. 16 is a red dot), 0 to make it random. Needs to be set BEFORE the gun is obtained |
-| - | `camo` | `!ca` | No | Allows for customizing gun PaP'd camo, needs to be a valid index, you risk crashing if it isn't, use only if you know how to manage custom camos. Needs to be set BEFORE the gun is obtained |
+| `key` | `key` | - | Yes | [Overriding key location](#overriding-key-location) |
+| - | `tank` | - | Yes | [Tank fix](#tank-fix) |
+| - | `purist` | `!pr` | No | [No jug games](#no-jug-games) |
+| - | `reticle` | `!rt` | No | Allows for customizing PaP'd gun reticle, values between 1 and 16 (eg. 16 is a red dot), 0 to make it random. Needs to be set BEFORE the gun is obtained |
+| - | `camo` | - | No | Allows for customizing gun PaP'd camo, needs to be a valid index, you risk crashing if it isn't, use only if you know how to manage custom camos. Needs to be set BEFORE the gun is obtained |
 
 # HUD
 

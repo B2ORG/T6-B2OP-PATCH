@@ -410,8 +410,8 @@ b2op_main_loop()
 {
     LEVEL_ENDON
 
-    // DEBUG_PRINT("initialized b2op_main_loop");
     game_start = gettime();
+    DEBUG_PRINT("initialized b2op_main_loop " + gettime() + " " + getutc());
 
     b2_signal("GAME_START", array("b2op", STR(B2OP_VER), get_plutonium_version()), array("patch", "patch_version", "plutonium_version"));
 
@@ -1374,9 +1374,27 @@ chat_watcher()
     {
         level waittill("say", message, player);
 
+        if (message == "")
+        {
+            continue;
+        }
+
+        if (!isplayer(player))
+        {
+            player = gethostplayer();
+        }
+
         cfg = chat_config();
 
-        /* TODO check if i should specifically validate if player is a player */
+        message_elements = strtok(message, " ");
+        cmd = message_elements[0];
+        contents = "";
+        if (message_elements.size > 1)
+        {
+            contents = array_implode(" ", array_shift(message_elements));
+        }
+
+        matched_chat = undefined;
         foreach (chat in cfg)
         {
             if (flag("b2_" + chat["chat"] + "_locked"))
@@ -1390,50 +1408,52 @@ chat_watcher()
                 continue;
             }
 
-            matched_signature = undefined;
-            for (i = -1; i < chat["aliases"].size; i++)
+            if (chat["chat"] == cmd || "!" + chat["chat"] == CMD)
             {
-                if (i == -1)
-                {
-                    signature = chat["chat"];
-                }
-                else
-                {
-                    signature = chat["aliases"][i];
-                }
+                // debugbox("chat['chat'] == cmd");
+                matched_chat = chat;
+                break;
+            }
 
-                if (isstrstart(message, signature))
+            foreach (alias in chat["aliases"])
+            {
+                if (alias == cmd || "!" + alias == cmd)
                 {
-                    matched_signature = signature;
+                    // debugbox("alias == cmd");
+                    matched_chat = chat;
                     break;
                 }
             }
 
-            if (isdefined(matched_signature))
+            if (isdefined(matched_chat))
             {
-                DEBUG_PRINT("matched chat signature '" + sstr(matched_signature) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
-                input = undefined;
-                if (message.size > matched_signature.size + 1)
-                {
-                    input = getsubstr(message, matched_signature.size + 1);
-                }
-                if (chat["thread"])
-                {
-                    thread [[chat["callback"]]](input, chat["chat"], player);
-                }
-                else
-                {
-                    [[chat["callback"]]](input, chat["chat"], player);
-                }
                 break;
             }
         }
 
-        CLEAR(message)
+        if (!isdefined(matched_chat))
+        {
+            continue;
+        }
+        DEBUG_PRINT("matched chat '" + sstr(matched_chat["chat"]) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
+
+        if (matched_chat["thread"])
+        {
+            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a thread callback");
+            thread [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
+        }
+        else
+        {
+            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a callback");
+            [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
+        }
+
+        CLEAR(alias)
         CLEAR(chat)
-        CLEAR(matched_signature)
-        CLEAR(signature)
-        CLEAR(input)
+        CLEAR(matched_chat)
+        CLEAR(contents)
+        CLEAR(cmd)
+        CLEAR(message_elements)
         CLEAR(cfg)
     }
 }
@@ -1573,37 +1593,37 @@ chat_config()
     chat = [];
 
     /*                              CHATS       ALIASES             CALLBACK                    HOSTONLY    THREAD */
-    chat[chat.size] = register_chat("backspeed",array("!b", "bs"),  ::backspeed_input,          true,       false);
-    chat[chat.size] = register_chat("splits",   array("!s"),        ::splits_input,             true,       false);
+    chat[chat.size] = register_chat("backspeed",array("!bs"),       ::backspeed_input,          true,       false);
+    chat[chat.size] = register_chat("splits",   array("!sl"),       ::splits_input,             true,       false);
 
 #if FEATURE_CHARACTERS == 1
-    chat[chat.size] = register_chat("char",     array("!c"),        ::characters_input,         false,      false);
-    chat[chat.size] = register_chat("view",     array("!v"),        ::viewmodel_input,          false,      false);
+    chat[chat.size] = register_chat("char",     [],                 ::characters_input,         false,      false);
+    chat[chat.size] = register_chat("view",     [],                 ::viewmodel_input,          false,      false);
 #endif
 #if FEATURE_FRIDGE == 1
     chat[chat.size] = register_chat("fridge",   array("!fr"),       ::fridge_input,             false,      false);
 #endif
 #if FEATURE_FIRSTBOX == 1
-    chat[chat.size] = register_chat("fb",       array("!fb"),       ::firstbox_input,           false,      false);
+    chat[chat.size] = register_chat("fb",       [],                 ::firstbox_input,           false,      false);
 #endif
 #if FEATURE_BOX_LOCATION == 1
-    chat[chat.size] = register_chat("lb",       array("!lb"),       ::box_location_input,       false,      false);
+    chat[chat.size] = register_chat("lb",       [],                 ::box_location_input,       false,      false);
 #endif
 #if FEATURE_BOXTRACKER == 1
     chat[chat.size] = register_chat("box",      array("!bt"),       ::print_box_stats,          false,      false);
 #endif
 #if FEATURE_MOB_KEY == 1
-    chat[chat.size] = register_chat("key",      array("!k"),        ::key_input,                true,       false);
+    chat[chat.size] = register_chat("key",      [],                 ::key_input,                true,       false);
 #endif
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat[chat.size] = register_chat("tank",     array("!t", "tank depatch"), ::tank_input,      true,       false);
+    chat[chat.size] = register_chat("tank",     [],                 ::tank_input,               true,       false);
 #endif
 #if FEATURE_PERMAPERKS == 1
-    chat[chat.size] = register_chat("purist",   array("!p"),        ::purist_input,             false,      false);
+    chat[chat.size] = register_chat("purist",   array("!pr"),       ::purist_input,             false,      false);
 #endif
 #if FEATURE_ANIMATED_CAMOS == 1
-    chat[chat.size] = register_chat("camo",     array("!ca"),       ::camo_input,               false,      false);
-    chat[chat.size] = register_chat("reticle",  array("!r"),        ::reticle_input,            false,      false);
+    chat[chat.size] = register_chat("camo",     [],                 ::camo_input,               false,      false);
+    chat[chat.size] = register_chat("reticle",  array("!rt"),       ::reticle_input,            false,      false);
 #endif
 
     return chat;
@@ -4031,10 +4051,18 @@ firstbox_input(value, key, player)
 {
     /* Additional check, prevents rigging past RNG_ROUND */
     if (!isdefined(level.rigged_hits))
+    {
         return true;
+    }
+    if (value == "" || value == " ")
+    {
+        return true;
+    }
 
     if (!isdefined(player))
+    {
         player = gethostplayer();
+    }
     thread rig_box(strtok(value, "|"), player);
 
     return true;
