@@ -236,6 +236,8 @@ on_player_spawned()
         }
         else if (flag("b2_tomahawk_upgraded"))
         {
+            tomahawk_pick = getent("spinning_tomahawk_pickup", "targetname");
+            tomahawk_pick setclientfield("play_tomahawk_fx", 2);
             /* Setting this enables the tomahawk loop to recognize it's upgraded */
             self.current_tomahawk_weapon = "upgraded_tomahawk_zm";
         }
