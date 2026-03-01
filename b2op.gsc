@@ -78,7 +78,7 @@
 #define FEATURE_MOB_KEY 1
 #define FEATURE_ORIGINS_TANK_DEPATCH 1
 #define FEATURE_ANIMATED_CAMOS 1
-#define FEATURE_TOMAHAWK_STATE 0
+#define FEATURE_TOMAHAWK_STATE 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -142,6 +142,8 @@ main()
     {
 #if FEATURE_MOB_KEY == 1
     replace_func_safe("maps/mp/zm_alcatraz_sq", "setup_master_key", ::override_setup_master_key, is_plutonium_version(VER_4K));
+#if FEATURE_TOMAHAWK_STATE == 1
+    replace_func_safe("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest", ::override_tomahawk_upgrade_quest, true);
 #endif
 
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
@@ -206,6 +208,10 @@ on_player_connected()
     {
         level waittill("connected", player);
         player thread on_player_spawned();
+        if (is_mob())
+        {
+            player thread on_player_disconnect();
+        }
     }
 }
 
@@ -227,23 +233,6 @@ on_player_spawned()
     self thread evaluate_network_frame();
     self thread fill_up_bank();
 
-#if FEATURE_TOMAHAWK_STATE == 1
-    if (is_mob())
-    {
-        if (!flag("b2_tomahawk_upgraded") && !is_round(50))
-        {
-            self thread watch_tomahawk_upgraded();
-        }
-        else if (flag("b2_tomahawk_upgraded"))
-        {
-            tomahawk_pick = getent("spinning_tomahawk_pickup", "targetname");
-            tomahawk_pick setclientfield("play_tomahawk_fx", 2);
-            /* Setting this enables the tomahawk loop to recognize it's upgraded */
-            self.current_tomahawk_weapon = "upgraded_tomahawk_zm";
-        }
-    }
-#endif
-
     if (is_tracking_buildables())
     {
         self.initial_stats = [];
@@ -261,6 +250,14 @@ on_player_spawned()
 
 #if DEBUG == 1 && DEBUG_HUD == 1
     self thread _zone_hud();
+#endif
+}
+
+on_player_disconnect()
+{
+    self waittill("disconnect");
+#if FEATURE_TOMAHAWK_STATE == 1
+    self cache_tomahawk_state();
 #endif
 }
 
@@ -2534,26 +2531,74 @@ gun_compatibile_with_index(index, weapon)
 #endif
 
 #if FEATURE_TOMAHAWK_STATE == 1
-watch_tomahawk_upgraded()
+override_tomahawk_upgrade_quest()
 {
-    if (flag("b2_tomahawk_upgraded"))
+    if (isdefined(level.gamedifficulty) && level.gamedifficulty == 0)
     {
         return;
     }
 
     PLAYER_ENDON
-    level endon("b2_tomahawk_upgraded");
 
-    while (!is_round(50))
+    DEBUG_PRINT("enter override_tomahawk_upgrade_quest for " + sstr(self.name));
+    DEBUG_PRINT("reading tomahawk cache for " + sstr(self.name) + " (" + sstr(self.entity_num) + ") = " + sstr(level.b2_tomahawk_cache[STR(self.entity_num)]));
+    if (!isdefined(level.b2_tomahawk_cache[STR(self.entity_num)]) || level.b2_tomahawk_cache[STR(self.entity_num)] != "upgraded_tomahawk_zm")
     {
-        if (isdefined(self.current_tomahawk_weapon) && self.current_tomahawk_weapon == "upgraded_tomahawk_zm")
+        DEBUG_PRINT("detouring override_tomahawk_upgrade_quest for " + sstr(self.name));
+        fn = getfunction("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest");
         {
-            flag_set("b2_tomahawk_upgraded");
-            level notify("b2_tomahawk_upgraded");
         }
-
-        wait 0.1;
+        disabledetouronce(fn);
+        self [[fn]]();
+        return;
     }
+
+    DEBUG_PRINT("replaced override_tomahawk_upgrade_quest for " + sstr(self.name));
+
+    self.tomahawk_upgrade_kills = 15;
+
+    wait 1.0;
+
+    self ent_flag_init("gg_round_done" );
+    self ent_flag_set("gg_round_done" );
+
+    if (!isdefined(self.retriever_trigger))
+    {
+        trigger = getent("retriever_pickup_trigger", "script_noteworthy");
+        self.retriever_trigger = trigger;
+    }
+    self.retriever_trigger setinvisibletoplayer(self);
+
+    self takeweapon("bouncing_tomahawk_zm");
+    self set_player_tactical_grenade("none");
+    self notify("tomahawk_upgraded_swap");
+    level thread maps\mp\zombies\_zm_audio::sndmusicstingerevent("quest_generic");
+    e_org = spawn("script_origin", self.origin + vectorscale((0, 0, 1), 64.0));
+    e_org playsoundwithnotify("zmb_easteregg_scream", "easteregg_scream_complete");
+    e_org waittill("easteregg_scream_complete");
+    e_org delete();
+
+    wait 0.5;
+
+    tomahawk_pick = getent("spinning_tomahawk_pickup", "targetname");
+    tomahawk_pick setclientfield("play_tomahawk_fx", 2);
+    self.current_tomahawk_weapon = "upgraded_tomahawk_zm";
+}
+
+cache_tomahawk_state()
+{
+    DEBUG_PRINT("caching tomahawk state for " + sstr(self.name));
+    if (!is_mob() || !isdefined(self.current_tomahawk_weapon))
+    {
+        return;
+    }
+
+    if (!isdefined(level.b2_tomahawk_cache))
+    {
+        level.b2_tomahawk_cache = [];
+    }
+    level.b2_tomahawk_cache[STR(self.entity_num)] = self.current_tomahawk_weapon;
+    DEBUG_PRINT("cached tomahawk state for " + sstr(self.name) + ": " + sstr(level.b2_tomahawk_cache[STR(self.entity_num)]) + " at " + sstr(self.entity_num));
 }
 #endif
 
