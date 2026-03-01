@@ -141,18 +141,20 @@ main()
     if (is_plutonium_version(VER_4K))
     {
 #if FEATURE_MOB_KEY == 1
-    replace_func_safe("maps/mp/zm_alcatraz_sq", "setup_master_key", ::override_setup_master_key, is_plutonium_version(VER_4K));
+    replace_func_safe("maps/mp/zm_alcatraz_sq", "setup_master_key", ::override_setup_master_key, true);
+#endif
+
 #if FEATURE_TOMAHAWK_STATE == 1
     replace_func_safe("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest", ::override_tomahawk_upgrade_quest, true);
 #endif
 
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
     /* Honor original fix, use this if original does not exist */
-    replace_func_safe("maps/mp/zm_tomb_tank", "tank_push_player_off_edge", ::override_tank_push_player_off_edge, is_plutonium_version(VER_4K), -2);
+    replace_func_safe("maps/mp/zm_tomb_tank", "tank_push_player_off_edge", ::override_tank_push_player_off_edge, true, -2);
 #endif
 
 #if FEATURE_ANIMATED_CAMOS == 1
-    replace_func_safe("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options", ::b2_get_pack_a_punch_weapon_options, is_plutonium_version(VER_4K));
+    replace_func_safe("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options", ::b2_get_pack_a_punch_weapon_options, true);
 #endif
     }
 }
