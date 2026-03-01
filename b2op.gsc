@@ -2548,8 +2548,6 @@ override_tomahawk_upgrade_quest()
     {
         DEBUG_PRINT("detouring override_tomahawk_upgrade_quest for " + sstr(self.name));
         fn = getfunction("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest");
-        {
-        }
         disabledetouronce(fn);
         self [[fn]]();
         return;
