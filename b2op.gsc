@@ -6,7 +6,7 @@
 #define DEBUG 0
 #define DEBUG_HUD 0
 #define BETA 0
-#define DEPRECATION 5202
+#define DEPRECATION 5246
 
 /* Const macros */
 #define B2OP_VER 4.6
