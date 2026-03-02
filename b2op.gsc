@@ -2100,6 +2100,21 @@ key_input(value, key, player)
             player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 0, STAT_KEY_MAP);
             print_scheduler("Key position is now random");
             break;
+        case "":
+            stat = player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP);
+            if (stat == 1)
+            {
+                print_scheduler("Key set to: " + COLOR_TXT("Cafeteria (east)", COL_YELLOW));
+            }
+            else if (stat == 2)
+            {
+                print_scheduler("Key set to: " + COLOR_TXT("Warden's office (west)", COL_YELLOW));
+            }
+            else
+            {
+                print_scheduler("Key position is random");
+            }
+            break;
         default:
             print_scheduler("'" + value + "' is not a valid option for key position");
     }
