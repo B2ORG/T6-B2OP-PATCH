@@ -497,7 +497,7 @@ get_watermark_position(mode, allocate)
 {
     foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
     {
-        if (!flag_exists("b2_watermark_" + mode + slot) || is_false(flag("b2_watermark_" + mode + slot)))
+        if (!flag_exists("b2_watermark_" + mode + slot) && !flag("b2_watermark_" + mode + slot))
         {
             s = abs(slot);
             if (slot < 0)
