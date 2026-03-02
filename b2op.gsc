@@ -258,7 +258,7 @@ on_player_spawned()
 on_player_disconnect()
 {
     self waittill("disconnect");
-#if FEATURE_TOMAHAWK_STATE == 1
+#if PLUTO == 1 && FEATURE_TOMAHAWK_STATE == 1
     self cache_tomahawk_state();
 #endif
 }
@@ -2532,7 +2532,7 @@ gun_compatibile_with_index(index, weapon)
 }
 #endif
 
-#if FEATURE_TOMAHAWK_STATE == 1
+#if PLUTO == 1 && FEATURE_TOMAHAWK_STATE == 1
 override_tomahawk_upgrade_quest()
 {
     if (isdefined(level.gamedifficulty) && level.gamedifficulty == 0)
