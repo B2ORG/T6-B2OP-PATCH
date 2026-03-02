@@ -1,23 +1,20 @@
 # T6-B2OP-PATCH
 
-Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023. What makes this patch stick out from among countless patches that have come before it, is focus on optimization, stability, and user freedom. Stuff like box, fridge overrides or characters are fully optional and invoked in-game by the players.
+Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023, and made mandatory for PC games during the vote in February 2026. The patch is focusing mainly on optimization, the priority is to contribute the least possible amount to errors the game has. It's features are build around finding a balance between reducing it's footprint and making it useful.
 
 Patch has already proved itself in multiple top games, including, but not limited to:
+- Tranzit [205](https://youtu.be/howdiS5Zq0k) WR by Santo
 - Town [100](https://x.com/Slewya/status/1837385114940022888) No Jug WR by Slewya
-- Town [29:14](https://youtu.be/jkJhQG_dsK0) 30sr WR by TheBrokenHead115
 - Die Rise [120](https://youtu.be/N0D1UieRNgM) coop WR by Issuez & NoMoleMan
-- Mob of the Dead [31:09](https://www.twitch.tv/videos/1918422380) 30sr WR by Becca
+- Mob of the Dead [240](https://youtu.be/MLtwXob2WJw) by Queziaa
 - Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
-- Buried [210](https://www.twitch.tv/videos/2241796423) coop WR by Blasteress & notway
-- Buried [150](https://www.twitch.tv/videos/1866405878) No Power coop WR by Astrox & Nessquik
 - Origins [173](https://www.twitch.tv/videos/2546264620) WR by Vengiix
-- Origins [131](https://youtu.be/w2_WvEB6KSs) coop WR by DestroyeR and NoMoleMan
 
 # Informations
 
 Please inform me about any issues you may encounter with the patch, so they can be fixed, preferably with decent amount of information in what circumstances an issue occured. The main channel for issues is GitHubs Issues section, although it won't hurt to ask about it on [Discord](https://b2.wtf/discord/) first
 
-I'm currently the sole developer for B2OP, but the person making almost all important decisions is [Astrox](https://twitter.com/lAsTroXl). The best way to talk to both of us about the patch is joining the Discord from the link above and talk in the dedicated B2 section
+The patch was build in cooperation with [Astrox](https://twitter.com/lAsTroXl) who was a driving force in creating the patch and [NoMoleMan](https://x.com/NoMoleMan) who did insane amount of testing to help make the patch as good as it is today.
 
 Before reporting a problem, please check out the [FAQ section down below](#faq), you may find answers you're looking for there
 
@@ -44,14 +41,13 @@ This patch is meant to be used during games of Highrounds, No Powers & Round Spe
 
 # Installation
 
-Since version 2.0, all scripts that are meant to be used by players are available in [releases](https://github.com/B2ORG/T6-B2OP-PATCH/releases) section. Downloading raw code from code section will not work!
+Download `b2op-plutonium.gsc` file [from the most recent release](https://github.com/B2ORG/T6-B2OP-PATCH/releases/latest)
 
 > [!TIP]
 > I've created a video on [how to install these patches](https://youtu.be/yjNbmlya6ik) in case instructions here are unclear
 
 > [!WARNING]
-> Redacted and Ancient Plutonium versions are now DEPRECATED. It means they're no longer guaranteed to receive new features and in the future I'll stop supporting them completely. Black Ops II is at the stage where by using older launchers for record games is pointless and is reducing the competitive integrity of the community, and maintaining the patch for 4 versions (realistically 2905 is already quite different from live) is an extra overhead.
-> End of life time for these versions isn't currently set in stone, from my perspective the sooner the better. Currently planning it for the next major release.
+> Redacted and Ancient Plutonium versions are DEPRECATED. They no longer receive new features and are on life support until version 5.0 where they'll stop being released completely. As of March 2026 PC players are required to play on Modern Plutonium.
 
 > [!CAUTION]
 > Whenever there's a new major patch release (eg. 2.* to 3.0 or 3.* to 4.0), please note that a lot of internal logic changes, therefore stability may not be up to the full standard. While we recommend you update your patch as we fix issues and add new features, we acknowledge increased risk with new major versions, which is why we usually leave most recent release of last major version in releases for some time, so players can access it until new version was battletested and issues have been fixed. We appreciate early adopters, who by reporting any problems help us provide the stable experience.
@@ -67,10 +63,8 @@ Download script `b2op-plutonium.gsc` from releases section, and put it in your P
 > [!TIP]
 > You can press CTRL + R on your keyboard and paste this string there. Assuming you haven't changed any Plutonium paths, directory with scripts should open right away.
 
-> [!WARNING]
-> Prior to patch version 4.0, the directory we recommended here was `Plutonium\storage\t6\scripts\zm` (the only difference is that `raw` folder in the middle), you should still use that directory if you want to use the patch in 2905. On modern Plutonium, it is recommended to start using the new location (remove the patch you currently have in the old location and place the updated version in the new directory specified above)
-
-For previous versions, network frame fix script was separate, but now it is built into the patch version for Plutonium (for this reason make sure not to use version for Redacted or Ancient on Plutonium)
+> [!TIP]
+> If you get a warning about duplicated patch files, check the following path, if you have any GSC files there, remove them `%LOCALAPPDATA%\Plutonium\storage\t6\scripts\zm`
 
 ## Redacted LAN
 
@@ -101,10 +95,10 @@ A high level overview what features are available in each of the versions.
 | :--- | :---: | :---: | :---: | :---: |
 | Plutonium anticheat integration | ✓ | ✗ | ✗ | ✗ |
 | Basic anticheat | ✓ | ✓ | ✓ | ✓ |
-| Network frame fix | ✓ | ✓ | ✗ | ✓ |
+| Network frame fix | ✗² | ✓ | ✗ | ✓ |
 | Automatic Permaperks & Bank | ✓ | ✓ | ✓ | ✓ |
 | Backspeed (with option to adjust) | ✓ | ✓ | ✓ | ✓ |
-| Trap / JetGun fix | ✗ | ✓ | ✓ | ✓ |
+| Trap / JetGun fix | ✗² | ✓ | ✓ | ✓ |
 | HUD timers | ✓ | ✓ | ✓ | ✓ |
 | HUD buildable counter | ✓ | ✓ | ✓ | ✓ |
 | HUD visibility toggling | ✓¹ | ✓¹ | ✓¹ | ✓¹ |
@@ -117,8 +111,12 @@ A high level overview what features are available in each of the versions.
 | FPS Limiter | ✓ | ✓ | ✓ | ✓ |
 | DOF Disabled | ✓ | ✓ | ✓ | ✓ |
 | Toogleable Purist no jug mode | ✓ | ✓ | ✓ | ✓ |
+| Animated camos integration | ✓ | ✗ | ✗ | ✗ |
+| MOTD key spawn patch | ✓ | ✗ | ✗ | ✗ |
+| MOTD Tomahawk pickup after reconnecting | ✓ | ✗ | ✗ | ✗ |
 
 1. Configuration only as host
+2. Fixed by Plutonium in the engine
 
 # Patch checksum
 
@@ -178,7 +176,7 @@ End of 18, 28, 38 onwards up to the end, and additionally
 
 4) Is there anything i need to worry about regarding legitimacy of my game while using this patch?
 
-- Do not use First Box or Box Location modifiers while playing Highrounds, those are OK only for round speedruns (and other categories that explicitly allow it). Make sure you're using the correct version of the patch in relation to your launcher (for example, Redacted version will not fix Network Frame problem on Plutonium, etc.). Also do not use this patch for categories it's not meant for. I've linked alternatives to other categories in a table above in [Categories](#categories) section
+- Do not use First Box, Box Location or MOTD Key placement modifiers while playing Highrounds, those are OK only for round speedruns (and other categories that explicitly allow it). Make sure you're using the correct version of the patch in relation to your launcher (for example, Redacted version will not fix Network Frame problem on Plutonium, etc.). Also do not use this patch for categories it's not meant for. I've linked alternatives to other categories in a table above in [Categories](#categories) section
 
 5) I heard this patch may cause early errors
 
@@ -622,6 +620,13 @@ tank depatch
 
 > [!TIP]
 > You can hear about this topic [in this video](https://youtu.be/p8s-4b4D1J8)
+
+# Hell's Redeemer after reconnecting
+
+As it is impossible to get the Hell's Redeemer back after reconnecting, in March 2026 the community voted on allowing to patch that. This patch will allow you to pickup the Tomahawk after you reconnect to the game (assuming you had it before disconnecting).
+
+> [!NOTE]
+> Because of the game internals, the blue light on the Tomahawk respawn spot cannot be re-enabled after reconnecting, you can pick the Tomahawk up while in afterlife but the light will be missing.
 
 # Characters
 

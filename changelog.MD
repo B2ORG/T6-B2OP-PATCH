@@ -1,3 +1,17 @@
+# Version 4.7
+
+*This patch is following a vote from February 2026*
+
+- Fix watermarks being able to draw on top of each other
+- Fix box location mover not properly integrating with the internal box location cycle
+- Box location command now moves the box instantly
+- Disabled tank command on maps other than Origins
+- Increase the duration the message with box stats is staying on the screen
+- Rework aliases for chat commands (check readme for current aliases)
+- Allow players to pick up the Hell's Redeemer after reconnecting
+- Bump deprecated Pluto version
+- Key patch status can now be checked by using `key` chat message
+
 # Version 4.6
 
 - Fix persiting bank state for reconnecting players
