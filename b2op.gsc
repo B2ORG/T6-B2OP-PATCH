@@ -6,10 +6,10 @@
 #define DEBUG 0
 #define DEBUG_HUD 0
 #define BETA 0
-#define DEPRECATION 5162
+#define DEPRECATION 5246
 
 /* Const macros */
-#define B2OP_VER 4.6
+#define B2OP_VER 4.7
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -57,6 +57,12 @@
 #define STAT_RETICLE "stock"
 #define STAT_CAMO_MAP "zm_tomb"
 #define STAT_CAMO "alt_clip"
+#define STAT_KEY_MAP "zm_prison"
+#define STAT_KEY "clip"
+#define DVAR_UNPROTECT 0
+#define DVAR_PROTECT 1
+#define DVAR_PROTECT_LOWER 2
+#define DVAR_PROTECT_HIGHER 3
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -72,6 +78,7 @@
 #define FEATURE_MOB_KEY 1
 #define FEATURE_ORIGINS_TANK_DEPATCH 1
 #define FEATURE_ANIMATED_CAMOS 1
+#define FEATURE_TOMAHAWK_STATE 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -123,7 +130,9 @@
 #if PLUTO == 1
 main()
 {
-    if (!is_plutonium_version(VER_3K))
+    // replace_func_safe("maps/mp/animscripts/zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
+    // replace_func_safe("maps/mp/zombies/_zm_utility", "wait_network_frame", ::fixed_wait_network_frame, !is_plutonium_version(VER_3K));
+      if (!is_plutonium_version(VER_3K))
     {
         replacefunc(maps\mp\animscripts\zm_utility::wait_network_frame, ::fixed_wait_network_frame);
         replacefunc(maps\mp\zombies\_zm_utility::wait_network_frame, ::fixed_wait_network_frame);
@@ -132,16 +141,20 @@ main()
     if (is_plutonium_version(VER_4K))
     {
 #if FEATURE_MOB_KEY == 1
-        replacefunc(getfunction("maps/mp/zm_alcatraz_sq", "setup_master_key"), ::override_setup_master_key);
+    replace_func_safe("maps/mp/zm_alcatraz_sq", "setup_master_key", ::override_setup_master_key, true);
+#endif
+
+#if FEATURE_TOMAHAWK_STATE == 1
+    replace_func_safe("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest", ::override_tomahawk_upgrade_quest, true);
 #endif
 
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-        /* Honor original fix, use this if original does not exist */
-        replacefunc(getfunction("maps/mp/zm_tomb_tank", "tank_push_player_off_edge"), ::override_tank_push_player_off_edge, -2);
+    /* Honor original fix, use this if original does not exist */
+    replace_func_safe("maps/mp/zm_tomb_tank", "tank_push_player_off_edge", ::override_tank_push_player_off_edge, true, -2);
 #endif
 
 #if FEATURE_ANIMATED_CAMOS == 1
-        replacefunc(getfunction("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options"), ::b2_get_pack_a_punch_weapon_options);
+    replace_func_safe("maps/mp/zombies/_zm_weapons", "get_pack_a_punch_weapon_options", ::b2_get_pack_a_punch_weapon_options, true);
 #endif
     }
 }
@@ -197,6 +210,10 @@ on_player_connected()
     {
         level waittill("connected", player);
         player thread on_player_spawned();
+        if (is_mob())
+        {
+            player thread on_player_disconnect();
+        }
     }
 }
 
@@ -235,6 +252,14 @@ on_player_spawned()
 
 #if DEBUG == 1 && DEBUG_HUD == 1
     self thread _zone_hud();
+#endif
+}
+
+on_player_disconnect()
+{
+    self waittill("disconnect");
+#if PLUTO == 1 && FEATURE_TOMAHAWK_STATE == 1
+    self cache_tomahawk_state();
 #endif
 }
 
@@ -310,6 +335,8 @@ init_b2_flags()
     flag_init("b2_fb_locked");
     flag_init("b2_lb_locked");
     flag_init("b2_silent_backspeed");
+    if (is_mob())
+        flag_init("b2_tomahawk_upgraded");
 }
 
 init_b2_dvars()
@@ -384,8 +411,8 @@ b2op_main_loop()
 {
     LEVEL_ENDON
 
-    // DEBUG_PRINT("initialized b2op_main_loop");
     game_start = gettime();
+    DEBUG_PRINT("initialized b2op_main_loop " + gettime() + " " + getutc());
 
     b2_signal("GAME_START", array("b2op", STR(B2OP_VER), get_plutonium_version()), array("patch", "patch_version", "plutonium_version"));
 
@@ -470,7 +497,7 @@ get_watermark_position(mode, allocate)
 {
     foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
     {
-        if (!flag_exists("b2_watermark_" + mode + slot) || is_false(flag("b2_watermark_" + mode + slot)))
+        if (!flag_exists("b2_watermark_" + mode + slot) && !flag("b2_watermark_" + mode + slot))
         {
             s = abs(slot);
             if (slot < 0)
@@ -571,51 +598,83 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
     for appending first box info to splits */
 }
 
-print_scheduler(content, player, delay)
+print_scheduler(content, player, custom_length)
 {
-    if (!isdefined(delay))
+    if (!isdefined(custom_length))
     {
-        delay = 0;
+        custom_length = 0;
     }
 
     // DEBUG_PRINT("print_scheduler(content='" + content + ")");
     if (isdefined(player))
     {
-        // DEBUG_PRINT(player.name + ": print scheduled: " + content);
-        player thread player_print_scheduler(content, delay);
+        if (isplayer(player))
+        {
+            player thread player_print_scheduler(content, custom_length);
+            return;
+        }
+        DEBUG_PRINT("Entity passet to print scheduler is not a player");
+        return;
     }
-    else
+    // DEBUG_PRINT("general: print scheduled: " + content);
+    foreach (player in level.players)
     {
-        // DEBUG_PRINT("general: print scheduled: " + content);
-        foreach (player in level.players)
-            player thread player_print_scheduler(content, delay);
+        player thread player_print_scheduler(content, custom_length);
     }
 }
 
-player_print_scheduler(content, delay)
+player_print_scheduler(content, custom_length)
 {
     PLAYER_ENDON
 
-    DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content));
+    DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content) + " custom length: " + sstr(custom_length));
 
-    while (delay > 0 && isdefined(self.scheduled_prints) && getdvarint("con_gameMsgWindow0LineCount") > 0 && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount"))
+    for (max_waits = 100; isdefined(self.scheduled_prints) && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount") && max_waits; max_waits--)
     {
-        if (delay > 0)
-            delay -= 0.05;
         wait 0.05;
     }
 
     if (isdefined(self.scheduled_prints))
+    {
         self.scheduled_prints++;
+    }
     else
+    {
         self.scheduled_prints = 1;
+    }
+
+    original_dvar_value = undefined;
+    if (custom_length)
+    {
+        original_dvar_value = dvar_config("con_gameMsgWindow0MsgTime")["start_value"];
+        custom_dvar_value = clamp(custom_length, 5, 15);
+        setdvar("con_gameMsgWindow0MsgTime", custom_dvar_value);
+        DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value));
+    }
 
     self iprintln(sstr(content));
-    wait_for_message_end();
-    self.scheduled_prints--;
+    if (isdefined(original_dvar_value))
+    {
+        /* This must be delayed */
+        thread defer_msg_window_time_restore(original_dvar_value);
+    }
+    wait getdvarfloat("con_gameMsgWindow0FadeInTime") + custom_dvar_value + getdvarfloat("con_gameMsgWindow0FadeOutTime");
 
-    if (self.scheduled_prints <= 0)
-        CLEAR(self.scheduled_prints)
+    if (isdefined(self.scheduled_prints))
+    {
+        self.scheduled_prints--;
+
+        if (self.scheduled_prints <= 0)
+        {
+            CLEAR(self.scheduled_prints)
+        }
+    }
+}
+
+defer_msg_window_time_restore(restore_to)
+{
+    wait 0.1;
+    setdvar("con_gameMsgWindow0MsgTime", restore_to);
 }
 
 convert_time(seconds)
@@ -701,6 +760,27 @@ array_implode(separator, arr)
         first = false;
     }
     return str;
+}
+
+array_from_struct(struct)
+{
+    if (!is_plutonium_version(5202))
+    {
+        DEBUG_PRINT("array_from_struct use in incompatibile plutonium version");
+        return [];
+    }
+
+    arr = [];
+    foreach (field in getstructkeys(struct))
+    {
+        value = structget(struct, field);
+        if (typeof(value) == "struct")
+        {
+            value = array_from_struct(value);
+        }
+        arr[field] = value;
+    }
+    return arr;
 }
 
 array_shift(arr)
@@ -860,6 +940,24 @@ number_round(floating_point, decimal_places, format)
         scaled = int(scaled);
 
     return scaled / factor;
+}
+
+normalize_both(numeric1, numeric2, factor)
+{
+    if (!isdefined(factor))
+    {
+        factor = 100000;
+    }
+
+    number1 = float(numeric1);
+    number2 = float(numeric2);
+    /* Try to handle overflows */
+    if (int(number1 * factor) < number1 || int(number2 * factor) < number2)
+    {
+        DEBUG_PRINT("Recursively handling normalize overflow for numbers " + sstr(numeric1) + " and " + sstr(numeric2) + " with factor factor " + sstr(factor));
+        return normalize_both(numeric1, numeric2, int(factor / 2));
+    }
+    return array(int(number1 * factor), int(number2 * factor));
 }
 
 is_town()
@@ -1107,11 +1205,6 @@ get_hordes_left()
 }
 #endif
 
-wait_for_message_end()
-{
-    wait getdvarfloat("con_gameMsgWindow0FadeInTime") + getdvarfloat("con_gameMsgWindow0MsgTime") + getdvarfloat("con_gameMsgWindow0FadeOutTime");
-}
-
 emulate_menu_call(content, ent)
 {
     if (!isdefined(ent))
@@ -1211,6 +1304,25 @@ decode_splits(splits_str, limit)
     return splits;
 }
 
+#if PLUTO == 1
+replace_func_safe(namespace, func_name, override, bool_check, priority)
+{
+    fn = getfunction(namespace, func_name);
+    if (!isdefined(priority))
+        priority = 0;
+#if DEBUG == 1
+    if (!isdefined(fn))
+    {
+        printf("ERROR: ^1Tried to replace undefined func '" + sstr(func_name) + "' in '" + sstr(namespace) + "'");
+    }
+#endif
+    if (isdefined(fn) && is_true(bool_check))
+    {
+        replacefunc(fn, override, priority);
+    }
+}
+#endif
+
 /*
  ************************************************************************************************************
  ****************************************** SINGLE PURPOSE FUNCTIONS ****************************************
@@ -1263,9 +1375,27 @@ chat_watcher()
     {
         level waittill("say", message, player);
 
+        if (message == "")
+        {
+            continue;
+        }
+
+        if (!isplayer(player))
+        {
+            player = gethostplayer();
+        }
+
         cfg = chat_config();
 
-        /* TODO check if i should specifically validate if player is a player */
+        message_elements = strtok(message, " ");
+        cmd = message_elements[0];
+        contents = "";
+        if (message_elements.size > 1)
+        {
+            contents = array_implode(" ", array_shift(message_elements));
+        }
+
+        matched_chat = undefined;
         foreach (chat in cfg)
         {
             if (flag("b2_" + chat["chat"] + "_locked"))
@@ -1279,50 +1409,52 @@ chat_watcher()
                 continue;
             }
 
-            matched_signature = undefined;
-            for (i = -1; i < chat["aliases"].size; i++)
+            if (chat["chat"] == cmd || "!" + chat["chat"] == CMD)
             {
-                if (i == -1)
-                {
-                    signature = chat["chat"];
-                }
-                else
-                {
-                    signature = chat["aliases"][i];
-                }
+                // debugbox("chat['chat'] == cmd");
+                matched_chat = chat;
+                break;
+            }
 
-                if (isstrstart(message, signature))
+            foreach (alias in chat["aliases"])
+            {
+                if (alias == cmd || "!" + alias == cmd)
                 {
-                    matched_signature = signature;
+                    // debugbox("alias == cmd");
+                    matched_chat = chat;
                     break;
                 }
             }
 
-            if (isdefined(matched_signature))
+            if (isdefined(matched_chat))
             {
-                DEBUG_PRINT("matched chat signature '" + sstr(matched_signature) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
-                input = undefined;
-                if (message.size > matched_signature.size + 1)
-                {
-                    input = getsubstr(message, matched_signature.size + 1);
-                }
-                if (chat["thread"])
-                {
-                    thread [[chat["callback"]]](input, chat["chat"], player);
-                }
-                else
-                {
-                    [[chat["callback"]]](input, chat["chat"], player);
-                }
                 break;
             }
         }
 
-        CLEAR(message)
+        if (!isdefined(matched_chat))
+        {
+            continue;
+        }
+        DEBUG_PRINT("matched chat '" + sstr(matched_chat["chat"]) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
+
+        if (matched_chat["thread"])
+        {
+            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a thread callback");
+            thread [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
+        }
+        else
+        {
+            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a callback");
+            [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
+        }
+
+        CLEAR(alias)
         CLEAR(chat)
-        CLEAR(matched_signature)
-        CLEAR(signature)
-        CLEAR(input)
+        CLEAR(matched_chat)
+        CLEAR(contents)
+        CLEAR(cmd)
+        CLEAR(message_elements)
         CLEAR(cfg)
     }
 }
@@ -1462,37 +1594,37 @@ chat_config()
     chat = [];
 
     /*                              CHATS       ALIASES             CALLBACK                    HOSTONLY    THREAD */
-    chat[chat.size] = register_chat("backspeed",array("!b", "bs"),  ::backspeed_input,          true,       false);
-    chat[chat.size] = register_chat("splits",   array("!s"),        ::splits_input,             true,       false);
+    chat[chat.size] = register_chat("backspeed",array("!bs"),       ::backspeed_input,          true,       false);
+    chat[chat.size] = register_chat("splits",   array("!sl"),       ::splits_input,             true,       false);
 
 #if FEATURE_CHARACTERS == 1
-    chat[chat.size] = register_chat("char",     array("!c"),        ::characters_input,         false,      false);
-    chat[chat.size] = register_chat("view",     array("!v"),        ::viewmodel_input,          false,      false);
+    chat[chat.size] = register_chat("char",     [],                 ::characters_input,         false,      false);
+    chat[chat.size] = register_chat("view",     [],                 ::viewmodel_input,          false,      false);
 #endif
 #if FEATURE_FRIDGE == 1
     chat[chat.size] = register_chat("fridge",   array("!fr"),       ::fridge_input,             false,      false);
 #endif
 #if FEATURE_FIRSTBOX == 1
-    chat[chat.size] = register_chat("fb",       array("!fb"),       ::firstbox_input,           false,      false);
+    chat[chat.size] = register_chat("fb",       [],                 ::firstbox_input,           false,      false);
 #endif
 #if FEATURE_BOX_LOCATION == 1
-    chat[chat.size] = register_chat("lb",       array("!lb"),       ::box_location_input,       false,      false);
+    chat[chat.size] = register_chat("lb",       [],                 ::box_location_input,       false,      false);
 #endif
 #if FEATURE_BOXTRACKER == 1
     chat[chat.size] = register_chat("box",      array("!bt"),       ::print_box_stats,          false,      false);
 #endif
 #if FEATURE_MOB_KEY == 1
-    chat[chat.size] = register_chat("key",      array("!k"),        ::key_input,                true,       false);
+    chat[chat.size] = register_chat("key",      [],                 ::key_input,                true,       false);
 #endif
 #if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat[chat.size] = register_chat("tank",     array("!t", "tank depatch"), ::tank_input,      true,       false);
+    chat[chat.size] = register_chat("tank",     [],                 ::tank_input,               true,       false);
 #endif
-#if FEATURE_ORIGINS_TANK_DEPATCH == 1
-    chat[chat.size] = register_chat("purist",   array("!p"),        ::purist_input,             false,      false);
+#if FEATURE_PERMAPERKS == 1
+    chat[chat.size] = register_chat("purist",   array("!pr"),       ::purist_input,             false,      false);
 #endif
 #if FEATURE_ANIMATED_CAMOS == 1
-    chat[chat.size] = register_chat("camo",     array("!ca"),       ::camo_input,               false,      false);
-    chat[chat.size] = register_chat("reticle",  array("!r"),        ::reticle_input,            false,      false);
+    chat[chat.size] = register_chat("camo",     [],                 ::camo_input,               false,      false);
+    chat[chat.size] = register_chat("reticle",  array("!rt"),       ::reticle_input,            false,      false);
 #endif
 
     return chat;
@@ -1514,79 +1646,79 @@ register_chat(chat, aliases, callback, host_only, is_thread)
 dvar_config(key)
 {
     dvars = [];
-    /*                                  DVAR                            VALUE                   PROTECT INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
-    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    true,   false);
-    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,  true,       undefined,                                          ::timers_alpha);
-    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,  true,       undefined,                                          ::buildables_alpha);
-    dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,  true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
-    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,  false,      undefined,                                          ::kill_hud);
-    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,  true,       ::has_permaperks_system);
+    /*                                  DVAR                            VALUE                   PROTECT         INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
+    dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    DVAR_PROTECT,       false);
+    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,              true,       undefined,                                          ::timers_alpha);
+    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,              true,       undefined,                                          ::buildables_alpha);
+    dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,              true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
+    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,              false,      undefined,                                          ::kill_hud);
+    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,              true,       ::has_permaperks_system);
 
 #if FEATURE_HORDES == 1
-    dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,  true);
+    dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,              true);
 #endif
 
 #if FEATURE_CHARACTERS == 1 && REDACTED == 1
-    dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,  true);
+    dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,              true);
 #endif
 #if FEATURE_CHARACTERS == 1
-    dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,  false,      undefined,                                          ::viewmodel_input);
+    dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,              false,      undefined,                                          ::viewmodel_input);
 #endif
 
 #if FEATURE_FRIDGE == 1
-    dvars[dvars.size] = register_dvar("fridge",                         "",                     false,  false,      ::has_permaperks_system,                            ::fridge_input);
+    dvars[dvars.size] = register_dvar("fridge",                         "",                     false,              false,      ::has_permaperks_system,                            ::fridge_input);
 #endif
 
 #if FEATURE_FIRSTBOX == 1
-    dvars[dvars.size] = register_dvar("fb",                             "",                     false,  false,      ::has_magic,                                        ::firstbox_input);
+    dvars[dvars.size] = register_dvar("fb",                             "",                     false,              false,      ::has_magic,                                        ::firstbox_input);
 #endif
 
 #if FEATURE_BOX_LOCATION == 1
-    dvars[dvars.size] = register_dvar("lb",                             "",                     false,  false,      undefined,                                          ::box_location_input);
+    dvars[dvars.size] = register_dvar("lb",                             "",                     false,              false,      undefined,                                          ::box_location_input);
 #endif
 
 #if FEATURE_MOB_KEY == 1
-    dvars[dvars.size] = register_dvar("key",                            "",                     false,  false,      array(::is_plutonium_version, VER_4K),              ::key_input);
+    dvars[dvars.size] = register_dvar("key",                            "",                     false,              false,      array(::is_plutonium_version, VER_4K),              ::key_input);
 #endif
 
 #if DEBUG == 1
-    dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,  false,      undefined,                                          ::_dvar_reader);
+    dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,              false,      undefined,                                          ::_dvar_reader);
 #endif
 
 #if PLUTO == 0
-    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,  true);
-    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "0.8",                  false,  false,  ::check_steam_backspeed);
-    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "0.7",                  false,  false,  ::check_steam_backspeed);
-    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "1",                    false,  false,  array(::check_steam_backspeed, true));
-    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "1",                    false,  false,  array(::check_steam_backspeed, true));
+    dvars[dvars.size] = register_dvar("steam_backspeed",                "0",                    false,              true);
+    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "0.8",                  false,              false,  ::check_steam_backspeed);
+    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "0.7",                  false,              false,  ::check_steam_backspeed);
+    dvars[dvars.size] = register_dvar("player_strafeSpeedScale",        "1",                    false,              false,  array(::check_steam_backspeed, true));
+    dvars[dvars.size] = register_dvar("player_backSpeedScale",          "1",                    false,              false,  array(::check_steam_backspeed, true));
 #endif
 
-    dvars[dvars.size] = register_dvar("g_speed",                        "190",                  true,   false);
-    dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    true,   false);
-    dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  true,   false);
+    dvars[dvars.size] = register_dvar("g_speed",                        "190",                  DVAR_PROTECT,       false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    DVAR_PROTECT_LOWER, false);
+    dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  DVAR_PROTECT,       false);
     /* The corpse count dvar definition says 8, however it's being set to 5 on first game launch, so effectively records are being played on 5. It's being mistakenly set to 8 on Pluto 4837 to 5140+ */
-    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    true,   false,      array(::is_plutonium_version, 5145, true));
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, 5145, true));
     /* Prevent host migration (redundant nowadays) */
-    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,  false);
+    dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,              false);
     /* Force post dlc1 patch on recoil */
-    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,  false);
+    dvars[dvars.size] = register_dvar("sv_patch_zm_weapons",            "1",                    false,              false);
     /* Remove Depth of Field */
-    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,  true);
+    dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,              true);
     /* Fix for devblocks in r3903/3904 */
-    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,  false,      array(::is_plutonium_version, VER_3K));
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,              false,      array(::is_plutonium_version, VER_3K));
     /* Use native health fix, r4516+ */
-    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,  true,       array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,              true,       array(::is_plutonium_version, VER_4K));
     /* Defines if Pluto error fixes are applied, r4516+ */
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    true,   false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
     /* Enables flashing hashes of individual scripts */
-    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
     /* Offsets for pluto draws compatibile with b2 timers */
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,  false,      ::should_set_draw_offset);
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,              false,      ::should_set_draw_offset);
     /* Displays the game status ID */
-    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    true,   false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
     /* Locks fps for all clients - 5162 fixes the limiter so we can set it more accurately */
-    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "250",                  true,   false,      array(::is_plutonium_version, 5163));
-    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "332",                  true,   false,      array(::is_plutonium_version, 5162, true));
+    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "250",                  DVAR_PROTECT,       false,      array(::is_plutonium_version, 5163));
+    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "332",                  DVAR_PROTECT,       false,      array(::is_plutonium_version, 5162, true));
 
     if (isdefined(key))
     {
@@ -1710,7 +1842,7 @@ dvar_scanner(dvars)
                 }
                 else if (dvars[i]["is_protected"] && !isdefined(dvars[i]["on_change"]))
                 {
-                    dvar_violation(current_state, state[dvars[i]["name"]], dvars[i]["name"]);
+                    dvar_violation(current_state, state[dvars[i]["name"]], dvars[i]["name"], dvars[i]["is_protected"], dvars[i]["start_value"]);
                 }
 
                 state[dvars[i]["name"]] = current_state;
@@ -1757,7 +1889,7 @@ new_dvar_scanner()
         }
         else if (cfg["is_protected"])
         {
-            dvar_violation(new_value, old_value, dvar);
+            dvar_violation(new_value, old_value, dvar, cfg["is_protected"], cfg["start_value"]);
         }
 
         CLEAR(cfg)
@@ -1769,11 +1901,36 @@ new_dvar_scanner()
 }
 #endif
 
-dvar_violation(new_value, old_value, dvar)
+dvar_violation(new_value, old_value, dvar, protection_mode, start_value)
 {
-    if (new_value != old_value)
+#if DEBUG == 1
+    if (isfloat(new_value) || isfloat(old_value))
     {
-        /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
+        DEBUG_PRINT("Float value passed to dvar_violation evaluation!!!! " + sstr(dvar) + ": " + sstr(old_value) + " => " + sstr(new_value));
+    }
+#endif
+
+    /* They're not reset here, someone might want to test something related to protected dvars, so they can do so with the watermark */
+    if (protection_mode == DVAR_PROTECT_HIGHER)
+    {
+        norm = normalize_both(new_value, start_value);
+        if (norm[0] > norm[1])
+        {
+            generate_watermark("DVAR CHANGED:\n" + toupper(dvar), (1, 0.6, 0.2), 0.66);
+            setcheatstate();
+        }
+    }
+    else if (protection_mode == DVAR_PROTECT_LOWER)
+    {
+        norm = normalize_both(new_value, start_value);
+        if (norm[0] < norm[1])
+        {
+            generate_watermark("DVAR CHANGED:\n" + toupper(dvar), (1, 0.6, 0.2), 0.66);
+            setcheatstate();
+        }
+    }
+    else if (protection_mode == DVAR_PROTECT && new_value != old_value)
+    {
         generate_watermark("DVAR CHANGED:\n" + toupper(dvar), (1, 0.6, 0.2), 0.66);
         setcheatstate();
     }
@@ -1794,6 +1951,11 @@ debug_mode()
     foreach (player in level.players)
         player thread award_points(333333);
     generate_watermark("DEBUGGER", (0.8, 0.8, 0));
+
+    foreach (chest in level.chests)
+    {
+        printf("chest '" + sstr(chest.script_noteworthy) + "' origin '" + sstr(chest.origin) + "'");
+    }
 
     thread _run_test_array();
 }
@@ -1924,19 +2086,34 @@ key_input(value, key, player)
         case LOCATION_CAFE:
         case "east":
         case 1:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 1, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 1, STAT_KEY_MAP);
             print_scheduler("Successfully set key position to: " + COLOR_TXT("Cafeteria (east)", COL_YELLOW));
             break;
         case LOCATION_WARDEN:
         case "west":
         case 2:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 2, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 2, STAT_KEY_MAP);
             print_scheduler("Successfully set key position to: " + COLOR_TXT("Warden's office (west)", COL_YELLOW));
             break;
         case "reset":
         case 0:
-            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_prison");
+            player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat(STAT_KEY, 0, STAT_KEY_MAP);
             print_scheduler("Key position is now random");
+            break;
+        case "":
+            stat = player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP);
+            if (stat == 1)
+            {
+                print_scheduler("Key set to: " + COLOR_TXT("Cafeteria (east)", COL_YELLOW));
+            }
+            else if (stat == 2)
+            {
+                print_scheduler("Key set to: " + COLOR_TXT("Warden's office (west)", COL_YELLOW));
+            }
+            else
+            {
+                print_scheduler("Key position is random");
+            }
             break;
         default:
             print_scheduler("'" + value + "' is not a valid option for key position");
@@ -1947,7 +2124,9 @@ key_input(value, key, player)
 
 override_setup_master_key()
 {
-    switch (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_prison"))
+    DEBUG_PRINT("override_setup_master_key: stat=>" + sstr(gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP)) + " type=>" + sstr(typeof(gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP))));
+
+    switch (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat(STAT_KEY, STAT_KEY_MAP))
     {
         case 1:
             thread generate_temp_watermark(20, "KEY PATCH", (0.5, 0.3, 0.7), 0.66);
@@ -2028,6 +2207,11 @@ override_tank_push_player_off_edge(trig)
 
 tank_input(value, key, player)
 {
+    if (!is_origins())
+    {
+        return true;
+    }
+
     if (!is_plutonium_version(VER_4K))
     {
         print_scheduler("This feature does not support your Plutonium version, consider updating", player);
@@ -2360,6 +2544,76 @@ gun_compatibile_with_index(index, weapon)
     }
 
     return true;
+}
+#endif
+
+#if PLUTO == 1 && FEATURE_TOMAHAWK_STATE == 1
+override_tomahawk_upgrade_quest()
+{
+    if (isdefined(level.gamedifficulty) && level.gamedifficulty == 0)
+    {
+        return;
+    }
+
+    PLAYER_ENDON
+
+    DEBUG_PRINT("enter override_tomahawk_upgrade_quest for " + sstr(self.name));
+    DEBUG_PRINT("reading tomahawk cache for " + sstr(self.name) + " (" + sstr(self.entity_num) + ") = " + sstr(level.b2_tomahawk_cache[STR(self.entity_num)]));
+    if (!isdefined(level.b2_tomahawk_cache[STR(self.entity_num)]) || level.b2_tomahawk_cache[STR(self.entity_num)] != "upgraded_tomahawk_zm")
+    {
+        DEBUG_PRINT("detouring override_tomahawk_upgrade_quest for " + sstr(self.name));
+        fn = getfunction("maps/mp/zm_alcatraz_weap_quest", "tomahawk_upgrade_quest");
+        disabledetouronce(fn);
+        self [[fn]]();
+        return;
+    }
+
+    DEBUG_PRINT("replaced override_tomahawk_upgrade_quest for " + sstr(self.name));
+
+    self.tomahawk_upgrade_kills = 15;
+
+    wait 1.0;
+
+    self ent_flag_init("gg_round_done" );
+    self ent_flag_set("gg_round_done" );
+
+    if (!isdefined(self.retriever_trigger))
+    {
+        trigger = getent("retriever_pickup_trigger", "script_noteworthy");
+        self.retriever_trigger = trigger;
+    }
+    self.retriever_trigger setinvisibletoplayer(self);
+
+    self takeweapon("bouncing_tomahawk_zm");
+    self set_player_tactical_grenade("none");
+    self notify("tomahawk_upgraded_swap");
+    level thread maps\mp\zombies\_zm_audio::sndmusicstingerevent("quest_generic");
+    e_org = spawn("script_origin", self.origin + vectorscale((0, 0, 1), 64.0));
+    e_org playsoundwithnotify("zmb_easteregg_scream", "easteregg_scream_complete");
+    e_org waittill("easteregg_scream_complete");
+    e_org delete();
+
+    wait 0.5;
+
+    tomahawk_pick = getent("spinning_tomahawk_pickup", "targetname");
+    tomahawk_pick setclientfield("play_tomahawk_fx", 2);
+    self.current_tomahawk_weapon = "upgraded_tomahawk_zm";
+}
+
+cache_tomahawk_state()
+{
+    DEBUG_PRINT("caching tomahawk state for " + sstr(self.name));
+    if (!is_mob() || !isdefined(self.current_tomahawk_weapon))
+    {
+        return;
+    }
+
+    if (!isdefined(level.b2_tomahawk_cache))
+    {
+        level.b2_tomahawk_cache = [];
+    }
+    level.b2_tomahawk_cache[STR(self.entity_num)] = self.current_tomahawk_weapon;
+    DEBUG_PRINT("cached tomahawk state for " + sstr(self.name) + ": " + sstr(level.b2_tomahawk_cache[STR(self.entity_num)]) + " at " + sstr(self.entity_num));
 }
 #endif
 
@@ -3752,26 +4006,26 @@ print_box_stats(value, key, player)
             print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
                 + " MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED)
                 + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED)
-            );
+            , undefined, 15);
             break;
         case WEAPON_NAME_MK2:
             print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
                 + " MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED)
                 + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED)
-            );
+            , undefined, 15);
             break;
         default:
             jokers = get_joker_pulls();
             if (jokers)
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED));
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED), undefined, 10);
             }
             else
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED));
+                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED), undefined, 10);
             }
-            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED));
-            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED));
+            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED), undefined, 10);
+            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED), undefined, 10);
     }
 
     return true;
@@ -3859,10 +4113,18 @@ firstbox_input(value, key, player)
 {
     /* Additional check, prevents rigging past RNG_ROUND */
     if (!isdefined(level.rigged_hits))
+    {
         return true;
+    }
+    if (value == "" || value == " ")
+    {
+        return true;
+    }
 
     if (!isdefined(player))
+    {
         player = gethostplayer();
+    }
     thread rig_box(strtok(value, "|"), player);
 
     return true;
@@ -3994,164 +4256,227 @@ server_box_weapon_verification(weapon_key)
 #if FEATURE_BOX_LOCATION == 1
 box_location_input(value, key, player)
 {
-    /* Map not supported by lb logic */
-    if (!is_town() && !is_nuketown() && !is_mob() && !is_origins())
-        return true;
-    /* Chest moving logic not yet processed by gsc */
-    if (!flag("moving_chest_enabled"))
-        return true;
-    /* Box has been hit already */
-    if (is_true(level.total_box_hits))
+    if (!can_set_box_location())
     {
-        flag_set("b2_lb_locked");
-        return true;
-    }
-    /* Initial afterlife - logic not ready */
-    if (is_mob() && !flag("afterlife_start_over"))
-    {
-        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), gethostplayer());
         return true;
     }
 
-    process_selection = process_box_location(value);
+    conf = box_location_config();
 
-    if (process_selection == "no box selected")
+    /* Show possible options */
+    if (value == "")
+    {
+        filtered_by_map = [];
+        foreach (loc_config in conf)
+        {
+            cb = loc_config["map_callback"];
+            if ([[cb]]())
+            {
+                filtered_by_map[filtered_by_map.size] = COLOR_TXT(loc_config["aliases"][0], COL_YELLOW) + " for " + loc_config["name"];
+            }
+        }
+
+        if (filtered_by_map.size)
+        {
+            print_scheduler("LB options: " + array_implode(", ", filtered_by_map), gethostplayer());
+        }
+        return true;
+    }
+
+    selection = undefined;
+    foreach (loc_config in conf)
+    {
+        cb = loc_config["map_callback"];
+        if ((tolower(value) == loc_config["script_noteworthy"] || isinarray(loc_config["aliases"], tolower(value))) && [[cb]]())
+        {
+            selection = loc_config;
+        }
+    }
+
+    /* Check selection against map chests */
+    chests_script = get_noteworthy_chests();
+    if (!isdefined(selection) || chests_script.size < 2 || !isinarray(chests_script, selection["script_noteworthy"]))
     {
         print_scheduler("Incorrect selection: " + COLOR_TXT(value, COL_RED), gethostplayer());
         return true;
     }
 
-    chests_script = [];
-    foreach (chest in level.chests)
-        chests_script[chests_script.size] = chest.script_noteworthy;
-
-    if (!isinarray(chests_script, process_selection))
-        return true;
-
-    thread move_chest(process_selection);
-    flag_set("b2_lb_locked");
-}
-
-move_chest(box)
-{
-    LEVEL_ENDON
-
-    if (isdefined(level._zombiemode_custom_box_move_logic))
-        kept_move_logic = level._zombiemode_custom_box_move_logic;
-
-    level._zombiemode_custom_box_move_logic = ::force_next_location;
+    /* Check if selected box is already there */
     foreach (chest in level.chests)
     {
-        if (!chest.hidden && chest.script_noteworthy == box)
+        if (chest.script_noteworthy == selection["script_noteworthy"] && chest.hidden == 0)
         {
-            print_scheduler("Box already in selected location");
-            if (isdefined(kept_move_logic))
+            print_scheduler("Box already in selected location", gethostplayer());
+            return true;
+        }
+    }
+
+    /* Attempt moving the chest */
+    if (move_chest(selection))
+    {
+        flag_set("b2_lb_locked");
+        print_scheduler("Box moved to: " + COLOR_TXT(selection["name"], COL_YELLOW));
+    }
+
+    return true;
+}
+
+move_chest(box_config)
+{
+    DEBUG_PRINT("moving chest: " + sstr(box_config));
+
+    chests_new = [];
+
+    /* All chests here do exist */
+    foreach (chest in level.chests)
+    {
+        chest notify("kill_chest_think");
+        /* Kill the FX playing on active box location, hide_chest won't do it */
+        if (isdefined(chest.zbarrier) && chest.zbarrier getclientfield("magicbox_amb_fx"))
+        {
+            DEBUG_PRINT("overriding clientfield 'magicbox_amb_fx'");
+            chest.zbarrier setclientfield("magicbox_amb_fx", 0);
+        }
+
+        if (chest.script_noteworthy == box_config["script_noteworthy"])
+        {
+            lb_chest = chest;
+        }
+        else
+        {
+            chests_new[chests_new.size] = chest;
+        }
+
+        /* Classic maps use this flag to check */
+        if (is_classic() && is_true(level.random_pandora_box_start))
+        {
+            chest.start_exclude = 1;
+
+            if (chest.script_noteworthy == box_config["script_noteworthy"])
             {
-                level._zombiemode_custom_box_move_logic = kept_move_logic;
+                chest.start_exclude = 0;
             }
-            return;
         }
-        else if (!chest.hidden)
+    }
+
+    /* We're in trouble if we get into this if */
+    if (!isdefined(lb_chest))
+    {
+        array_thread(level.chests, maps\mp\zombies\_zm_magicbox::treasure_chest_think);
+        DEBUG_PRINT("lb_chest undefined, should never happen!");
+        return false;
+    }
+
+    /* Pandora box based maps (mob & origins) */
+    if (is_true(level.random_pandora_box_start))
+    {
+        maps\mp\zombies\_zm_magicbox::init_starting_chest_location("start_chest");
+    }
+    /* script noteworthy based maps */
+    else
+    {
+        /* I have to reindex the global array, since the actual location is index dependent */
+        level.chests = [];
+        level.chests[0] = lb_chest;
+        foreach (new in chests_new)
         {
-            level.chest_min_move_usage = 8;
-            level.chest_name = box;
-            print_box_location(box);
+            level.chests[level.chests.size] = new;
+        }
 
-            flag_set("moving_chest_now");
-            chest thread maps\mp\zombies\_zm_magicbox::treasure_chest_move();
+        maps\mp\zombies\_zm_magicbox::init_starting_chest_location(box_config["script_noteworthy"]);
+    }
 
-            wait 0.05;
-            level notify("weapon_fly_away_start");
-            wait 0.05;
-            level notify("weapon_fly_away_end");
+    array_thread(level.chests, maps\mp\zombies\_zm_magicbox::treasure_chest_think);
 
-            break;
+    return true;
+}
+
+can_set_box_location()
+{
+    /* 1 or 0 boxes on the map */
+    if (level.chests.size < 2)
+    {
+        DEBUG_PRINT("can_set_box_location false => chest size");
+        return false;
+    }
+
+    /* random_pandora_box_start not used */
+    if (!is_true(level.random_pandora_box_start))
+    {
+        chests = get_noteworthy_chests();
+        start_chests = 0;
+        foreach (chest in chests)
+        {
+            if (is_town() && issubstr(chest, "town_chest"))
+                start_chests++;
+            else if (is_nuketown() && issubstr(chest, "start_chest"))
+                start_chests++;
+        }
+        if (start_chests < 2)
+        {
+            DEBUG_PRINT("can_set_box_location false => start chests size");
+            return false;
         }
     }
 
-    while (flag("moving_chest_now"))
-        wait 0.05;
-
-    if (isdefined(kept_move_logic))
-        level._zombiemode_custom_box_move_logic = kept_move_logic;
-
-    /* Prevents firesale to be included in origins dig cycle */
-    if (isdefined(level.chest_name) && isdefined(level.dig_magic_box_moved))
+    /* Check if GSC logic is ready */
+    if (!flag_exists("moving_chest_enabled") || !flag("moving_chest_enabled"))
     {
-        level.dig_magic_box_moved = 0;
+        DEBUG_PRINT("can_set_box_location false => moving_chest_enabled");
+        return false;
     }
-    CLEAR(level.chest_name)
+    /* Exit if box has been hit already */
+    if (is_true(level.total_box_hits))
+    {
+        DEBUG_PRINT("can_set_box_location false => total_box_hits");
+        flag_set("b2_lb_locked");
+        return false;
+    }
+    /* Mob can't lb until exit 1st afterlife */
+    if ((!flag_exists("afterlife_start_over") || !flag("afterlife_start_over")) && is_mob())
+    {
+        DEBUG_PRINT("can_set_box_location false => afterlife_start_over");
+        print_scheduler(COLOR_TXT("Players must leave initial afterlife mode first!", COL_YELLOW), gethostplayer());
+        return false;
+    }
 
-    level.chest_min_move_usage = 4;
-    DEBUG_PRINT("dig_magic_box_moved: " + level.dig_magic_box_moved);
+    return true;
 }
 
-force_next_location()
+get_noteworthy_chests()
 {
-    for (b=0; b<level.chests.size; b++)
+    chests = [];
+    foreach (chest in level.chests)
     {
-        if (level.chests[b].script_noteworthy == level.chest_name)
-            level.chest_index = b;
+        chests[chests.size] = chest.script_noteworthy;
     }
+    return chests;
 }
 
-process_box_location(input_msg)
+box_location_config()
 {
-    // DEBUG_PRINT("Input for 'lb': " + input_msg);
-    switch (tolower(input_msg))
-    {
-        case "dt":
-            return "town_chest_2";
-        case "qr":
-            return "town_chest";
-        case LOCATION_CAFE:
-            return "cafe_chest";
-        case LOCATION_WARDEN:
-            return "start_chest";
-        case "yellow":
-            return "start_chest2";
-        case "green":
-            return "start_chest1";
-        case "2":
-            return "bunker_tank_chest";
-        case "3":
-            return "bunker_cp_chest";
-        default:
-            return "no box selected";
-    }
+    conf = [];
+    /*                                      script_noteworthy   aliases                             name                map_cb      */
+    conf[conf.size] = register_box_location("town_chest_2",     array("dt", "cage"),                "Double Tap Cage",  ::is_town);
+    conf[conf.size] = register_box_location("town_chest",       array("qr", "quick"),               "Quick Revive Room",::is_town);
+    conf[conf.size] = register_box_location("cafe_chest",       array(LOCATION_CAFE, "cateteria"),  "Cafeteria",        ::is_mob);
+    conf[conf.size] = register_box_location("start_chest",      array(LOCATION_WARDEN, "office"),   "Warden's Office",  ::is_mob);
+    conf[conf.size] = register_box_location("start_chest2",     array("yellow"),                    "Yellow House",     ::is_nuketown);
+    conf[conf.size] = register_box_location("start_chest1",     array("green"),                     "Green House",      ::is_nuketown);
+    conf[conf.size] = register_box_location("bunker_tank_chest",array("2", "tank"),                 "Generator 2",      ::is_origins);
+    conf[conf.size] = register_box_location("bunker_cp_chest",  array("3", "speed"),                "Generator 3",      ::is_origins);
+
+    return conf;
 }
 
-print_box_location(loc)
+register_box_location(script_noteworthy, aliases, name, map_callback)
 {
-    switch (loc)
-    {
-        case "town_chest_2":
-            print_scheduler("Box moving to: " + COLOR_TXT("Double Tap Cage", COL_YELLOW));
-            break;
-        case "town_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Quick Revive Room", COL_YELLOW));
-            break;
-        case "cafe_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Cafeteria", COL_YELLOW));
-            break;
-        case "start_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Warden's Office", COL_YELLOW));
-            break;
-        case "start_chest2":
-            print_scheduler("Box moving to: " + COLOR_TXT("Yellow House", COL_YELLOW));
-            break;
-        case "start_chest1":
-            print_scheduler("Box moving to: " + COLOR_TXT("Green House", COL_YELLOW));
-            break;
-        case "bunker_tank_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Generator 2", COL_YELLOW));
-            break;
-        case "bunker_cp_chest":
-            print_scheduler("Box moving to: " + COLOR_TXT("Generator 3", COL_YELLOW));
-            break;
-        default:
-            print_scheduler("Box moving to: " + COLOR_TXT(loc, COL_GREEN));
-    }
+    location = [];
+    location["script_noteworthy"] = script_noteworthy;
+    location["aliases"] = aliases;
+    location["name"] = name;
+    location["map_callback"] = map_callback;
+    return location;
 }
 #endif
 
