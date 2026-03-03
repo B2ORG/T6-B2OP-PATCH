@@ -9,7 +9,7 @@
 #define DEPRECATION 5246
 
 /* Const macros */
-#define B2OP_VER 4.7
+#define B2OP_VER 4.8
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -2456,8 +2456,8 @@ backspeed_input(new_value, dvar, player)
     }
     else
     {
-        strafe = float(values[0]);
-        back = float(values[0]);
+        strafe = clamp(float(values[0]), 0.1, 1.0);
+        back = clamp(float(values[0]), 0.1, 1.0);
     }
 
     if (is_true(strafe) && is_true(back))

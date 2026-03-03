@@ -1,3 +1,7 @@
+# Version 4.8
+
+- Fix `backspeed` message not clamping the input when a single value is used
+
 # Version 4.7
 
 *This patch is following a vote from February 2026*
