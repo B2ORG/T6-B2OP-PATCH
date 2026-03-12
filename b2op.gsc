@@ -63,6 +63,9 @@
 #define DVAR_PROTECT 1
 #define DVAR_PROTECT_LOWER 2
 #define DVAR_PROTECT_HIGHER 3
+#define WATERMARK_SLOT_PERM 0
+#define WATERMARK_SLOT_TEMP 1
+#define SLOT_ARRAY array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630)
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -493,51 +496,69 @@ b2op_main_loop()
  ************************************************************************************************************
 */
 
-get_watermark_position(mode, allocate)
+get_watermark_position(mode, txt)
 {
-    foreach (slot in array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630))
+    if (!isdefined(level.b2_watermark_slots[mode]))
     {
-        if (!flag_exists("b2_watermark_" + mode + slot) && !flag("b2_watermark_" + mode + slot))
-        {
-            s = abs(slot);
-            if (slot < 0)
-            {
-                s = "-" + s;
-            }
+        level.b2_watermark_slots[mode] = [];
+    }
 
-            if (is_true(allocate))
+    for (i = 0; i < SLOT_ARRAY.size; i++)
+    {
+        if (!isdefined(level.b2_watermark_slots[mode][i]))
+        {
+            if (isdefined(txt))
             {
-                flag_set("b2_watermark_" + mode + s);
+                level.b2_watermark_slots[mode][i] = txt;
             }
-            return slot;
+            return SLOT_ARRAY[i];
         }
     }
 
-    return 0;
+    if (isdefined(txt))
+    {
+        level.b2_watermark_slots[mode][0] = txt;
+    }
+    return SLOT_ARRAY[0];
 }
 
-deallocate_temp_watermark_slot(slot)
+deallocate_temp_watermark_slot(text)
 {
-    s = abs(slot);
-    if (slot < 0)
+    if (!isdefined(level.b2_watermark_slots[WATERMARK_SLOT_TEMP]))
     {
-        s = "-" + s;
+        return;
     }
-    flag_clear("b2_watermark_temp" + s);
+    arrayremovevalue(level.b2_watermark_slots[WATERMARK_SLOT_TEMP], text, false);
+
+    if (level.b2_watermark_slots[WATERMARK_SLOT_TEMP].size == 0)
+    {
+        CLEAR(level.b2_watermark_slots[WATERMARK_SLOT_TEMP]);
+
+        if (level.b2_watermark_slots.size == 0)
+        {
+            CLEAR(level.b2_watermark_slots);
+        }
+    }
 }
 
 generate_watermark(text, color, alpha_override)
 {
-    if (flag_exists(text) && is_true(flag(text)))
+    if (isdefined(level.b2_watermark_slots[WATERMARK_SLOT_PERM]) && isinarray(level.b2_watermark_slots[WATERMARK_SLOT_PERM], text))
+    {
         return;
+    }
 
-    x_pos = get_watermark_position("perm", true);
+    x_pos = get_watermark_position(WATERMARK_SLOT_PERM, text);
 
     if (!isdefined(color))
+    {
         color = (1, 1, 1);
+    }
 
     if (!isdefined(alpha_override))
+    {
         alpha_override = 0.33;
+    }
 
     watermark = createserverfontstring("objective" , 1.2);
     watermark setpoint("CENTER", "TOP", x_pos, -5);
@@ -547,28 +568,28 @@ generate_watermark(text, color, alpha_override)
     watermark.hidewheninmenu = 0;
 
     DEBUG_PRINT("Created permanent watermark: " + sstr(text));
-
-    flag_set(text);
-
-    if (!isdefined(level.num_of_watermarks))
-        level.num_of_watermarks = 0;
-    level.num_of_watermarks++;
 }
 
 generate_temp_watermark(kill_on, text, color, alpha_override)
 {
     LEVEL_ENDON
 
-    if (flag_exists(text) && is_true(flag(text)))
+    if (isdefined(level.b2_watermark_slots[WATERMARK_SLOT_TEMP]) && isinarray(level.b2_watermark_slots[WATERMARK_SLOT_TEMP], text))
+    {
         return;
+    }
 
-    x_pos = get_watermark_position("temp", true);
+    x_pos = get_watermark_position(WATERMARK_SLOT_TEMP, text);
 
     if (!isdefined(color))
+    {
         color = (1, 1, 1);
+    }
 
     if (!isdefined(alpha_override))
+    {
         alpha_override = 0.33;
+    }
 
     twatermark = createserverfontstring("objective" , 1.2);
     twatermark setpoint("CENTER", "TOP", x_pos, -17);
@@ -579,23 +600,23 @@ generate_temp_watermark(kill_on, text, color, alpha_override)
 
     DEBUG_PRINT("Created temp watermark: " + sstr(text));
 
-    flag_set(text);
-
     CLEAR(text)
     CLEAR(color)
     CLEAR(alpha_override)
+    CLEAR(x_pos)
 
     while (level.round_number < kill_on)
+    {
         level waittill("end_of_round");
+    }
 
     twatermark.alpha = 0;
+    twatermark fadeovertime(2);
+    wait 2;
     twatermark destroy_hud();
 
     /* Cleanup the slot */
-    deallocate_temp_watermark_slot(x_pos);
-
-    /* There should've been flag_clear here, but don't add it anymore, since it's now used
-    for appending first box info to splits */
+    deallocate_temp_watermark_slot(text);
 }
 
 print_scheduler(content, player, custom_length)
@@ -613,7 +634,7 @@ print_scheduler(content, player, custom_length)
             player thread player_print_scheduler(content, custom_length);
             return;
         }
-        DEBUG_PRINT("Entity passet to print scheduler is not a player");
+        DEBUG_PRINT("Entity passed to print scheduler is not a player");
         return;
     }
     // DEBUG_PRINT("general: print scheduled: " + content);
@@ -2810,13 +2831,19 @@ show_split(start_time)
     wait MS_TO_SECONDS(round_pulses());
 
     timestamp = convert_time(MS_TO_SECONDS((gettime() - start_time)));
-    if (is_true(flag("FIRST BOX")))
+    if (is_true(level.b2_rigged_hits))
+    {
         print_scheduler("Round " + level.round_number + " time: " + COLOR_TXT(timestamp, COL_RED) + " [FIRST BOX]");
+    }
     else
+    {
         print_scheduler("Round " + level.round_number + " time: " + COLOR_TXT(timestamp, COL_RED));
+    }
 
     if (!is_plutonium_version(4837))
+    {
         print_scheduler("UTC: " + COLOR_TXT(getutc(), COL_RED));
+    }
 }
 
 #if PLUTO == 1
@@ -4094,25 +4121,25 @@ first_box()
 {
     LEVEL_ENDON
 
-    level.rigged_hits = 0;
+    level.b2_rigged_hits = 0;
     print_scheduler("First Box module: " + TXT_AVAILABLE);
 
     while (!is_round(RNG_ROUND) && !is_true(level.zombie_vars["zombie_powerup_fire_sale_on"]))
         wait 0.1;
 
     print_scheduler("First Box module: " + TXT_DISABLED);
-    if (level.rigged_hits)
-        print_scheduler("First box used: " + COLOR_TXT(level.rigged_hits, COL_YELLOW) + " times");
+    if (level.b2_rigged_hits)
+    {
+        print_scheduler("First box used: " + COLOR_TXT(level.b2_rigged_hits, COL_YELLOW) + " times");
+    }
     level notify("b2_box_restore");
     flag_set("b2_first_box_terminated");
-
-    CLEAR(level.rigged_hits)
 }
 
 firstbox_input(value, key, player)
 {
     /* Additional check, prevents rigging past RNG_ROUND */
-    if (!isdefined(level.rigged_hits))
+    if (!isdefined(level.b2_rigged_hits))
     {
         return true;
     }
@@ -4158,7 +4185,7 @@ rig_box(guns, player)
     if (guns.size > 1)
         print_scheduler(COLOR_TXT((guns.size - 1), COL_RED) + " more gun codes in the queue");
     thread generate_temp_watermark(20, "FIRST BOX", (0.5, 0.3, 0.7), 0.66);
-    level.rigged_hits++;
+    level.b2_rigged_hits++;
 
     saved_check = level.special_weapon_magicbox_check;
     current_box_hits = level.total_box_hits;
