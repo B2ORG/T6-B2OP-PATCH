@@ -1,3 +1,7 @@
+# Version 4.9
+
+- Fix duplicating watermarks
+
 # Version 4.8
 
 - Fix `backspeed` message not clamping the input when a single value is used
