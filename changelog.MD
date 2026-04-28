@@ -1,3 +1,8 @@
+# Version 4.10
+
+- The box tracker print is now disabled by default, details in the readme
+- The box tracker print is now delayed and shows after the gun is either picked up or times out in the box
+
 # Version 4.9
 
 - Fix duplicating watermarks

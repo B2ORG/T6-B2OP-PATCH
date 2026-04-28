@@ -6,10 +6,10 @@
 #define DEBUG 0
 #define DEBUG_HUD 0
 #define BETA 0
-#define DEPRECATION 5246
+#define DEPRECATION 5278
 
 /* Const macros */
-#define B2OP_VER 4.9
+#define B2OP_VER "4.10"
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905
@@ -417,7 +417,7 @@ b2op_main_loop()
     game_start = gettime();
     DEBUG_PRINT("initialized b2op_main_loop " + gettime() + " " + getutc());
 
-    b2_signal("GAME_START", array("b2op", STR(B2OP_VER), get_plutonium_version()), array("patch", "patch_version", "plutonium_version"));
+    b2_signal("GAME_START", array("b2op", B2OP_VER, get_plutonium_version()), array("patch", "patch_version", "plutonium_version"));
 
     while (true)
     {
@@ -1534,7 +1534,7 @@ welcome_prints()
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
 #if PLUTO == 1
-    printf(get_launcher_as_txt() + " " + get_plutonium_version() + " " + "b2op" + " " + STR(B2OP_VER));
+    printf(get_launcher_as_txt() + " " + get_plutonium_version() + " " + "b2op" + " " + B2OP_VER);
 #endif
     wait 0.75;
     self iprintln(compose_welcome_print());
