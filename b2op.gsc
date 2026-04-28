@@ -3971,6 +3971,17 @@ boxtracker_watchweapon(player)
 
     key = self.weapon_string;
 
+    b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
+    self thread delayed_box_weapon_handle(player, key);
+}
+
+delayed_box_weapon_handle(player, key)
+{
+    level endon("end_game");
+    player endon("disconnect");
+    self endon("randomization_done");
+    self waittill("weapon_grabbed");
+
     foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
     {
         if (player player_box_weapon_verification(wpn_to_avg) != "" || key == wpn_to_avg)
@@ -3979,8 +3990,6 @@ boxtracker_watchweapon(player)
             DEBUG_PRINT("Adding '" + wpn_to_avg + "' to available_but_did_not_get");
         }
     }
-
-    b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
 
     if (!is_tracking_box_key(key))
     {
