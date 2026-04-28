@@ -1674,6 +1674,9 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,              true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
     dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,              false,      undefined,                                          ::kill_hud);
     dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,              true,       ::has_permaperks_system);
+#if FEATURE_BOXTRACKER == 1
+    dvars[dvars.size] = register_dvar("box_tracking",                   "0",                    false,              true);
+#endif
 
 #if FEATURE_HORDES == 1
     dvars[dvars.size] = register_dvar("hordes",                         "1",                    false,              true);
@@ -4030,9 +4033,13 @@ print_box_stats(value, key, player)
 {
     if (!isdefined(level.boxtracker_pulls))
     {
-        return;
+        return true;
     }
     DEBUG_PRINT("print_box_stats('" + value + "', '" + key + "')");
+    if (getdvar("box_tracking") != "1")
+    {
+        return true;
+    }
 
     weapon = get_weapon_key(value);
 

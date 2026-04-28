@@ -107,7 +107,7 @@ A high level overview what features are available in each of the versions.
 | First Box (configurable) | ✓ | ✓ | ✓¹ | ✓¹ |
 | Fridge weapon (configurable) | ✓ | ✓ | ✓¹ | ✓¹ |
 | Characters & Viewmodels (configurable) | ✓ | ✓ | ✓ | ✓ |
-| Simple trade tracker | ✓ | ✓ | ✓ | ✓ |
+| Simple trade tracker | ✓³ | ✓³ | ✓³ | ✓³ |
 | FPS Limiter | ✓ | ✓ | ✓ | ✓ |
 | DOF Disabled | ✓ | ✓ | ✓ | ✓ |
 | Toogleable Purist no jug mode | ✓ | ✓ | ✓ | ✓ |
@@ -117,6 +117,7 @@ A high level overview what features are available in each of the versions.
 
 1. Configuration only as host
 2. Fixed by Plutonium in the engine
+3. Disabled by default, i recommend using the [dedicated Box tracker](https://gitlab.com/EvelynYuki/BoxAverageTracker) instead. Set `box_tracking` dvar to 1 to enable this feature.
 
 # Patch checksum
 
@@ -226,8 +227,9 @@ The patch can be interacted with using DVARs and game chat commands. Below is a 
 | :---: | :---: | :---: | :--- | :--- |
 | `timers` | - | - | - | Set to `1` to show timers |
 | `buildables` | - | - | - | Set to `1` to show buildables tracker |
+| `box_tracking` | - | - | - | Set to `1` to see the GSC box tracking prints |
 | `kill_hud` | - | - | - | Set to `1` to premanently destroy HUD for the rest of the game to save allocations |
-| `kill_box_tracker` | - | - | - | Set to `1` to premanently disable box tracker for the rest of the game |
+| `kill_box_tracker` | - | - | - | Set to `1` to premanently disable box tracker for the rest of the game to save allocations |
 | `viewmodel` | `view` | - | No | [Viewmodel swapping](#viewmodel-swapping) |
 | - | `char` | - | No | [Character chat commands](#character-chat-commands) |
 | - | `splits` | `!sl` | Yes | [Splits chat command](#splits-chat-command) |
