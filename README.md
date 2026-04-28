@@ -258,7 +258,7 @@ timers 0;splits 0;buildables 0
 | HUD element | DVAR | Default |
 | --- | --- | --- |
 | Timers | `timers` 0/1 | Enabled |
-| SPH print | `splits` 0/1 | Enabled |
+| Time splits print | `splits` 0/1 | Enabled |
 | Buildables HUD | `buildables` 0/1 | Enabled |
 
 ## Kill hud
