@@ -82,6 +82,7 @@
 #define FEATURE_ORIGINS_TANK_DEPATCH 1
 #define FEATURE_ANIMATED_CAMOS 1
 #define FEATURE_TOMAHAWK_STATE 1
+#define FEATURE_BOXTRACKER_INTEGRATION 1
 
 /* Snippet macros */
 #define LEVEL_ENDON \
@@ -180,6 +181,9 @@ init()
     init_b2_characters();
     init_b2_permaperks();
     init_b2_io();
+#if FEATURE_BOXTRACKER_INTEGRATION == 1
+    logprint("InitB2OP;" + B2OP_VER + ";" + sstr(level.script) + ";" + sstr(level.scr_zm_map_start_location) + ";" + sstr(level.scr_zm_ui_gametype_group) + "\n");
+#endif
 
     thread post_init();
 }
@@ -1708,6 +1712,10 @@ dvar_config(key)
 
 #if FEATURE_MOB_KEY == 1
     dvars[dvars.size] = register_dvar("key",                            "",                     false,              false,      array(::is_plutonium_version, VER_4K),              ::key_input);
+#endif
+
+#if FEATURE_BOXTRACKER_INTEGRATION == 1
+    dvars[dvars.size] = register_dvar("g_logsync",                      "",                     false,              false,      array(::is_plutonium_version, VER_4K));
 #endif
 
 #if DEBUG == 1
@@ -3656,7 +3664,7 @@ watch_box_state()
 
         self.zbarrier thread scan_in_box();
 
-#if FEATURE_BOXTRACKER == 1
+#if FEATURE_BOXTRACKER == 1 || FEATURE_BOXTRACKER_INTEGRATION == 1
         if (is_survival_map() && isdefined(level.boxtracker_pulls))
         {
             self.zbarrier thread boxtracker_watchweapon(self.chest_user);
@@ -3970,16 +3978,18 @@ boxtracker_watchweapon(player)
     self waittill("randomization_done");
     DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
 
-    if (!isdefined(self.weapon_string))
+    if (isdefined(self.weapon_string))
     {
-        level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
-        b2_signal("BOX_WEAPON", array(BOXTRACKER_KEY_JOKER, player.name), array("weapon", "player"));
-        return;
+        key = self.weapon_string;
+        b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
+    }
+    else
+    {
+        key = BOXTRACKER_KEY_JOKER;
+        level.boxtracker_pulls[key]++;
+        b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
     }
 
-    key = self.weapon_string;
-
-    b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
     self thread delayed_box_weapon_handle(player, key);
 }
 
@@ -3988,7 +3998,29 @@ delayed_box_weapon_handle(player, key)
     level endon("end_game");
     player endon("disconnect");
     self endon("randomization_done");
-    self waittill("weapon_grabbed");
+    if (!is_true(self.chest_moving))
+    {
+        self waittill("weapon_grabbed");
+    }
+
+#if FEATURE_BOXTRACKER_INTEGRATION == 1
+    DEBUG_PRINT("Printing box hook to game log");
+    logprint(
+        "B;"
+        + player getguid() + ";"
+        + player getentitynumber() + ";"
+        + array_implode("", strtok(sstr(player.name), ";")) + ";"
+        + sstr(key) + ";"
+        + sstr(self.script_noteworthy) + ";"
+        + sstr(level.script) + ";"
+        + sstr(level.scr_zm_map_start_location) + ";"
+        + sstr(level.scr_zm_ui_gametype_group) + "\n"
+    );
+#endif
+    if (key == BOXTRACKER_KEY_JOKER)
+    {
+        return;
+    }
 
     foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
     {
