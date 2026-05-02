@@ -498,6 +498,10 @@ b2op_main_loop()
 
 get_watermark_position(mode, txt)
 {
+    if (!isdefined(level.b2_watermark_slots))
+    {
+        level.b2_watermark_slots = [];
+    }
     if (!isdefined(level.b2_watermark_slots[mode]))
     {
         level.b2_watermark_slots[mode] = [];
@@ -543,7 +547,7 @@ deallocate_temp_watermark_slot(text)
 
 generate_watermark(text, color, alpha_override)
 {
-    if (isdefined(level.b2_watermark_slots[WATERMARK_SLOT_PERM]) && isinarray(level.b2_watermark_slots[WATERMARK_SLOT_PERM], text))
+    if (isdefined(level.b2_watermark_slots) && isdefined(level.b2_watermark_slots[WATERMARK_SLOT_PERM]) && isinarray(level.b2_watermark_slots[WATERMARK_SLOT_PERM], text))
     {
         return;
     }
@@ -665,9 +669,10 @@ player_print_scheduler(content, custom_length)
     }
 
     original_dvar_value = undefined;
+    custom_dvar_value = float(dvar_config("con_gameMsgWindow0MsgTime")["start_value"]);
     if (custom_length)
     {
-        original_dvar_value = dvar_config("con_gameMsgWindow0MsgTime")["start_value"];
+        original_dvar_value = custom_dvar_value;
         custom_dvar_value = clamp(custom_length, 5, 15);
         setdvar("con_gameMsgWindow0MsgTime", custom_dvar_value);
         DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value));
