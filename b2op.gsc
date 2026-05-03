@@ -199,6 +199,7 @@ post_init()
     init_b2_chat_watcher();
     init_b2_backspeed();
     thread b2op_main_loop();
+    thread end_game_callback();
 
 #if DEBUG == 1
     debug_mode();
@@ -491,6 +492,19 @@ b2op_main_loop()
         CLEAR(round_duration)
 #endif
         // level waittill("between_round_over");
+    }
+}
+
+end_game_callback()
+{
+#if PLUTO == 0
+    /* Currently no non-pluto functionalities */
+    return;
+#endif
+    level waittill("end_game");
+    if (level.round_number >= 10 && is_vanilla_map() && get_plutonium_version() >= 4522)
+    {
+        cmdexec("flashScriptHashes");
     }
 }
 
@@ -1600,7 +1614,9 @@ print_checksums()
 should_print_checksum()
 {
     if (get_plutonium_version() < 4522 || did_game_just_start())
+    {
         return false;
+    }
 
     /* 150, 100, 60, 60 */
     faster = 200 - (50 * level.players.size);
