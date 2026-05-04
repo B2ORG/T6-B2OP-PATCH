@@ -672,8 +672,9 @@ player_print_scheduler(content, custom_length)
 
     DEBUG_PRINT("print scheduler for '" + sstr(self.name) + "' content: " + sstr(content) + " custom length: " + sstr(custom_length));
 
-    for (max_waits = 100; isdefined(self.scheduled_prints) && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount") && max_waits; max_waits--)
+    for (max_waits = 100; isdefined(self.scheduled_prints) && self.scheduled_prints >= getdvarint("con_gameMsgWindow0LineCount") && max_waits > 0; max_waits--)
     {
+        // DEBUG_PRINT("print scheduler wait enter (" + sstr(max_waits) + ") for (" + sstr(self.name) + "): " + sstr(content));
         wait 0.05;
     }
 
@@ -687,21 +688,37 @@ player_print_scheduler(content, custom_length)
     }
 
     original_dvar_value = undefined;
-    custom_dvar_value = float(dvar_config("con_gameMsgWindow0MsgTime")["start_value"]);
-    if (custom_length)
+    msg_time_config = dvar_config("con_gameMsgWindow0MsgTime");
+    if (isdefined(msg_time_config))
+    {
+        custom_dvar_value = float(msg_time_config["start_value"]);
+    }
+    else
+    {
+        custom_dvar_value = getdvarfloat("con_gameMsgWindow0MsgTime");
+    }
+
+    /* Non-host players can't be changed, setdvar won't work for them */
+    if (self ishost() && custom_length)
     {
         original_dvar_value = custom_dvar_value;
         custom_dvar_value = clamp(custom_length, 5, 15);
+        disabledvarchangednotify("con_gameMsgWindow0MsgTime");
         setdvar("con_gameMsgWindow0MsgTime", custom_dvar_value);
-        DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value));
+        if (isdefined(msg_time_config) && is_true(msg_time_config["is_protected"]))
+        {
+            enabledvarchangednotify("con_gameMsgWindow0MsgTime");
+        }
+        DEBUG_PRINT("msgWindowMsgTime check, value=" + sstr(getdvar("con_gameMsgWindow0MsgTime")) + " expecting=" + sstr(custom_dvar_value) + " original=" + sstr(original_dvar_value));
     }
 
     self iprintln(sstr(content));
     if (isdefined(original_dvar_value))
     {
         /* This must be delayed */
-        thread defer_msg_window_time_restore(original_dvar_value);
+        thread defer_msg_window_time_restore(original_dvar_value, msg_time_config);
     }
+    // DEBUG_PRINT("Wait print scheduler for " + sstr(self.name) + " scheduled=" + sstr(self.scheduled_prints) + " with value: " + sstr(content) + " => " + sstr(getdvarfloat("con_gameMsgWindow0FadeInTime") + custom_dvar_value + getdvarfloat("con_gameMsgWindow0FadeOutTime")));
     wait getdvarfloat("con_gameMsgWindow0FadeInTime") + custom_dvar_value + getdvarfloat("con_gameMsgWindow0FadeOutTime");
 
     if (isdefined(self.scheduled_prints))
@@ -713,12 +730,19 @@ player_print_scheduler(content, custom_length)
             CLEAR(self.scheduled_prints)
         }
     }
+
+    // DEBUG_PRINT("Exit print scheduler for " + sstr(self.name) + " scheduled=" + sstr(self.scheduled_prints) + " with value: " + sstr(content));
 }
 
-defer_msg_window_time_restore(restore_to)
+defer_msg_window_time_restore(restore_to, dvar_config)
 {
     wait 0.1;
+    disabledvarchangednotify("con_gameMsgWindow0MsgTime");
     setdvar("con_gameMsgWindow0MsgTime", restore_to);
+    if (isdefined(dvar_config) && is_true(dvar_config["is_protected"]))
+    {
+        enabledvarchangednotify("con_gameMsgWindow0MsgTime");
+    }
 }
 
 convert_time(seconds)
