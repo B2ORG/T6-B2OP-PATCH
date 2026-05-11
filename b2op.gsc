@@ -66,6 +66,8 @@
 #define WATERMARK_SLOT_PERM 0
 #define WATERMARK_SLOT_TEMP 1
 #define SLOT_ARRAY array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630)
+#define G_LOG_LOADOUT "L"
+#define G_LOG_BOX "B"
 
 /* Feature flags */
 #define FEATURE_HUD 1
@@ -181,7 +183,7 @@ init()
     init_b2_characters();
     init_b2_permaperks();
     init_b2_io();
-#if FEATURE_BOXTRACKER_INTEGRATION == 1
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
     logprint("InitB2OP;" + B2OP_VER + ";" + sstr(level.script) + ";" + sstr(level.scr_zm_map_start_location) + ";" + sstr(level.scr_zm_ui_gametype_group) + "\n");
 #endif
 
@@ -648,7 +650,6 @@ print_scheduler(content, player, custom_length)
         custom_length = 0;
     }
 
-    // DEBUG_PRINT("print_scheduler(content='" + content + ")");
     if (isdefined(player))
     {
         if (isplayer(player))
@@ -659,11 +660,7 @@ print_scheduler(content, player, custom_length)
         DEBUG_PRINT("Entity passed to print scheduler is not a player");
         return;
     }
-    // DEBUG_PRINT("general: print scheduled: " + content);
-    foreach (player in level.players)
-    {
-        player thread player_print_scheduler(content, custom_length);
-    }
+    array_thread(get_players(), ::player_print_scheduler, content, custom_length);
 }
 
 player_print_scheduler(content, custom_length)
@@ -983,11 +980,17 @@ number_round(floating_point, decimal_places, format)
         full = STR(int(full_scaled / factor));
         decimal = STR(int(abs(full_scaled) % factor));
 
-        DEBUG_PRINT("decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + typeof(scaled) + " typeof(factor)=" + typeof(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
+        DEBUG_PRINT("floating_point=" + sstr(floating_point) + " decimal_places=" + sstr(decimal_places) + " factor=" + sstr(factor) + " typeof(scaled)=" + typeof(scaled) + " typeof(factor)=" + typeof(factor) + " scaled=" + sstr(scaled) + " decimal=" + sstr(decimal) + " full=" + sstr(full) + " abs(scaled)=" + sstr(abs(scaled)) );
 
         for (i = decimal.size; i < decimal_places; i++)
         {
             decimal = "0" + decimal;
+#if DEBUG == 1
+            if (i > 8)
+            {
+                DEBUG_PRINT("Decimal iterator exceeded 8 chars");
+            }
+#endif
         }
 
         DEBUG_PRINT("number_round() for loop finished");
@@ -1441,6 +1444,16 @@ chat_watcher()
 
     while (true)
     {
+        CLEAR(message)
+        CLEAR(player)
+        CLEAR(alias)
+        CLEAR(chat)
+        CLEAR(matched_chat)
+        CLEAR(contents)
+        CLEAR(cmd)
+        CLEAR(message_elements)
+        CLEAR(cfg)
+
         level waittill("say", message, player);
 
         if (message == "")
@@ -1516,14 +1529,6 @@ chat_watcher()
             DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a callback");
             [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
         }
-
-        CLEAR(alias)
-        CLEAR(chat)
-        CLEAR(matched_chat)
-        CLEAR(contents)
-        CLEAR(cmd)
-        CLEAR(message_elements)
-        CLEAR(cfg)
     }
 }
 #endif
@@ -1681,7 +1686,7 @@ chat_config()
     chat[chat.size] = register_chat("lb",       [],                 ::box_location_input,       false,      false);
 #endif
 #if FEATURE_BOXTRACKER == 1
-    chat[chat.size] = register_chat("box",      array("!bt"),       ::print_box_stats,          false,      false);
+    chat[chat.size] = register_chat("box",      array("!bt"),       ::print_box_stats,          false,      true);
 #endif
 #if FEATURE_MOB_KEY == 1
     chat[chat.size] = register_chat("key",      [],                 ::key_input,                true,       false);
@@ -1715,6 +1720,9 @@ register_chat(chat, aliases, callback, host_only, is_thread)
 
 dvar_config(key)
 {
+#if DEBUG == 1
+    level._b2_dvar_skip_key = key;
+#endif
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT         INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    DVAR_PROTECT,       false);
@@ -1754,8 +1762,8 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("key",                            "",                     false,              false,      array(::is_plutonium_version, VER_4K),              ::key_input);
 #endif
 
-#if FEATURE_BOXTRACKER_INTEGRATION == 1
-    dvars[dvars.size] = register_dvar("g_logsync",                      "",                     false,              false,      array(::is_plutonium_version, VER_4K));
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+    dvars[dvars.size] = register_dvar("g_logsync",                      "1",                    false,              false,      array(::is_plutonium_version, VER_4K));
 #endif
 
 #if DEBUG == 1
@@ -1831,15 +1839,30 @@ register_dvar(dvar, set_value, protected, init_only, closure, on_change)
     {
         if (isarray(closure) && is_false(call_func_with_variadic_args(closure[0], array_shift(closure))))
         {
-            DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
+#if DEBUG == 1
+            if (isdefined(level._b2_dvar_skip_key) && level._b2_dvar_skip_key == dvar)
+            {
+                DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
+            }
+#endif
             return undefined;
         }
         else if (!isarray(closure) && ![[closure]]())
         {
-            DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
+#if DEBUG == 1
+            if (isdefined(level._b2_dvar_skip_key) && level._b2_dvar_skip_key == dvar)
+            {
+                DEBUG_PRINT("Cancelled dvar '" + dvar + "' registration as closure is false");
+            }
+#endif
             return undefined;
         }
-        DEBUG_PRINT("Closure for dvar '" + dvar + "' is true");
+#if DEBUG == 1
+        if (isdefined(level._b2_dvar_skip_key) && level._b2_dvar_skip_key == dvar)
+        {
+            DEBUG_PRINT("Closure for dvar '" + dvar + "' is true");
+        }
+#endif
     }
 
     dvar_data = [];
@@ -1849,7 +1872,12 @@ register_dvar(dvar, set_value, protected, init_only, closure, on_change)
     dvar_data["is_protected"] = protected;
     dvar_data["on_change"] = on_change;
 
-    DEBUG_PRINT("registered dvar " + dvar);
+#if DEBUG == 1
+    if (isdefined(level._b2_dvar_skip_key) && level._b2_dvar_skip_key == dvar)
+    {
+        DEBUG_PRINT("registered dvar " + dvar);
+    }
+#endif
 
     return dvar_data;
 }
@@ -2693,6 +2721,13 @@ cache_tomahawk_state()
     DEBUG_PRINT("cached tomahawk state for " + sstr(self.name) + ": " + sstr(level.b2_tomahawk_cache[STR(self.entity_num)]) + " at " + sstr(self.entity_num));
 }
 #endif
+
+box_integration_log(log, message)
+{
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+    logprint(log + ";" + self getguid() + ";" + self getentitynumber() + ";" + message + "\n");
+#endif
+}
 
 /*
  ************************************************************************************************************
@@ -3703,13 +3738,7 @@ watch_box_state()
         level.total_box_hits++;
 
         self.zbarrier thread scan_in_box();
-
-#if FEATURE_BOXTRACKER == 1 || FEATURE_BOXTRACKER_INTEGRATION == 1
-        if (is_survival_map() && isdefined(level.boxtracker_pulls))
-        {
-            self.zbarrier thread boxtracker_watchweapon(self.chest_user);
-        }
-#endif
+        self.zbarrier thread boxtracker_watchweapon(self.chest_user);
 
         self.zbarrier waittill("randomization_done");
         wait 0.05;
@@ -3974,6 +4003,7 @@ setup_box_tracker()
 
     if (!isdefined(level.boxtracker_pulls) || !isdefined(level.boxtracker_cnt_to_avg))
     {
+        level.boxtracker_pulls = [];
         if (is_tracking_box_key(BOXTRACKER_KEY_JOKER))
         {
             level.boxtracker_pulls[BOXTRACKER_KEY_JOKER] = 0;
@@ -4017,17 +4047,26 @@ boxtracker_watchweapon(player)
 
     self waittill("randomization_done");
     DEBUG_PRINT("boxtracker_watchweapon(" + player.name + ") with str '" + sstr(self.weapon_string) + "'");
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+    foreach (b_player in level.players)
+    {
+        log = "";
+        foreach (idx, wpn in b_player getweaponslistprimaries())
+        {
+            log += "primary" + idx + "=" + sstr(wpn) + ";";
+        }
+        log += "lethal=" + sstr(b_player maps\mp\zombies\_zm_utility::get_player_lethal_grenade()) + ";"
+            + "tactical=" + sstr(b_player maps\mp\zombies\_zm_utility::get_player_tactical_grenade()) + ";"
+            + "placeable_mine=" + sstr(b_player maps\mp\zombies\_zm_utility::get_player_placeable_mine()) + ";"
+            + "melee=" + sstr(b_player maps\mp\zombies\_zm_utility::get_player_melee_weapon());
+        b_player box_integration_log(G_LOG_LOADOUT, log);
+    }
+#endif
 
+    key = BOXTRACKER_KEY_JOKER;
     if (isdefined(self.weapon_string))
     {
         key = self.weapon_string;
-        b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
-    }
-    else
-    {
-        key = BOXTRACKER_KEY_JOKER;
-        level.boxtracker_pulls[key]++;
-        b2_signal("BOX_WEAPON", array(key, player.name), array("weapon", "player"));
     }
 
     self thread delayed_box_weapon_handle(player, key);
@@ -4038,52 +4077,68 @@ delayed_box_weapon_handle(player, key)
     level endon("end_game");
     player endon("disconnect");
     self endon("randomization_done");
+
+#if FEATURE_BOXTRACKER == 1
+    if (isdefined(level.boxtracker_pulls))
+    {
+        cached_boxtracker_cnt_to_avg = [];
+        foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
+        {
+            /* The hit with the weapon also counts to cnt_to_avg for that weapon */
+            if (player player_box_weapon_verification(wpn_to_avg) != "" || key == wpn_to_avg)
+            {
+                cached_boxtracker_cnt_to_avg[cached_boxtracker_cnt_to_avg.size] = wpn_to_avg;
+                DEBUG_PRINT("Adding '" + wpn_to_avg + "' to available_but_did_not_get");
+            }
+        }
+    }
+#endif
+
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+    log = sstr(key) + ";"
+        + sstr(self.script_noteworthy) + ";"
+        + sstr(level.script) + ";"
+        + sstr(level.scr_zm_map_start_location) + ";"
+        + sstr(level.scr_zm_ui_gametype_group);
+#endif
+
     if (!is_true(self.chest_moving))
     {
         self waittill("weapon_grabbed");
     }
 
-#if FEATURE_BOXTRACKER_INTEGRATION == 1
-    DEBUG_PRINT("Printing box hook to game log");
-    logprint(
-        "B;"
-        + player getguid() + ";"
-        + player getentitynumber() + ";"
-        + array_implode("", strtok(sstr(player.name), ";")) + ";"
-        + sstr(key) + ";"
-        + sstr(self.script_noteworthy) + ";"
-        + sstr(level.script) + ";"
-        + sstr(level.scr_zm_map_start_location) + ";"
-        + sstr(level.scr_zm_ui_gametype_group) + "\n"
-    );
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+    player box_integration_log(G_LOG_BOX, log);
 #endif
-    if (key == BOXTRACKER_KEY_JOKER)
-    {
-        return;
-    }
 
-    foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
+#if FEATURE_BOXTRACKER == 1
+    if (isdefined(level.boxtracker_pulls))
     {
-        if (player player_box_weapon_verification(wpn_to_avg) != "" || key == wpn_to_avg)
+        foreach (wpn_to_update in cached_boxtracker_cnt_to_avg)
         {
-            level.boxtracker_cnt_to_avg[wpn_to_avg]++;
-            DEBUG_PRINT("Adding '" + wpn_to_avg + "' to available_but_did_not_get");
+            level.boxtracker_cnt_to_avg[wpn_to_update]++;
         }
-    }
 
-    if (!is_tracking_box_key(key))
-    {
-        return;
-    }
+        if (key == BOXTRACKER_KEY_JOKER)
+        {
+            level.boxtracker_cnt_to_avg[BOXTRACKER_KEY_JOKER]++;
+            level.boxtracker_pulls[BOXTRACKER_KEY_JOKER]++;
+            return;
+        }
+        if (!is_tracking_box_key(key))
+        {
+            return;
+        }
+        if (!isdefined(level.boxtracker_pulls) || !isdefined(level.boxtracker_pulls[key]) || !isdefined(level.boxtracker_pulls[key][player.name]))
+        {
+            DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
+            return;
+        }
 
-    if (!isdefined(level.boxtracker_pulls[key]) || !isdefined(level.boxtracker_pulls[key][player.name]))
-    {
-        DEBUG_PRINT("Undefined boxtracker array with key '" + key + "' for name '" + player.name + "'");
-        return;
+        level.boxtracker_pulls[key][player.name]++;
+        print_box_stats(key, "box", undefined, true);
     }
-
-    level.boxtracker_pulls[key][player.name]++;
-    print_box_stats(key, "box");
+#endif
 }
 
 is_tracking_box_key(key)
@@ -4106,14 +4161,14 @@ is_tracking_box_key(key)
     }
 }
 
-print_box_stats(value, key, player)
+print_box_stats(value, key, player, check_dvar)
 {
     if (!isdefined(level.boxtracker_pulls))
     {
         return true;
     }
     DEBUG_PRINT("print_box_stats('" + value + "', '" + key + "')");
-    if (getdvar("box_tracking") != "1")
+    if (is_true(check_dvar) && getdvar("box_tracking") != "1")
     {
         return true;
     }
@@ -4136,16 +4191,26 @@ print_box_stats(value, key, player)
             break;
         default:
             jokers = get_joker_pulls();
-            if (jokers)
+            if (jokers > 0)
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED), undefined, 10);
+                print_scheduler(
+                    "Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED) + " Jokers: " + COLOR_TXT(jokers, COL_RED)
+                    + "\nMK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED)
+                    + "\nMK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED),
+                    undefined,
+                    10
+                );
             }
             else
             {
-                print_scheduler("Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED), undefined, 10);
+                print_scheduler(
+                    "Hits total: " + COLOR_TXT(level.total_box_hits, COL_RED)
+                    + "\nMK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED)
+                    + "\nMK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED),
+                    undefined,
+                    10
+                );
             }
-            print_scheduler("MK1 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK1), COL_RED) + " MK1 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK1), COL_RED), undefined, 10);
-            print_scheduler("MK2 pulls: " + COLOR_TXT(get_total_pulls(WEAPON_NAME_MK2), COL_RED) + " MK2 avg: " + COLOR_TXT(get_average(WEAPON_NAME_MK2), COL_RED), undefined, 10);
     }
 
     return true;
@@ -4155,8 +4220,10 @@ get_total_pulls(key)
 {
     DEBUG_PRINT("get_total_pulls('" + key + "')");
     value = 0;
-    if (!isdefined(level.boxtracker_pulls[key]))
+    if (!isdefined(level.boxtracker_pulls) || !isdefined(level.boxtracker_pulls[key]))
+    {
         return value;
+    }
 
     DEBUG_PRINT("Boxtracker pulls for key '" + key + "': " + sstr(level.boxtracker_pulls[key]));
     foreach (pull in level.boxtracker_pulls[key])
@@ -4169,13 +4236,14 @@ get_total_pulls(key)
 get_average(key)
 {
     DEBUG_PRINT("get_average('" + key + "')");
-    no_joker_pulls = level.boxtracker_cnt_to_avg[key] - get_joker_pulls();
     key_pulls = get_total_pulls(key);
-    if (no_joker_pulls == 0 || key_pulls == 0)
+    if (!isdefined(level.boxtracker_cnt_to_avg[key]) || level.boxtracker_cnt_to_avg[key] < 1 || key_pulls < 1)
+    {
         return 0;
+    }
 
-    DEBUG_PRINT("get_average() no_joker_pulls=" + sstr(no_joker_pulls) + " key_pulls=" + sstr(key_pulls) + " resulting from boxtracker_cnt_to_avg['" + key + "']=" + sstr(level.boxtracker_cnt_to_avg[key]) + " joker_pulls=" + sstr(get_joker_pulls()));
-    return number_round(no_joker_pulls / key_pulls, 3, true);
+    DEBUG_PRINT("get_average() box_hist=" + sstr(level.boxtracker_cnt_to_avg[key]) + " key_pulls=" + sstr(key_pulls) + " resulting from boxtracker_cnt_to_avg['" + key + "']=" + sstr(level.boxtracker_cnt_to_avg[key]));
+    return number_round(level.boxtracker_cnt_to_avg[key] / key_pulls, 3, true);
 }
 
 kill_box_tracker()
