@@ -47,7 +47,7 @@ Download `b2op-plutonium.gsc` file [from the most recent release](https://github
 > I've created a video on [how to install these patches](https://youtu.be/yjNbmlya6ik) in case instructions here are unclear
 
 > [!WARNING]
-> Redacted and Ancient Plutonium versions are DEPRECATED. They no longer receive new features and are on life support until version 5.0 where they'll stop being released completely. As of March 2026 PC players are required to play on Modern Plutonium.
+> Redacted and Ancient Plutonium versions are DEPRECATED. They no longer receive new features and are on life support until version 5.0 where they'll stop being released completely. The releases are provided AS IS, i try to maintain compatibility but it makes no sense to dedicate time into testing them. As of March 2026 PC players are required to play on Modern Plutonium.
 
 > [!CAUTION]
 > Whenever there's a new major patch release (eg. 2.* to 3.0 or 3.* to 4.0), please note that a lot of internal logic changes, therefore stability may not be up to the full standard. While we recommend you update your patch as we fix issues and add new features, we acknowledge increased risk with new major versions, which is why we usually leave most recent release of last major version in releases for some time, so players can access it until new version was battletested and issues have been fixed. We appreciate early adopters, who by reporting any problems help us provide the stable experience.
