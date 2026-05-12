@@ -1,3 +1,11 @@
+# Version 4.11
+
+- The box tracker print can now be triggered via chat `box` message even when it's disabled
+- The box tracker average calculation was optimized and made to work similar to standalone box trackers
+- Added gamelog based integration for external box tracking
+- Checksums are now flashed automatically on end game event
+- Changed strategy for handling dvar change events to prevent anticheat tripping when Plutos new "FLASH SCRIPT HASHES NOW" button is used
+
 # Version 4.10
 
 - The box tracker print is now disabled by default, details in the readme
