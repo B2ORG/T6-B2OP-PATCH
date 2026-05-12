@@ -1394,6 +1394,14 @@ replace_func_safe(namespace, func_name, override, bool_check, priority)
 }
 #endif
 
+set_dvar_to_1(value, dvar)
+{
+    disabledvarchangednotify(dvar);
+    setdvar(dvar, "1");
+    enabledvarchangednotify(dvar);
+    return false;
+}
+
 /*
  ************************************************************************************************************
  ****************************************** SINGLE PURPOSE FUNCTIONS ****************************************
@@ -1726,11 +1734,11 @@ dvar_config(key)
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT         INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
     dvars[dvars.size] = register_dvar("sv_cheats",                      "0",                    DVAR_PROTECT,       false);
-    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,              true,       undefined,                                          ::timers_alpha);
-    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,              true,       undefined,                                          ::buildables_alpha);
-    dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,              true,       array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
-    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,              false,      undefined,                                          ::kill_hud);
-    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,              true,       ::has_permaperks_system);
+    dvars[dvars.size] = register_dvar("timers",                         "1",                    false,              true,   undefined,                                          ::timers_alpha);
+    dvars[dvars.size] = register_dvar("buildables",                     "1",                    false,              true,   undefined,                                          ::buildables_alpha);
+    dvars[dvars.size] = register_dvar("kill_box_tracker",               "0",                    false,              true,   array(::is_tracking_box_key, BOXTRACKER_KEY_TOTAL), ::kill_box_tracker);
+    dvars[dvars.size] = register_dvar("kill_hud",                       "0",                    false,              false,  undefined,                                          ::kill_hud);
+    dvars[dvars.size] = register_dvar("award_perks",                    "1",                    false,              true,   ::has_permaperks_system);
 #if FEATURE_BOXTRACKER == 1
     dvars[dvars.size] = register_dvar("box_tracking",                   "0",                    false,              true);
 #endif
@@ -1743,31 +1751,31 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("set_character",                  "-1",                   false,              true);
 #endif
 #if FEATURE_CHARACTERS == 1
-    dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,              false,      undefined,                                          ::viewmodel_input);
+    dvars[dvars.size] = register_dvar("viewmodel",                      "",                     false,              false,  undefined,                                          ::viewmodel_input);
 #endif
 
 #if FEATURE_FRIDGE == 1
-    dvars[dvars.size] = register_dvar("fridge",                         "",                     false,              false,      ::has_permaperks_system,                            ::fridge_input);
+    dvars[dvars.size] = register_dvar("fridge",                         "",                     false,              false,  ::has_permaperks_system,                            ::fridge_input);
 #endif
 
 #if FEATURE_FIRSTBOX == 1
-    dvars[dvars.size] = register_dvar("fb",                             "",                     false,              false,      ::has_magic,                                        ::firstbox_input);
+    dvars[dvars.size] = register_dvar("fb",                             "",                     false,              false,  ::has_magic,                                        ::firstbox_input);
 #endif
 
 #if FEATURE_BOX_LOCATION == 1
-    dvars[dvars.size] = register_dvar("lb",                             "",                     false,              false,      undefined,                                          ::box_location_input);
+    dvars[dvars.size] = register_dvar("lb",                             "",                     false,              false,  undefined,                                          ::box_location_input);
 #endif
 
 #if FEATURE_MOB_KEY == 1
-    dvars[dvars.size] = register_dvar("key",                            "",                     false,              false,      array(::is_plutonium_version, VER_4K),              ::key_input);
+    dvars[dvars.size] = register_dvar("key",                            "",                     false,              false,  array(::is_plutonium_version, VER_4K),              ::key_input);
 #endif
 
 #if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
-    dvars[dvars.size] = register_dvar("g_logsync",                      "1",                    false,              false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_logsync",                      "1",                    false,              false,  array(::is_plutonium_version, VER_4K));
 #endif
 
 #if DEBUG == 1
-    dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,              false,      undefined,                                          ::_dvar_reader);
+    dvars[dvars.size] = register_dvar("getDvarValue",                   "",                     false,              false,  undefined,                                          ::_dvar_reader);
 #endif
 
 #if PLUTO == 0
@@ -1782,7 +1790,7 @@ dvar_config(key)
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0MsgTime",      "5",                    DVAR_PROTECT_LOWER, false);
     dvars[dvars.size] = register_dvar("con_gameMsgWindow0Filter",       "gamenotify obituary",  DVAR_PROTECT,       false);
     /* The corpse count dvar definition says 8, however it's being set to 5 on first game launch, so effectively records are being played on 5. It's being mistakenly set to 8 on Pluto 4837 to 5140+ */
-    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, 5145, true));
+    dvars[dvars.size] = register_dvar("ai_corpseCount",                 "5",                    DVAR_PROTECT,       false,  array(::is_plutonium_version, 5145, true));
     /* Prevent host migration (redundant nowadays) */
     dvars[dvars.size] = register_dvar("sv_endGameIfISuck",              "0",                    false,              false);
     /* Force post dlc1 patch on recoil */
@@ -1790,20 +1798,20 @@ dvar_config(key)
     /* Remove Depth of Field */
     dvars[dvars.size] = register_dvar("r_dof_enable",                   "0",                    false,              true);
     /* Fix for devblocks in r3903/3904 */
-    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,              false,      array(::is_plutonium_version, VER_3K));
+    dvars[dvars.size] = register_dvar("scr_skip_devblock",              "1",                    false,              false,  array(::is_plutonium_version, VER_3K));
     /* Use native health fix, r4516+ */
-    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,              true,       array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_zm_fix_damage_overflow",       "1",                    false,              true,   array(::is_plutonium_version, VER_4K));
     /* Defines if Pluto error fixes are applied, r4516+ */
-    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("g_fix_entity_leaks",             "0",                    DVAR_PROTECT,       false,  array(::is_plutonium_version, VER_4K));
     /* Enables flashing hashes of individual scripts */
-    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_flashScriptHashes",           "1",                    false,              false,  array(::is_plutonium_version, VER_4K),              ::set_dvar_to_1);
     /* Offsets for pluto draws compatibile with b2 timers */
-    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,              false,      ::should_set_draw_offset);
+    dvars[dvars.size] = register_dvar("cg_debugInfoCornerOffset",       "-20 15",               false,              false,  ::should_set_draw_offset);
     /* Displays the game status ID */
-    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    DVAR_PROTECT,       false,      array(::is_plutonium_version, VER_4K));
+    dvars[dvars.size] = register_dvar("cg_drawIdentifier",              "1",                    false,              false,  array(::is_plutonium_version, VER_4K),              ::set_dvar_to_1);
     /* Locks fps for all clients - 5162 fixes the limiter so we can set it more accurately */
-    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "250",                  DVAR_PROTECT,       false,      array(::is_plutonium_version, 5163));
-    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "332",                  DVAR_PROTECT,       false,      array(::is_plutonium_version, 5162, true));
+    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "250",                  DVAR_PROTECT,       false,  array(::is_plutonium_version, 5163));
+    dvars[dvars.size] = register_dvar("sv_clientFpsLimit",              "332",                  DVAR_PROTECT,       false,  array(::is_plutonium_version, 5162, true));
 
     if (isdefined(key))
     {
