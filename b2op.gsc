@@ -3775,6 +3775,10 @@ scan_in_box()
         should_be_in_box = 22;
     else if (is_origins())
         should_be_in_box = 23;
+    else if (getdvar("fs_game") != "" && isdefined(level.b2_should_be_in_box))
+        should_be_in_box = int(level.b2_should_be_in_box);
+    else
+        return;
 
     offset = 0;
     if (is_die_rise() || is_origins())
