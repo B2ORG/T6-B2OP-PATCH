@@ -66,6 +66,7 @@
 #define WATERMARK_SLOT_PERM 0
 #define WATERMARK_SLOT_TEMP 1
 #define SLOT_ARRAY array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630)
+#define G_LOG_BOXOPEN "O"
 #define G_LOG_LOADOUT "L"
 #define G_LOG_BOX "B"
 
@@ -3737,16 +3738,26 @@ watch_box_state()
     LEVEL_ENDON
 
     while (!isdefined(self.zbarrier))
+    {
         wait 0.05;
+    }
 
     while (true)
     {
         while (self.zbarrier getzbarrierpiecestate(2) != "opening")
+        {
             wait 0.05;
+        }
         level.total_box_hits++;
 
         self.zbarrier thread scan_in_box();
-        self.zbarrier thread boxtracker_watchweapon(self.chest_user);
+        if (isdefined(self.chest_user))
+        {
+            self.zbarrier thread boxtracker_watchweapon(self.chest_user);
+#if PLUTO == 1 && FEATURE_BOXTRACKER_INTEGRATION == 1
+            self.chest_user box_integration_log(G_LOG_BOXOPEN, sstr(self.script_noteworthy));
+#endif
+        }
 
         self.zbarrier waittill("randomization_done");
         wait 0.05;
