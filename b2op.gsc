@@ -1631,7 +1631,7 @@ register_chat(chat, aliases, callback, host_only, is_thread)
 dvar_config(key)
 {
 #if DEBUG == 1
-    level._b2_dvar_skip_key = key;
+    level._b2_dvar_skip_key = sstr(key);
 #endif
     dvars = [];
     /*                                  DVAR                            VALUE                   PROTECT         INIT_ONLY   EVAL                                                WATCHER_CALLBACK*/
@@ -4003,9 +4003,9 @@ delayed_box_weapon_handle(player, key)
     self endon("randomization_done");
 
 #if FEATURE_BOXTRACKER == 1
+    cached_boxtracker_cnt_to_avg = [];
     if (isdefined(level.boxtracker_pulls))
     {
-        cached_boxtracker_cnt_to_avg = [];
         foreach (wpn_to_avg in getarraykeys(level.boxtracker_cnt_to_avg))
         {
             /* The hit with the weapon also counts to cnt_to_avg for that weapon */
