@@ -50,16 +50,17 @@
 #define STAT_CAMO "alt_clip"
 #define STAT_KEY_MAP "zm_prison"
 #define STAT_KEY "clip"
-#define DVAR_UNPROTECT 0
-#define DVAR_PROTECT 1
-#define DVAR_PROTECT_LOWER 2
-#define DVAR_PROTECT_HIGHER 3
 #define WATERMARK_SLOT_PERM 0
 #define WATERMARK_SLOT_TEMP 1
 #define SLOT_ARRAY array(0, -90, 90, -180, 180, -270, 270, -360, 360, -450, 450, -540, 540, -630, 630)
 #define G_LOG_BOXOPEN "O"
 #define G_LOG_LOADOUT "L"
 #define G_LOG_BOX "B"
+#define DVAR_INIT_ONLY 1
+#define DVAR_PROTECT 2
+#define DVAR_PROTECT_LOWER 4
+#define DVAR_PROTECT_HIGHER 8
+#define DVAR_CLIENT 16
 
 /* Feature flags */
 #define FEATURE_HUD 1
