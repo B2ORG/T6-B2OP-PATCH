@@ -78,6 +78,7 @@ init()
     {
         level.b2_sniff = 0;
     }
+    level.b2_flag = 0;
     thread protect_file();
     thread on_player_connected();
     init_b2_flags();
@@ -936,6 +937,64 @@ normalize_both(numeric1, numeric2, factor)
         return normalize_both(numeric1, numeric2, int(factor / 2));
     }
     return array(int(number1 * factor), int(number2 * factor));
+}
+
+b2_flag(flag)
+{
+    return (level.b2_flag & int(flag));
+}
+
+b2_flag_set(flag)
+{
+    level.b2_flag |= int(flag);
+}
+
+b2_flag_clear(flag)
+{
+    level.b2_flag = level.b2_flag & ~int(flag);
+}
+
+b2_flag_wait(flag)
+{
+    while (!b2_flag(flag))
+    {
+        wait 0.05;
+    }
+}
+
+b2_flag_waitopen(flag)
+{
+    while (b2_flag(flag))
+    {
+        wait 0.05;
+    }
+}
+
+b2_flag_wait_timeout(flag, timeout_ms)
+{
+    start = gettime();
+    while (!b2_flag(flag))
+    {
+        if (start + timeout_ms >= gettime())
+        {
+            break;
+        }
+        wait 0.05;
+    }
+}
+
+b2_flag_waitopen_timeout(flag, timeout_ms)
+{
+    start = gettime();
+
+    while (b2_flag(flag))
+    {
+        if (start + timeout_ms >= gettime())
+        {
+            break;
+        }
+        wait 0.05;
+    }
 }
 
 is_town()
