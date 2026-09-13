@@ -101,7 +101,7 @@ post_init()
 
     thread init_b2_hud();
     init_b2_box();
-    init_b2_chat_watcher();
+    thread init_b2_chat_watcher();
     init_b2_backspeed();
     thread b2op_main_loop();
     thread end_game_callback();
@@ -285,7 +285,11 @@ init_b2_dvars()
 init_b2_chat_watcher()
 {
 #if PLUTO == 1
-    thread chat_watcher();
+    while (true)
+    {
+        level waittill("say", message, player);
+        level thread b2_chat_handler(message, player);
+    }
 #endif
 }
 
@@ -1372,6 +1376,75 @@ get_is_dvar_protected(dvar_config)
     return false;
 }
 
+player_input(input_type, input_content, player)
+{
+    if (!isdefined(input_type) || !isdefined(input_content) || !isdefined(player))
+    {
+        return;
+    }
+
+    switch (input_type)
+    {
+        case INPUT_BACKSPEED:
+            backspeed_input(input_content, "", player);
+            break;
+        case INPUT_SPLITS:
+            splits_input(input_content, "", player);
+            break;
+#if FEATURE_CHARACTERS == 1
+        case INPUT_CHARACTERS:
+            characters_input(input_content, "", player);
+            break;
+        case INPUT_VIEWMODEL:
+            viewmodel_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_FRIDGE == 1
+        case INPUT_FRIDGE:
+            fridge_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_FIRSTBOX == 1
+        case INPUT_FIRSTBOX:
+            firstbox_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_BOX_LOCATION == 1
+        case INPUT_BOXLOCATION:
+            box_location_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_BOXTRACKER == 1
+        case INPUT_BOXSTATS:
+            print_box_stats(input_content, "", player);
+            break;
+#endif
+#if FEATURE_MOB_KEY == 1
+        case INPUT_KEY:
+            key_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+        case INPUT_TANK:
+            tank_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_PERMAPERKS == 1
+        case INPUT_PURIST:
+            purist_input(input_content, "", player);
+            break;
+#endif
+#if FEATURE_ANIMATED_CAMOS == 1
+        case INPUT_CAMO:
+            camo_input(input_content, "", player);
+            break;
+        case INPUT_RETICLE:
+            reticle_input(input_content, "", player);
+            break;
+#endif
+    }
+}
+
 /*
  ************************************************************************************************************
  ****************************************** SINGLE PURPOSE FUNCTIONS ****************************************
@@ -1416,97 +1489,85 @@ protect_file()
 }
 
 #if PLUTO == 1
-chat_watcher()
+b2_chat_handler(message, player)
 {
-    LEVEL_ENDON
-
-    while (true)
+    if (!isdefined(message) || message == "")
     {
-        CLEAR(message)
-        CLEAR(player)
-        CLEAR(alias)
-        CLEAR(chat)
-        CLEAR(matched_chat)
-        CLEAR(contents)
-        CLEAR(cmd)
-        CLEAR(message_elements)
-        CLEAR(cfg)
+        return;
+    }
 
-        level waittill("say", message, player);
+    if (!isdefined(player) || !isplayer(player))
+    {
+        player = gethostplayer();
+    }
 
-        if (message == "")
-        {
-            continue;
-        }
+    message_elements = strtok(message, " ");
+    command_param = message_elements.size > 1 ? array_implode(" ", array_shift(message_elements)) : "";
 
-        if (!isplayer(player))
-        {
-            player = gethostplayer();
-        }
-
-        cfg = chat_config();
-
-        message_elements = strtok(message, " ");
-        cmd = message_elements[0];
-        contents = "";
-        if (message_elements.size > 1)
-        {
-            contents = array_implode(" ", array_shift(message_elements));
-        }
-
-        matched_chat = undefined;
-        foreach (chat in cfg)
-        {
-            if (flag("b2_" + chat["chat"] + "_locked"))
-            {
-                DEBUG_PRINT("not checking chat " + sstr(chat["chat"]) + " as flag is locked");
-                continue;
-            }
-            if (chat["host_only"] && !player ishost())
-            {
-                DEBUG_PRINT("not checking chat " + sstr(chat["chat"]) + " as player " + sstr(player.name) + " is not a host");
-                continue;
-            }
-
-            if (chat["chat"] == cmd || "!" + chat["chat"] == CMD)
-            {
-                // debugbox("chat['chat'] == cmd");
-                matched_chat = chat;
-                break;
-            }
-
-            foreach (alias in chat["aliases"])
-            {
-                if (alias == cmd || "!" + alias == cmd)
-                {
-                    // debugbox("alias == cmd");
-                    matched_chat = chat;
-                    break;
-                }
-            }
-
-            if (isdefined(matched_chat))
-            {
-                break;
-            }
-        }
-
-        if (!isdefined(matched_chat))
-        {
-            continue;
-        }
-        DEBUG_PRINT("matched chat '" + sstr(matched_chat["chat"]) + "' to message '" + sstr(message) + "' for player " + sstr(player.name));
-
-        if (matched_chat["thread"])
-        {
-            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a thread callback");
-            thread [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
-        }
-        else
-        {
-            DEBUG_PRINT("Passing value '" + sstr(contents) + "' to a callback");
-            [[matched_chat["callback"]]](contents, matched_chat["chat"], player);
-        }
+    switch (tolower(message_elements[0]))
+    {
+        case "backspeed":
+        case "!bs":
+            level thread player_input(INPUT_BACKSPEED, command_param, player);
+            break;
+        case "splits":
+        case "!sl":
+            level thread player_input(INPUT_SPLITS, command_param, player);
+            break;
+#if FEATURE_CHARACTERS == 1
+        case "char":
+            level thread player_input(INPUT_CHARACTERS, command_param, player);
+            break;
+        case "view":
+            level thread player_input(INPUT_VIEWMODEL, command_param, player);
+            break;
+#endif
+#if FEATURE_FRIDGE == 1
+        case "fridge":
+        case "!fr":
+            level thread player_input(INPUT_FRIDGE, command_param, player);
+            break;
+#endif
+#if FEATURE_FIRSTBOX == 1
+        case "fb":
+            level thread player_input(INPUT_FIRSTBOX, command_param, player);
+            break;
+#endif
+#if FEATURE_BOX_LOCATION == 1
+        case "lb":
+            level thread player_input(INPUT_BOXLOCATION, command_param, player);
+            break;
+#endif
+#if FEATURE_BOXTRACKER == 1
+        case "box":
+            level thread player_input(INPUT_BOXSTATS, command_param, player);
+            break;
+#endif
+#if FEATURE_MOB_KEY == 1
+        case "key":
+            level thread player_input(INPUT_KEY, command_param, player);
+            break;
+#endif
+#if FEATURE_ORIGINS_TANK_DEPATCH == 1
+        case "tank":
+            level thread player_input(INPUT_TANK, command_param, player);
+            break;
+#endif
+#if FEATURE_PERMAPERKS == 1
+        case "purist":
+        case "!pr":
+            level thread player_input(INPUT_PURIST, command_param, player);
+            break;
+#endif
+#if FEATURE_ANIMATED_CAMOS == 1
+        case "camo":
+            level thread player_input(INPUT_CAMO, command_param, player);
+            break;
+        case "reticle":
+        case "!rt":
+            level thread player_input(INPUT_RETICLE, command_param, player);
+            break;
+#endif
     }
 }
 #endif
@@ -2194,6 +2255,10 @@ key_input(value, key, player)
         print_scheduler("This feature does not support your Plutonium version, consider updating", player);
         return true;
     }
+    if (!player ishost())
+    {
+        return true;
+    }
 
     switch (value)
     {
@@ -2332,7 +2397,12 @@ tank_input(value, key, player)
         return true;
     }
 
-    if (gethostplayer() maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_tomb"))
+    if (!player ishost())
+    {
+        return true;
+    }
+
+    if (player maps\mp\zombies\_zm_stats::get_map_weaponlocker_stat("clip", "zm_tomb"))
     {
         print_scheduler("Tank depatch: " + COLOR_TXT("Disabled", COL_YELLOW));
         player maps\mp\zombies\_zm_stats::set_map_weaponlocker_stat("clip", 0, "zm_tomb");
@@ -2539,6 +2609,10 @@ purist_input(new_value, dvar, player)
 #if PLUTO == 1
 backspeed_input(new_value, dvar, player)
 {
+    if (!player ishost())
+    {
+        return;
+    }
     // DEBUG_PRINT("backspeed_input('" + sstr(new_value) + "', '" + sstr(dvar) + "', '" + sstr(player.name) + "')");
     if (isstring(new_value))
     {
@@ -2957,6 +3031,10 @@ splits_input(new_value, dvar, player)
     if (!is_io_available())
     {
         print_scheduler("File IO is " + COLOR_TXT("NOT AVAILABLE", COL_RED));
+        return true;
+    }
+    if (!player ishost())
+    {
         return true;
     }
 
@@ -3577,7 +3655,9 @@ fridge_handler()
             locker = player get_locker_stat();
             /* Save state of the locker, if it's any weapon */
             if (!isdefined(player.fridge_state) && locker != "")
+            {
                 player.fridge_state = locker;
+            }
             /* If locker is saved, but stat is cleared, break out */
             else if (isdefined(player.fridge_state) && locker == "")
             {
@@ -4331,6 +4411,10 @@ first_box()
 
 firstbox_input(value, key, player)
 {
+    if (b2_flag(F_FIRSTBOX_LOCKED))
+    {
+        return true;
+    }
     /* Additional check, prevents rigging past RNG_ROUND */
     if (!isdefined(level.b2_rigged_hits))
     {
