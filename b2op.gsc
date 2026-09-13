@@ -249,9 +249,6 @@ init_b2_flags()
     flag_init("b2_char_taken_2");
     flag_init("b2_char_taken_3");
     flag_init("b2_boxtracker_hud_busy");
-    flag_init("b2_fridge_locked");
-    flag_init("b2_fb_locked");
-    flag_init("b2_lb_locked");
     flag_init("b2_silent_backspeed");
     if (is_mob())
         flag_init("b2_tomahawk_upgraded");
@@ -3566,14 +3563,14 @@ fridge_handler()
 
     if (!has_permaperks_system())
     {
-        flag_set("b2_fridge_locked");
+        b2_flag_set(F_FRIDGE_LOCKED);
         return;
     }
 
     // DEBUG_PRINT("currently in fridge='" + level.players[0] get_locker_stat() + "'");
 
     print_scheduler("Fridge module: " + TXT_AVAILABLE);
-    while (!flag("b2_fridge_locked"))
+    while (!b2_flag(F_FRIDGE_LOCKED))
     {
         foreach (player in level.players)
         {
@@ -3583,11 +3580,15 @@ fridge_handler()
                 player.fridge_state = locker;
             /* If locker is saved, but stat is cleared, break out */
             else if (isdefined(player.fridge_state) && locker == "")
-                flag_set("b2_fridge_locked");
+            {
+                b2_flag_set(F_FRIDGE_LOCKED);
+            }
         }
 
         if (is_round(RNG_ROUND))
-            flag_set("b2_fridge_locked");
+        {
+            b2_flag_set(F_FRIDGE_LOCKED);
+        }
 
         wait 0.1;
     }
@@ -3603,7 +3604,7 @@ fridge_handler()
 
 fridge_input(value, key, player)
 {
-    if (flag("b2_fridge_locked"))
+    if (b2_flag(F_FRIDGE_LOCKED))
     {
         return true;
     }
@@ -4383,8 +4384,7 @@ rig_box(guns, player)
     current_box_hits = level.total_box_hits;
     removed_guns = [];
 
-    flag_set("b2_fb_locked");
-    // DEBUG_PRINT("FIRST BOX: flag('box_rigged'): " + flag("b2_fb_locked"));
+    b2_flag_set(F_FIRSTBOX_LOCKED);
 
     level.special_weapon_magicbox_check = undefined;
     foreach (weapon in getarraykeys(level.zombie_weapons))
@@ -4427,7 +4427,7 @@ rig_box(guns, player)
         rig_box(array_shift(guns), player);
     }
 
-    flag_clear("b2_fb_locked");
+    b2_flag_clear(F_FIRSTBOX_LOCKED);
 }
 
 box_weapon_verification(weapon_key)
@@ -4533,7 +4533,7 @@ box_location_input(value, key, player)
     /* Attempt moving the chest */
     if (move_chest(selection))
     {
-        flag_set("b2_lb_locked");
+        b2_flag_set(F_BOXLOCATION_LOCKED);
         print_scheduler("Box moved to: " + COLOR_TXT(selection["name"], COL_YELLOW));
     }
 
@@ -4648,7 +4648,7 @@ can_set_box_location()
     if (is_true(level.total_box_hits))
     {
         DEBUG_PRINT("can_set_box_location false => total_box_hits");
-        flag_set("b2_lb_locked");
+        b2_flag_set(F_BOXLOCATION_LOCKED);
         return false;
     }
     /* Mob can't lb until exit 1st afterlife */

@@ -62,6 +62,11 @@
 #define DVAR_PROTECT_HIGHER 8
 #define DVAR_CLIENT 16
 
+/* B2 flags */
+#define F_FRIDGE_LOCKED 1
+#define F_FIRSTBOX_LOCKED 2
+#define F_BOXLOCATION_LOCKED 4
+
 /* Feature flags */
 #define FEATURE_HUD 1
 #define FEATURE_PERMAPERKS 1
