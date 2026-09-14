@@ -927,7 +927,7 @@ normalize_both(numeric1, numeric2, factor)
 
 b2_flag(flag)
 {
-    DEBUG_PRINT("query B2 flag: " + sstr(flag));
+    // DEBUG_PRINT("query B2 flag: " + sstr(flag));
     return (level.b2_flag & int(flag));
 }
 
@@ -940,7 +940,11 @@ b2_flag_set(flag)
 b2_flag_clear(flag)
 {
     DEBUG_PRINT("clear B2 flag: " + sstr(flag));
-    level.b2_flag = level.b2_flag & ~int(flag);
+#if REDACTED == 1
+    level.b2_flag -= (level.b2_flag & int(flag));
+#else
+    level.b2_flag = (level.b2_flag & ~int(flag));
+#endif
 }
 
 b2_flag_wait(flag)
@@ -1374,6 +1378,7 @@ get_is_dvar_protected(dvar_config)
     return false;
 }
 
+#if PLUTO == 1
 player_input(input_type, input_content, player)
 {
     if (!isdefined(input_type) || !isdefined(input_content) || !isdefined(player))
@@ -1442,6 +1447,7 @@ player_input(input_type, input_content, player)
 #endif
     }
 }
+#endif
 
 /*
  ************************************************************************************************************
@@ -2626,7 +2632,6 @@ purist_input(new_value, dvar, player)
     return true;
 }
 
-#if PLUTO == 1
 backspeed_input(new_value, dvar, player)
 {
     if (!player ishost())
@@ -2686,7 +2691,6 @@ backspeed_input(new_value, dvar, player)
     }
     return true;
 }
-#endif
 
 #if PLUTO == 0
     check_steam_backspeed(revert)
@@ -4838,7 +4842,11 @@ override_personality_character()
 
     preset = self parse_preset(get_character_stat_for_map(), array(1, 2, 3, 4));
     charindex = preset - 1;
+#if REDACTED == 1
+    if (preset > 0 && !b2_flag(F_CHAR_0_TAKEN * int(pow(2, clamp(charindex, 0, 3)))))
+#else
     if (preset > 0 && !b2_flag(clamp(F_CHAR_0_TAKEN << charindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN)))
+#endif
     {
         /* Need to assign level checks for coop specific logic in original callbacks */
         if (is_mob() && charindex == 3)
@@ -4852,7 +4860,11 @@ override_personality_character()
 
     self [[level.old_givecustomcharacters]]();
     /* Set it here, to avoid duplicates when some players don't have presets */
+#if REDACTED == 1
+    b2_flag_set(F_CHAR_0_TAKEN * int(pow(2, clamp(self.characterindex, 0, 3))));
+#else
     b2_flag_set(clamp(F_CHAR_0_TAKEN << self.characterindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN));
+#endif
 }
 
 override_team_character()
@@ -4912,7 +4924,11 @@ get_character_stat_for_map()
 
 character_flag_cleanup()
 {
+#if REDACTED == 1
+    b2_flag_clear(F_CHAR_0_TAKEN * int(pow(2, clamp(self.characterindex, 0, 3))));
+#else
     b2_flag_clear(clamp(F_CHAR_0_TAKEN << self.characterindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN));
+#endif
     DEBUG_PRINT("clearing character flag: " + self.characterindex);
 
     /* Need to invoke original callback afterwards */
