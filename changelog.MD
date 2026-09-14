@@ -1,3 +1,10 @@
+# Version 4.12
+
+- Set Plutonium competitive DVARs on the patch level
+- Fridge can now be set with a specific attachment using original `+<attachment>` syntax
+- Permaperks that are removed on a specific map now have their progress stats reset regardless whether players already have them
+- Optimize allocations
+
 # Version 4.11
 
 - The box tracker print can now be triggered via chat `box` message even when it's disabled

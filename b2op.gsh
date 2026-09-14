@@ -1,6 +1,6 @@
 /* Const macros */
-#define B2OP_VER "4.11"
-#define DEPRECATION 5304
+#define B2OP_VER "4.12"
+#define DEPRECATION 5346
 #define VER_ANCIENT 353
 #define VER_MODERN 1824
 #define VER_2905 2905

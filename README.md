@@ -3,12 +3,13 @@
 Patch for playing world record games in Black Ops II Zombies. Made based on community decision to create an official community patch from March 2023, and made mandatory for PC games during the vote in February 2026. The patch is focusing mainly on optimization, the priority is to contribute the least possible amount to errors the game has. It's features are build around finding a balance between reducing it's footprint and making it useful.
 
 Patch has already proved itself in multiple top games, including, but not limited to:
-- Tranzit [205](https://youtu.be/howdiS5Zq0k) WR by Santo
-- Town [100](https://x.com/Slewya/status/1837385114940022888) No Jug WR by Slewya
-- Die Rise [120](https://youtu.be/N0D1UieRNgM) coop WR by Issuez & NoMoleMan
+- Tranzit [249](https://youtu.be/yrlT4kK6DAw) WR by DestroyeR
+- Town [102](https://youtu.be/wy-RlDveayw) WR by Slewya
 - Mob of the Dead [240](https://youtu.be/MLtwXob2WJw) by Queziaa
-- Buried [255](https://www.twitch.tv/videos/2023305226) WR by Blasteress
-- Origins [173](https://www.twitch.tv/videos/2546264620) WR by Vengiix
+- Buried [255](https://youtu.be/Bit3MdgEckY) WR by NoMoleMan
+- Origins [179](https://youtu.be/XMVmwo_eYxI) WR by Vengiix
+- Die Rise COOP [120](https://youtu.be/N0D1UieRNgM) WR by Issuez & NoMoleMan
+- Buried COOP [225](https://youtu.be/2Ul9VcIu7ck) WR by NoMoleMan & TMargwa
 
 # Informations
 
@@ -16,7 +17,7 @@ Please inform me about any issues you may encounter with the patch, so they can 
 
 The patch was build in cooperation with [Astrox](https://twitter.com/lAsTroXl) who was a driving force in creating the patch and [NoMoleMan](https://x.com/NoMoleMan) who did insane amount of testing to help make the patch as good as it is today.
 
-Before reporting a problem, please check out the [FAQ section down below](#faq), you may find answers you're looking for there
+Before reporting a problem, please make sure you're using the most recent Plutonium and B2OP versions. Also check commonly asked questions in [FAQ section down below](#faq), you may find answers you're looking for there.
 
 [Also check out a B2 website with useful tools and data](https://b2.wtf/)
 
@@ -115,8 +116,8 @@ A high level overview what features are available in each of the versions.
 | MOTD key spawn patch | ✓ | ✗ | ✗ | ✗ |
 | MOTD Tomahawk pickup after reconnecting | ✓ | ✗ | ✗ | ✗ |
 
-1. Configuration only as host
-2. Fixed by Plutonium in the engine
+1. Configuration only as host.
+2. Fixed by Plutonium in the engine.
 3. Disabled by default, i recommend using the [dedicated Box tracker](https://gitlab.com/EvelynYuki/BoxAverageTracker) instead. Set `box_tracking` dvar to 1 to enable this feature.
 
 # Patch checksum
@@ -460,10 +461,10 @@ fb mk2|monk|galil
 
 ## Overriding fridge weapon
 
-Player is allowed to override weapons for himself and his team in the fridge until either round 11 or first use of the fridge. This functionality does not allow for inserting weapons that are not normally allowed to be put in the fridge by the game.
+Player is allowed to override weapons for themselves and their team in the fridge until either round 11 or first use of the fridge. This functionality does not allow for inserting weapons that are not normally allowed to be put in the fridge by the game.
 To override fridge weapon, a DVAR `fridge` has to be set to the right value. 
 
-Values from this DVAR can be seen above (in the [Overriding box weapon](#overriding-box-weapon) section), but in order to put upgraded weapon in the fridge, a `+` has to be added in front of the weapon key.
+Values from this DVAR can be seen above (in the [Overriding box weapon](#overriding-box-weapon) section), but in order to put upgraded weapon in the fridge, a `+` has to be added in front of the weapon key. Weapon can be also suffixed with an attachment the game permits to be on an upgraded weapon.
 
 Example for normal weapon:
 
@@ -477,6 +478,12 @@ Example for upgraded weapon:
 fridge +m16
 ```
 
+Example for upgraded weapon with custom attachment:
+
+```
+fridge +an94+rangefinder
+```
+
 Example of player setting weapons for everyone (host only):
 
 ```
@@ -488,6 +495,32 @@ Example of player setting upgraded weapons for everyone (host only):
 ```
 fridge all +m16
 ```
+
+### Available attachments
+
+| Weapon | Attachment codes |
+| :---: | :---: |
+| B23R | `extbarrel` `dualclip` |
+| Executioner | `extbarrel` `dualclip_judge` |
+| Fiveseven | `extbarrel` `dualclip` |
+| KAP40 | `extbarrel` `dualclip` |
+| Chicom CQB | `reflex` `grip` `dualclip` `sf` |
+| PDW57 | `reflex` `rangefinder` `mms` |
+| Skorpion EVO | `reflex` `rangefinder` `dualclip` |
+| Remington 870 | `reflex` `extbarrel` |
+| Saiga | `reflex` `extbarrel` |
+| M1216 | `reflex` `extbarrel` |
+| AN94 | `reflex` `grip` `rangefinder` `mms` |
+| M27 | `reflex` `longbreath` `rangefinder` `mms` |
+| M8A1 | `reflex` `longbreath` `rangefinder` `gl` `mms` |
+| MTAR | `reflex` `longbreath` `rangefinder` `gl` `mms` |
+| SCAR | `reflex` `rangefinder` `dualclip` `acog` |
+| SMR | `dualoptic` `reflex` `rangefinder` `mms` |
+| Type 25 | `reflex` `longbreath` `rangefinder` `gl` `mms` |
+| Ballista | `acog` `is` |
+| DSR50 | `vzoom` `is` `silencer` |
+| HAMR | `reflex` `grip` `acog` |
+| LSAT | `rangefinder` `reflex` `grip` `acog` |
 
 ## Overriding key location
 
