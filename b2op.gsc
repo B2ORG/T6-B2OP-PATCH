@@ -3601,10 +3601,23 @@ resolve_permaperk(perk)
         }
     }
 
-    if (isinarray(perk["maps_take"], level.script) && is_true(self.pers_upgrades_awarded[perk_code]))
+    if (isinarray(perk["maps_take"], level.script))
     {
-        // DEBUG_PRINT("call remove_permaperk_wrapper with " + sstr(stat_name) + " (" + sstr(perk_code) + ")");
-        self remove_permaperk_wrapper(perk_code, 0, false);
+        /* If they got perk already, run the whole cleanup sequence */
+        if (is_true(self.pers_upgrades_awarded[perk_code]))
+        {
+            // DEBUG_PRINT("call remove_permaperk_wrapper(" + sstr(perk_code) + ")");
+            self remove_permaperk_wrapper(perk_code, 0, false);
+        }
+        /* Otherwise simply zero progress stats */
+        else
+        {
+            foreach (remove_stat in level.pers_upgrades[perk_code].stat_names)
+            {
+                // DEBUG_PRINT("call remove_permaperk_stat(" + sstr(remove_stat) + ")");
+                self remove_permaperk_stat(remove_stat);
+            }
+        }
     }
 }
 
