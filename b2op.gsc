@@ -2159,6 +2159,7 @@ debug_mode()
     }
 
     thread _run_test_array();
+    thread _dumps();
 }
 #endif
 
@@ -3727,62 +3728,107 @@ fridge_input(value, key, player)
     {
         return true;
     }
+    if (!isdefined(player))
+    {
+        player = gethostplayer();
+    }
 
     set_all = false;
     if (isstrstart(value, "all "))
     {
         value = getsubstr(value, 4);
-        /* Dvar watcher won't provide player at all, that's how we identify it */
-        if (!isdefined(player) || player ishost())
+        if (player ishost())
         {
             set_all = true;
         }
     }
 
+    upgrade = false;
+    if (isstrstart(value, "+"))
+    {
+        upgrade = true;
+        value = getsubstr(value, 1);
+    }
+
+    attachment = maps\mp\zombies\_zm_weapons::get_attachment_name(value);
+    value = maps\mp\zombies\_zm_weapons::get_base_name(value);
+
     if (set_all)
     {
-        rig_fridge(value);
+        foreach (p in level.players)
+        {
+            DEBUG_PRINT("rig fridge => " + sstr(p) + " " + sstr(value) + " " + sstr(upgrade) + " " + sstr(attachment));
+            set_weapon = rig_fridge(p, value, upgrade, attachment);
+            if (isdefined(set_weapon) && p.clientid == player.clientid)
+            {
+                print_scheduler("You set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(set_weapon), COL_YELLOW), p);
+            }
+            else if (isdefined(set_weapon))
+            {
+                print_scheduler(COLOR_TXT(player.name, COL_YELLOW) + " set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(set_weapon), COL_YELLOW), p);
+            }
+            else if (p.clientid == player.clientid)
+            {
+                print_scheduler("Incorrect fridge weapon key: " + COLOR_TXT(sstr(value), COL_RED), player);
+            }
+        }
+
+        return true;
     }
-    else if (isdefined(player) && player maps\mp\zombies\_zm_utility::is_player())
+
+    DEBUG_PRINT("rig fridge => " + sstr(player) + " " + sstr(value) + " " + sstr(upgrade) + " " + sstr(attachment));
+    set_weapon = rig_fridge(player, value, upgrade, attachment);
+    if (isdefined(set_weapon))
     {
-        rig_fridge(value, player);
+        print_scheduler("You set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(set_weapon), COL_YELLOW), player);
     }
     else
     {
-        rig_fridge(value, gethostplayer());
+        print_scheduler("Incorrect fridge weapon key: " + COLOR_TXT(sstr(value), COL_RED), player);
     }
 
     return true;
 }
 
-rig_fridge(key, player)
+rig_fridge(for_player, weapon, upgraded, attachment)
 {
-    // DEBUG_PRINT("rig_fridge(): key=" + key + "'");
-
-    if (issubstr(key, "+"))
-        weapon = get_weapon_key(getsubstr(key, 1), ::fridge_pap_weapon_verification);
-    else
-        weapon = get_weapon_key(key, ::fridge_weapon_verification);
-
+    weapon = get_weapon_key(weapon, ::fridge_weapon_verification);
     if (weapon == "")
-        return;
-
-    if (isdefined(player))
     {
-        print_scheduler("You set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW), player);
-        player player_rig_fridge(weapon);
+        DEBUG_PRINT("rig_fridge failed validation for '" + sstr(weapon) + "'");
+        return undefined;
+    }
+
+    if (is_true(upgraded))
+    {
+        weapon = maps\mp\zombies\_zm_weapons::get_upgrade_weapon(weapon, false);
+        DEBUG_PRINT("rig_fridge set '" + sstr(weapon) + "'");
+        if (isdefined(attachment) && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon, attachment))
+        {
+            if (issubstr(weapon, "+"))
+            {
+                weapon = strtok(weapon, "+")[0];
+            }
+            weapon += "+" + attachment;
+            DEBUG_PRINT("rig_fridge set '" + sstr(weapon) + "'");
+        }
+        else if (maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon, "mms"))
+        {
+            if (issubstr(weapon, "+"))
+            {
+                weapon = strtok(weapon, "+")[0];
+            }
+            weapon += "+mms";
+            DEBUG_PRINT("rig_fridge set '" + sstr(weapon) + "'");
+        }
     }
     else
     {
-        print_scheduler(COLOR_TXT(gethostplayer().name, COL_YELLOW) + " set your fridge weapon to: " + COLOR_TXT(weapon_display_wrapper(weapon), COL_YELLOW));
-        foreach (player in level.players)
-            player player_rig_fridge(weapon);
+        weapon = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon, true);
+        DEBUG_PRINT("rig_fridge set '" + sstr(weapon) + "'");
     }
-}
 
-player_rig_fridge(weapon)
-{
-    self maps\mp\zombies\_zm_stats::clear_stored_weapondata();
+    for_player maps\mp\zombies\_zm_stats::clear_stored_weapondata();
 
     wpn = [];
     wpn["clip"] = weaponclipsize(weapon);
@@ -3793,65 +3839,41 @@ player_rig_fridge(weapon)
     wpn["alt_clip"] = weaponclipsize(wpn["alt_name"]);
     wpn["alt_stock"] = weaponmaxammo(wpn["alt_name"]);
 
-    self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "name", weapon);
-    self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "clip", wpn["clip"]);
-    self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "stock", wpn["stock"]);
+    for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "name", weapon);
+    for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "clip", wpn["clip"]);
+    for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "stock", wpn["stock"]);
 
     if (isdefined(wpn["alt_name"]) && wpn["alt_name"] != "")
     {
-        self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_name", wpn["alt_name"]);
-        self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_clip", wpn["alt_clip"]);
-        self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_stock", wpn["alt_stock"]);
+        for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_name", wpn["alt_name"]);
+        for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_clip", wpn["alt_clip"]);
+        for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "alt_stock", wpn["alt_stock"]);
     }
 
     if (isdefined(wpn["dw_name"]) && wpn["dw_name"] != "")
     {
-        self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "dw_name", wpn["dw_name"]);
-        self setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
+        for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "dw_name", wpn["dw_name"]);
+        for_player setdstat("PlayerStatsByMap", "zm_transit", "weaponLocker", "lh_clip", wpn["lh_clip"]);
     }
+
+    return weapon;
 }
 
 fridge_weapon_verification(weapon_key)
 {
-    wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, 1);
+    wpn = maps\mp\zombies\_zm_weapons::get_base_weapon_name(weapon_key, true);
     // DEBUG_PRINT("fridge_weapon_verification(): wpn='" + wpn + "' weapon_key='" + weapon_key + "'");
 
     if (!maps\mp\zombies\_zm_weapons::is_weapon_included(wpn))
+    {
         return "";
-
+    }
     if (is_offhand_weapon(wpn) || is_limited_weapon(wpn))
+    {
         return "";
-
-    return wpn;
-}
-
-fridge_pap_weapon_verification(weapon_key)
-{
-    weapon_key = fridge_weapon_verification(weapon_key);
-    // DEBUG_PRINT("fridge_pap_weapon_verification(): weapon_key='" + weapon_key + "'");
-
-    /* Give set attachment if weapon supports it */
-    att = fridge_pap_weapon_attachment_rules(weapon_key);
-    if (weapon_key != "" && maps\mp\zombies\_zm_weapons::weapon_supports_this_attachment(weapon_key, att))
-    {
-        base = maps\mp\zombies\_zm_weapons::get_base_name(weapon_key);
-        return level.zombie_weapons[base].upgrade_name + "+" + att;
     }
-    /* Else just give base attachment */
-    else if (weapon_key != "")
-    {
-        return maps\mp\zombies\_zm_weapons::get_upgrade_weapon(weapon_key);
-    }
+
     return weapon_key;
-}
-
-fridge_pap_weapon_attachment_rules(weapon_key)
-{
-    switch (weapon_key)
-    {
-        default:
-            return "mms";
-    }
 }
 #endif
 
@@ -5513,6 +5535,30 @@ _run_test_array()
     // printf("test 7: " + sstr(t7) + " | keys: " + sstr(getarraykeys(t7)));
     // printf("test 8: " + sstr(t8) + " | keys: " + sstr(getarraykeys(t8)));
     // printf("test 9: " + sstr(t9) + " | keys: " + sstr(getarraykeys(t9)));
+}
+
+_dumps()
+{
+#if false
+    /* Weapons */
+    f = fs_fopen("b2op/_wpn_dump.txt", "append");
+    foreach (key, wpn in level.zombie_weapons)
+    {
+        fs_write(f, key + "\n");
+        if (isdefined(wpn.default_attachment) && wpn.default_attachment != "none")
+        {
+            fs_write(f, "\t" + wpn.default_attachment + "\n");
+        }
+        if (isdefined(wpn.addon_attachments))
+        {
+            foreach (att in wpn.addon_attachments)
+            {
+                fs_write(f, "\t" + att + "\n");
+            }
+        }
+    }
+    fs_fclose(f);
+#endif
 }
 #endif
 
