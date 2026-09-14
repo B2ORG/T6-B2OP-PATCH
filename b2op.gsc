@@ -81,7 +81,6 @@ init()
     level.b2_flag = 0;
     thread protect_file();
     thread on_player_connected();
-    init_b2_flags();
     init_b2_dvars();
     init_b2_characters();
     init_b2_permaperks();
@@ -100,7 +99,7 @@ post_init()
     flag_wait("initial_blackscreen_passed");
 
     thread init_b2_hud();
-    init_b2_box();
+    thread init_b2_box();
     thread init_b2_chat_watcher();
     init_b2_backspeed();
     thread b2op_main_loop();
@@ -240,20 +239,6 @@ init_b2_box()
 #endif
 }
 
-init_b2_flags()
-{
-    flag_init("b2_permaperks_were_set");
-    flag_init("b2_hud_killed");
-    flag_init("b2_char_taken_0");
-    flag_init("b2_char_taken_1");
-    flag_init("b2_char_taken_2");
-    flag_init("b2_char_taken_3");
-    flag_init("b2_boxtracker_hud_busy");
-    flag_init("b2_silent_backspeed");
-    if (is_mob())
-        flag_init("b2_tomahawk_upgraded");
-}
-
 init_b2_dvars()
 {
     LEVEL_ENDON
@@ -314,7 +299,7 @@ init_b2_backspeed()
 
     DEBUG_PRINT("decoded backspeed stats: (" + typeof(strafe) + ") " + sstr(strafe) + " (" + typeof(back) + ") " + sstr(back));
 
-    flag_set("b2_silent_backspeed");
+    b2_flag_set(F_SILENT_BACKSPEED);
     if (!strafe || !back)
     {
         strafe = 100;
@@ -322,7 +307,7 @@ init_b2_backspeed()
     }
 
     backspeed_input(array(strafe / 100, back / 100), "bs", gethostplayer());
-    flag_clear("b2_silent_backspeed");
+    b2_flag_clear(F_SILENT_BACKSPEED);
 #endif
 }
 
@@ -942,60 +927,73 @@ normalize_both(numeric1, numeric2, factor)
 
 b2_flag(flag)
 {
+    DEBUG_PRINT("query B2 flag: " + sstr(flag));
     return (level.b2_flag & int(flag));
 }
 
 b2_flag_set(flag)
 {
+    DEBUG_PRINT("set B2 flag: " + sstr(flag));
     level.b2_flag |= int(flag);
 }
 
 b2_flag_clear(flag)
 {
+    DEBUG_PRINT("clear B2 flag: " + sstr(flag));
     level.b2_flag = level.b2_flag & ~int(flag);
 }
 
 b2_flag_wait(flag)
 {
+    DEBUG_PRINT("wait B2 flag: " + sstr(flag));
     while (!b2_flag(flag))
     {
         wait 0.05;
     }
+    DEBUG_PRINT("finished waiting B2 flag: " + sstr(flag));
 }
 
 b2_flag_waitopen(flag)
 {
+    DEBUG_PRINT("waitopen B2 flag: " + sstr(flag));
     while (b2_flag(flag))
     {
         wait 0.05;
     }
+    DEBUG_PRINT("finished waiting waitopen B2 flag: " + sstr(flag));
 }
 
 b2_flag_wait_timeout(flag, timeout_ms)
 {
+    DEBUG_PRINT("wait timeout B2 flag: " + sstr(flag) + " " + sstr(timeout_ms));
     start = gettime();
     while (!b2_flag(flag))
     {
         if (start + timeout_ms >= gettime())
         {
+            DEBUG_PRINT("wait B2 flag timeout: " + sstr(flag));
             break;
         }
         wait 0.05;
     }
+    DEBUG_PRINT("finished waiting with timeout B2 flag: " + sstr(flag));
 }
 
 b2_flag_waitopen_timeout(flag, timeout_ms)
 {
+    DEBUG_PRINT("waitopen timeout B2 flag: " + sstr(flag) + " " + sstr(timeout_ms));
     start = gettime();
 
     while (b2_flag(flag))
     {
         if (start + timeout_ms >= gettime())
         {
+            DEBUG_PRINT("waitopen B2 flag timeout: " + sstr(flag));
             break;
         }
         wait 0.05;
     }
+    DEBUG_PRINT("finished waitopen with timeout B2 flag: " + sstr(flag));
 }
 
 is_town()
@@ -1294,7 +1292,7 @@ check_for_strattester_override(key)
         return false;
     if (is_true(level.strat_tester))
         return true;
-    return flag("b2_strattester_" + key);
+    return flag_exists("b2_strattester_" + key) && flag("b2_strattester_" + key);
 }
 
 b2_restart_level()
@@ -1506,6 +1504,12 @@ b2_chat_handler(message, player)
 
     switch (tolower(message_elements[0]))
     {
+#if DEBUG == 1
+        case "bit":
+            iprintln("B2_FLAG: " + sstr(level.b2_flag));
+            DEBUG_PRINT("B2_FLAG: " + sstr(level.b2_flag));
+            break;
+#endif
         case "backspeed":
         case "!bs":
             level thread player_input(INPUT_BACKSPEED, command_param, player);
@@ -1574,7 +1578,7 @@ b2_chat_handler(message, player)
 
 bad_file()
 {
-    flag_set("b2_bad_file");
+    b2_flag_set(F_BAD_FILE);
 
     wait 0.75;
     iprintln("YOU'VE DOWNLOADED THE ^1WRONG FILE!");
@@ -1619,8 +1623,10 @@ welcome_prints()
 {
     PLAYER_ENDON
 
-    if (flag_exists("b2_bad_file") && is_true(flag("b2_bad_file")))
+    if (b2_flag(F_BAD_FILE))
+    {
         return;
+    }
 
     wait 0.75;
     self iprintln("B2^1OP^7 PATCH " + COLOR_TXT("V" + B2OP_VER, COL_RED));
@@ -1992,7 +1998,7 @@ dvar_scanner(dvars)
                 if (isdefined(dvars[i]["on_change"]) && state[dvars[i]["name"]] != current_state)
                 {
                     DEBUG_PRINT("dvar onchange " + sstr(dvars[i]["name"]) + ": " + sstr(state[dvars[i]["name"]]) + " != " + sstr(current_state));
-                    if (!flag("b2_" + dvars[i]["name"] + "_locked"))
+                    if (!is_dvar_locked(dvars[i]["name"]))
                     {
                         callback = dvars[i]["on_change"];
                         reset = [[callback]](current_state, dvars[i]["name"], gethostplayer());
@@ -2109,6 +2115,20 @@ set_client_dvars()
             self setclientdvar(dvar["name"], dvar["start_value"]);
         }
     }
+}
+
+is_dvar_locked(dvar)
+{
+    switch (dvar)
+    {
+        case "fb":
+            return b2_flag(F_FIRSTBOX_LOCKED);
+        case "lb":
+            return b2_flag(F_BOXLOCATION_LOCKED);
+        case "fridge":
+            return b2_flag(F_FRIDGE_LOCKED);
+    }
+    return false;
 }
 
 award_points(amount)
@@ -2660,7 +2680,7 @@ backspeed_input(new_value, dvar, player)
         player thread maps\mp\zombies\_zm_stats::uploadstatssoon();
     }
 
-    if (!flag("b2_silent_backspeed"))
+    if (!b2_flag(F_SILENT_BACKSPEED))
     {
         print_scheduler("Strafespeed: " + COLOR_TXT(getdvar("player_strafeSpeedScale"), COL_YELLOW) + " | Backspeed: " + COLOR_TXT(getdvar("player_backSpeedScale"), COL_YELLOW));
     }
@@ -2942,7 +2962,7 @@ setclientdvar(arg1, arg2)
 #if FEATURE_HUD == 1
 kill_hud()
 {
-    flag_set("b2_killed_hud");
+    b2_flag_set(F_HUD_KILLED);
     if (isdefined(level.timer_hud))
         level.timer_hud destroyelem();
     if (isdefined(level.round_hud))
@@ -3206,7 +3226,7 @@ watch_stat(stat)
     if (!isdefined(self.initial_stats[stat]))
         self.initial_stats[stat] = self getdstat("buildables", stat, "buildable_pickedup");
 
-    while (!flag("b2_hud_killed"))
+    while (!b2_flag(F_HUD_KILLED))
     {
         stat_number = self getdstat("buildables", stat, "buildable_pickedup");
         delta = stat_number - self.initial_stats[stat];
@@ -3385,8 +3405,10 @@ remove_permaperk_stat(stat_name)
 
 emergency_permaperks_cleanup()
 {
-    if (!flag("pers_jug_cleared"))
+    if (!b2_flag(F_PERS_JUG_CLEARED))
+    {
         return;
+    }
 
     /* This shouldn't be necessary, serves as last resort defence. Will not reset health but will prevent the perk to be active after a down */
     foreach (player in level.players)
@@ -3403,7 +3425,7 @@ fix_persistent_jug()
         wait 0.05;
 
     level.pers_upgrades["jugg"].upgrade_active_func = ::fixed_upgrade_jugg_active;
-    flag_wait("pers_jug_cleared");
+    b2_flag_wait(F_PERS_JUG_CLEARED);
     wait 0.5;
 
     arrayremoveindex(level.pers_upgrades, "jugg");
@@ -3446,7 +3468,7 @@ fixed_upgrade_jugg_active()
     self maps\mp\zombies\_zm_perks::perk_set_max_health_if_jugg("jugg_upgrade", 1, 1);
     self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg", 0);
     self maps\mp\zombies\_zm_stats::zero_client_stat("pers_jugg_downgrade_count", 0);
-    flag_set("pers_jug_cleared");
+    b2_flag_set(F_PERS_JUG_CLEARED);
 
     DEBUG_PRINT("fixed_upgrade_jugg_active() deinit " + self.name);
     // DEBUG_PRINT("fixed_upgrade_jugg_active() stat: " + sstr(self maps\mp\zombies\_zm_stats::get_global_stat("pers_jugg")));
@@ -3462,7 +3484,7 @@ watch_permaperk_award()
         wait 0.05;
     }
 
-    if (flag("b2_permaperks_were_set"))
+    if (b2_flag(F_PERS_SET))
     {
         print_scheduler("Permaperks Awarded - ^1RESTARTING");
         wait 1;
@@ -3585,7 +3607,7 @@ resolve_permaperk(perk)
 award_permaperk(stat_name, perk_code, stat_value)
 {
     DEBUG_PRINT("award_permaperk: " + sstr(stat_name) + " " + sstr(perk_code) + " " + sstr(stat_value));
-    flag_set("b2_permaperks_were_set");
+    b2_flag_set(F_PERS_SET);
     self.stats_this_frame[stat_name] = 1;
     self maps\mp\zombies\_zm_stats::set_global_stat(stat_name, stat_value);
     self playsoundtoplayer("evt_player_upgrade", self);
@@ -4406,7 +4428,7 @@ first_box()
         print_scheduler("First box used: " + COLOR_TXT(level.b2_rigged_hits, COL_YELLOW) + " times");
     }
     level notify("b2_box_restore");
-    flag_set("b2_first_box_terminated");
+    b2_flag_set(F_FIRSTBOX_TERMINATED);
 }
 
 firstbox_input(value, key, player)
@@ -4438,8 +4460,10 @@ rig_box(guns, player)
 {
     LEVEL_ENDON
 
-    if (flag("b2_first_box_terminated"))
+    if (b2_flag(F_FIRSTBOX_TERMINATED))
+    {
         return;
+    }
 
     weapon_key = get_weapon_key(guns[0], ::box_weapon_verification);
     if (level.players.size == 1)
@@ -4814,7 +4838,7 @@ override_personality_character()
 
     preset = self parse_preset(get_character_stat_for_map(), array(1, 2, 3, 4));
     charindex = preset - 1;
-    if (preset > 0 && !flag("b2_char_taken_" + charindex))
+    if (preset > 0 && !b2_flag(clamp(F_CHAR_0_TAKEN << charindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN)))
     {
         /* Need to assign level checks for coop specific logic in original callbacks */
         if (is_mob() && charindex == 3)
@@ -4828,7 +4852,7 @@ override_personality_character()
 
     self [[level.old_givecustomcharacters]]();
     /* Set it here, to avoid duplicates when some players don't have presets */
-    flag_set("b2_char_taken_" + self.characterindex);
+    b2_flag_set(clamp(F_CHAR_0_TAKEN << self.characterindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN));
 }
 
 override_team_character()
@@ -4837,12 +4861,19 @@ override_team_character()
     if (run_default_character_hotjoin_safety())
         return;
 
-    if (!flag("b2_char_taken_0") && !flag("b2_char_taken_1"))
+    if (!b2_flag(F_CHAR_0_TAKEN | F_CHAR_1_TAKEN))
     {
         preset = gethostplayer() parse_preset(get_character_stat_for_map(), array(1, 2));
-        charindex = preset - 1;
-        flag_set("b2_char_taken_" + charindex);
-        level.should_use_cia = charindex;
+        if (preset == 1)
+        {
+            b2_flag_set(F_CHAR_0_TAKEN);
+            level.should_use_cia = false;
+        }
+        else if (preset == 2)
+        {
+            b2_flag_set(F_CHAR_1_TAKEN);
+            level.should_use_cia = true;
+        }
         DEBUG_PRINT("Set character " + level.should_use_cia);
     }
 
@@ -4881,8 +4912,8 @@ get_character_stat_for_map()
 
 character_flag_cleanup()
 {
-    flag_clear("b2_char_taken_" + self.characterindex);
-    DEBUG_PRINT("clearing flag: b2_char_taken_" + self.characterindex);
+    b2_flag_clear(clamp(F_CHAR_0_TAKEN << self.characterindex, F_CHAR_0_TAKEN, F_CHAR_3_TAKEN));
+    DEBUG_PRINT("clearing character flag: " + self.characterindex);
 
     /* Need to invoke original callback afterwards */
     self maps\mp\gametypes_zm\_globallogic_player::callback_playerdisconnect();

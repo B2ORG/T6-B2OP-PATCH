@@ -79,6 +79,16 @@
 #define F_FRIDGE_LOCKED 1
 #define F_FIRSTBOX_LOCKED 2
 #define F_BOXLOCATION_LOCKED 4
+#define F_FIRSTBOX_TERMINATED 8
+#define F_BAD_FILE 16
+#define F_SILENT_BACKSPEED 32
+#define F_HUD_KILLED 64
+#define F_PERS_JUG_CLEARED 128
+#define F_PERS_SET 256
+#define F_CHAR_0_TAKEN 512
+#define F_CHAR_1_TAKEN 1024
+#define F_CHAR_2_TAKEN 2048
+#define F_CHAR_3_TAKEN 4096
 
 /* Feature flags */
 #define FEATURE_HUD 1
