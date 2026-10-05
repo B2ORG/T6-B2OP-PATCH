@@ -124,7 +124,7 @@ A high level overview what features are available in each of the versions.
 
 Starting on Plutonium version R4516, the launcher is able to show checksum of each of the patches you have as well as the entire game memory (i'm massively oversimplifying here, geeks give me a break). [Here as an article about what a checksum is](https://www.howtogeek.com/363735/what-is-a-checksum-and-why-should-you-care/). Every file has a different signature, and changing as much as a single letter in the patch changes it's signature entirely.
 
-![checksum example](https://b2.wtf/images/checksum-img-example.jpg)
+![checksum example](https://cdn.b2.wtf/0b9e471c-83ea-4aa4-9db0-8c78c73c1d8e.jpg)
 
 As you can see on the screenshot above, each of the GSC files you have loaded into the game is listed by the game. Occurance of this data is navigated by `cg_flashScriptHashes` DVAR (do not worry, the patch will set this DVAR for you automatically, no action required).
 
